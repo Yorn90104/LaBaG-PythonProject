@@ -1,16 +1,19 @@
-from Module.GUI import (
+from src.GUI import (
                         setup_tk_win, setup_frame_and_canvas,switch_frame, init_window_mainloop,#視窗
                         input_box, get_input, reset_input_box, load_picture, add_text, image_button, txt_button, #圖像元素
+                        save_icon
                         )
+from src.imageb64 import image_dict
 
-win = setup_tk_win("啦八機", ".\\Asset\\Superhhh.ico", 450, 800)
+save_icon(image_dict, 'Superhhh')
+win = setup_tk_win("啦八機", "temp_icon.ico", 450, 800)
 
-from Module.Logic import LABAG, Begin, button_able
-from Module.Element import (
+from src.Logic import LABAG, Begin, button_able
+from src.Element import (
                             BG, QST, Title, SuperCircle, SB, 
                             back, BeginPIC, AgainPIC
                             )
-from Module.Sheet import get_data
+from src.Sheet import get_data
 
 get_data()
 

@@ -1,17 +1,18 @@
 from random import randint
-from Module.GUI import (
+from src.GUI import (
                         update_picture, switch_frame, image_button, delete_button,
                         play_music , stop_music, play_sound, switch_music
                         )
-from Module.Element import (
+from src.Element import (
                             QST, BG, Title, 
                             gss , hhh , hentai , handsun , kachu , rrr,
                             super_hhh, SuperPOP, SuperBG, SuperQST, SuperTitle,
                             green_wei, GreenPOP, GreenBG, GreenQST, GreenTitle, GreenLeft, GreenMid, GreenRight, 
                             pikachu, KachuPOP, KachuBG, KachuQST, KachuTitle,
-                            Ding, SuperUP, GreenUP
+                            Ding, SuperUP, GreenUP,
+                            bgm, SuperMusic, GreenMusic, KachuMusic
                             )
-from Module.Sheet import find_history_score, commit_score
+from src.Sheet import find_history_score, commit_score
 
 class Game:
 
@@ -223,13 +224,13 @@ class Game:
         """音樂開關"""
         mod = self.now_mod()
         if mod == "SuperHHH":
-            file = '.\\Asset\\SuperMusic.wav'
+            file = SuperMusic
         elif mod == "GreenWei":
-            file = '.\\Asset\\GreenMusic.wav'
+            file = GreenMusic
         elif mod == "PiKaChu":
-            file = '.\\Asset\\KachuMusic.wav'
+            file = KachuMusic
         else:
-            file = '.\\Asset\\bgm.wav'
+            file = bgm
         
         #關
         if self.bgm_playing or game_running == False :
@@ -389,14 +390,14 @@ class Game:
             canvas_Game.itemconfig("BG", image = SuperBG)
             canvas_Game.itemconfig("Title", image = SuperTitle)
             canvas_Game.itemconfig("mod_1", text = f"超級阿禾剩餘次數:{self.SuperTimes}次", fill = "#FF00FF")
-            switch_music(self.bgm_playing, '.\\Asset\\SuperMusic.wav')
+            switch_music(self.bgm_playing, SuperMusic)
             
 
         else :
             canvas_Game.itemconfig("BG", image = BG)
             canvas_Game.itemconfig("Title", image = Title)
             canvas_Game.itemconfig("mod_1", text = "")
-            switch_music(self.bgm_playing, '.\\Asset\\bgm.wav', game_running)
+            switch_music(self.bgm_playing, bgm, game_running)
 
     def Super_init(self, canvas_Game):
         
@@ -516,14 +517,14 @@ class Game:
             canvas_Game.itemconfig("BG", image = GreenBG)
             canvas_Game.itemconfig("Title", image = GreenTitle)
             canvas_Game.itemconfig("mod_1", text = f"綠光阿瑋剩餘次數:{self.GreenTimes}次", fill = "#00FF00")
-            switch_music(self.bgm_playing, '.\\Asset\\GreenMusic.wav')
+            switch_music(self.bgm_playing, GreenMusic)
             
 
         else :
             canvas_Game.itemconfig("BG", image = BG)
             canvas_Game.itemconfig("Title", image = Title)
             canvas_Game.itemconfig("mod_1", text = "")
-            switch_music(self.bgm_playing, '.\\Asset\\bgm.wav',game_running)
+            switch_music(self.bgm_playing, bgm,game_running)
 
     def Green_init(self, canvas_Game):
         update_picture(canvas_Game , "LP" , GreenQST)
@@ -572,7 +573,7 @@ class Game:
 
     def change_kachu(self, canvas_Game):
         """把皮卡丘變成皮卡丘"""
-        switch_music(self.bgm_playing,'.\\Asset\\KachuMusic.wav')
+        switch_music(self.bgm_playing,KachuMusic)
         if self.all_p[0] == "E":
             canvas_Game.itemconfig("LP" , image = pikachu)
         if self.all_p[1] == "E":
@@ -593,7 +594,7 @@ class Game:
             canvas_Game.itemconfig("BG", image = BG)
             canvas_Game.itemconfig("Title", image = Title)
             canvas_Game.itemconfig("mod_1", text = "")
-            switch_music(self.bgm_playing, '.\\Asset\\bgm.wav',game_running)
+            switch_music(self.bgm_playing, bgm,game_running)
 
     def Kachu_init(self, canvas_Game):
         

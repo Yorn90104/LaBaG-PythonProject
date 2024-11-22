@@ -3,6 +3,7 @@ from PIL import Image, ImageTk
 import base64
 from io import BytesIO
 import os
+import time
 import wave
 import tempfile
 from pygame import mixer
@@ -27,12 +28,22 @@ def setup_tk_win(name, icon_file_path: str,  width: int, height: int):
 
     def clean_temp():
         """關閉視窗時刪除臨時 圖標 & 音訊文件"""
+        win.destroy()
+        stop_music()
+        mixer.quit() 
         if os.path.exists("temp_icon.ico"):
             os.remove("temp_icon.ico")
         for temp_file in temp_files:
             if os.path.exists(temp_file):
-                os.remove(temp_file)
-        win.destroy()
+                try:
+                    os.remove(temp_file)
+                except PermissionError:
+                    time.sleep(1)
+                    try:
+                        os.remove(temp_file)
+                    except PermissionError:
+                        print(f"仍然無法刪除：{temp_file}")
+                
 
     win.protocol("WM_DELETE_WINDOW", clean_temp)#綁定關閉視窗
 
@@ -136,14 +147,15 @@ def reset_input_box(input_box:tk.Entry, content: str = ""):
 
 #region base64區
 
-def _encode_image(files: list):
+def encode_image(files: list):
     """產生base64編碼的圖像字典檔"""
     image_dict = dict()
     for file in files:
         with open(f".\\Asset\\{file}", mode = "rb") as f :
             image_b64 = base64.b64encode(f.read())
         image_dict[file.split(".")[0]] = image_b64
-    with open((f".\\LabaModule\\Image.py"), mode = "w") as f:
+    with open((f".\\src\\imageb64.py"), mode = "w") as f:
+        f.write("image_dict =")
         f.write(image_dict.__repr__())
 
 def process_image_base64(image_dict: dict, name: str, width: int= 0, height: int= 0):
@@ -197,7 +209,8 @@ def encode_wav(files: list):
         with open(f'.\\Asset\\{file}', mode = 'rb') as f:
             sound_b64 = base64.b64encode(f.read())
         sounds[file.split('.')[0]] = sound_b64
-    with open(f'.\\LabaModule\\WAV.py', mode='w') as f:
+    with open(f'.\\src\\soundb64.py', mode='w') as f:
+        f.write("wav_dict =")
         f.write(sounds.__repr__())
 
 def decode_sound(wav_dict: dict, name):
