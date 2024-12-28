@@ -1,9 +1,9 @@
-#目標
- 
+#產生目標分數的隨機數 json 檔
+from random import randint
 import sys , math
 sys.stdout.reconfigure(encoding='utf-8')
-
 from random import randint #隨機數字
+import json
 
 import subprocess
 def commit_score(name, score):
@@ -15,375 +15,324 @@ def commit_score(name, score):
     else:
         print("名稱為空，資料未上傳！")
 
-i_data = {}
-recent_max = 0
 
 
+class P:
+    def __init__(self, code: str = None, score_list: list[int] = None, rate_dict: dict[str, int]= 0):
+        self.code = code
+        self.score_list = score_list
+        self.rate_dict = rate_dict or {"Normal": 0}
 
-def game(i, LOG):
-        #region 定義區
-        global recent_max
+    def __str__(self):
+        return self.code
 
-        #初始設定
-        game_running = True
+        
+class LaBaG:
+    def __init__(self):
+        # 遊戲邏輯變數
+        self.times = 30 #可遊玩次數 正常30
+        self.played = 0 #已遊玩次數
 
-        ram1 , ram2 , ram3 = 0 , 0 , 0
-        SuperRam = 0
-        GreenRam = 0
+        self.score = 0
+        self.margin_score= 0
 
-        p1 , p2 , p3 = '' , '' , ''
-        all_p = []
+        self.P_dict = {
+            "Gss":P("A",[625, 350, 150], {
+                "Normal": 36,
+                "SuperHHH": 19,
+                "GreenWei": 36,
+                "PiKaChu": 36
+            }),
+            "Hhh":P("B",[1250, 650, 220], {
+                "Normal": 24,
+                "SuperHHH": 5,
+                "GreenWei": 24,
+                "PiKaChu": 24
+            }),
+            "Hentai":P("C",[2100, 1080, 380], {
+                "Normal": 17,
+                "SuperHHH": 19,
+                "GreenWei": 17,
+                "PiKaChu": 17
+            }),
+            "Handsun":P("D",[2500, 1250, 420], {
+                "Normal": 12,
+                "SuperHHH": 19,
+                "GreenWei": 12,
+                "PiKaChu": 12
+            }),
+            "Kachu":P("E",[10000, 5000, 1250], {
+                "Normal": 8,
+                "SuperHHH": 19,
+                "GreenWei": 8,
+                "PiKaChu": 8
+            }),
+            "Rrr":P("F",[20000, 10000, 2500], {
+                "Normal": 3,
+                "SuperHHH": 19,
+                "GreenWei": 3,
+                "PiKaChu": 3
+            }),
+        }
 
-        score = 0
-        add = 0
-        times = 30
-        ed = 0
+        #加分倍數
+        self.score_times_dict = {
+            "Normal": 1,
+            "SuperHHH": 1,
+            "GreenWei": 3,
+            "PiKaChu": 1
+        }
 
-        SuperTimes = 0
-        SuperHHH = False
-        SuperFirst = False
-        superS = 0
+        #region 特殊模式
+        #超級阿禾
+        self.SuperRate = 15
+        self.SuperHHH = False
+        self.SuperNum = 0
+        self.SuperTimes = 0
 
-        GreenTimes = 0
-        GreenWei = False
-        GreenFirst = False
-        gss_times = 0
-        greenS = 0
+        self.superS = 0
 
-        PiKaChu = False
-        kachuS = 0
+        #綠光阿瑋
+        self.GreenRate = 35
+        self.GreenWei = False
+        self.GreenNum = 0
+        self.GreenTimes = 0
+        self.gss_times = 0 #咖波累積數
 
-        #機率
-        def acc_rate(original_rate):
-                result_rate= []
-                acc = 0
-                for x in original_rate:
-                    acc += x
-                    result_rate.append(acc)
-                return result_rate
-
-        normal_acc = acc_rate([36, 24, 17, 12, 8, 3])
-
-        super_acc = acc_rate([19, 5, 19, 19, 19, 19])
-
-        #分數清單
-        same3 = [625, 1250, 2100, 2500, 10000, 20000]
-        same2 = [350, 650, 1080, 1250, 5000, 10000]
-        same1 = [150, 220, 380, 420, 1250, 2500]
+        self.greenS = 0
+        #皮卡丘
+        self.PiKaChu = False
+        
+        self.kachuS = 0
 
         #endregion
-        
-        #region 普通函式區
-        def change_rate(rate, y):
-                """根據隨機數和機率找歸屬 (隨機數)"""
-                if y <= rate[0] :
-                    return 'A'
-                elif y <= rate[1] :
-                    return 'B'
-                elif y <= rate[2] :
-                    return 'C'
-                elif y <= rate[3] :
-                    return 'D'
-                elif y <= rate[4] :
-                    return 'E'
-                elif y <= rate[5] :
-                    return 'F'
 
-
-        def ADD(x,y,lst) :
-                '(歸屬,增加分,分數清單)'
-                if x == 'A':
-                    y = y + lst[0]
-                elif x == 'B' :
-                    y = y + lst[1]
-                elif x == 'C' :
-                    y = y + lst[2]
-                elif x == 'D' :
-                    y = y + lst[3]
-                elif x == 'E' :
-                    y = y + lst[4]
-                elif x == 'F' :
-                    y = y + lst[5]
-                return y
-
-        def calculate_score(p1 , p2 , p3 , a):
-                """計算分數"""
-                #3個相同
-                if p1 == p2 == p3 :
-                    a = ADD(p1 , a , same3)
-
-                #2個相同=(2個相同的+1個不同的)/1.3
-                # 1 & 2
-                elif p1 == p2 :
-                    a = ADD(p1 , a , same2)
-                    #不同的
-                    a = ADD(p3 , a , same1)
-
-                    a = round( a / 1.3 )
-
-                # 2 & 3
-                elif p2 == p3 :
-                    #2個同
-                    a = ADD(p2 , a , same2)
-                    #不同的
-                    a = ADD(p1 , a , same1)
-
-                    a = round( a / 1.3 )
-
-                # 1 & 3
-                elif p1 == p3 :
-                    #2個同
-                    a = ADD(p3 , a , same2)
-                    #不同的
-                    a = ADD(p2 , a , same1)
-
-                    a = round( a / 1.3 )
-
-                #3個都不同 加總/3
-                elif p1 != p2 != p3 :
-                    #1
-                    a = ADD(p1 , a , same1)
-                    
-                    #2
-                    a = ADD(p2 , a , same1)
-                    
-                    #3
-                    a = ADD(p3 , a , same1)
-
-                    a = round( a / 3 )
-                return a
-
-        def result() :
-                nonlocal score , add , ed , p1 , p2 , p3
-                ed += 1
-                score += add
-                add = 0
-                #endregion
-
-        def now_mod(): #現在模式
-                nonlocal SuperHHH, GreenWei, PiKaChu
-                mod = ""
-                if SuperHHH :
-                    mod = "SuperHHH"
-                elif GreenWei :
-                    mod = "GreenWei"
-                elif PiKaChu :
-                    mod = "PiKaChu"
-                else :
-                    mod = "Normal"
-                
-                return mod
-
-        #region 超級阿禾區
-        def super_times(Times) :
-                nonlocal SuperHHH, SuperFirst
-                if SuperHHH :
-                    SuperFirst = False
-                    Times -= 1
-                return Times
-
-        def super_ram(SuperRam):
-                """阿禾隨機數"""
-                SuperRam = randint(1,100)
-                return SuperRam
-
-        def judge_super(all_p, game_running = True, ModEnd = False):
-                """判斷超級阿禾"""
-                nonlocal SuperRam, SuperHHH, SuperTimes, SuperFirst, superS
-                if not game_running :
-                    SuperHHH = False
-                    return
-                
-                mod = now_mod()
-                if mod == "SuperHHH" : #正處於超級阿禾狀態
-                    if all(x == "B" for x in all_p):
-                            SuperTimes += 2
-                    if SuperTimes <= 0 : #超級阿禾次數用完
-                            SuperHHH = False
-                            judge_super(all_p, ModEnd = True)
-                elif mod == "Normal" or mod == "PiKaChu" or ModEnd : #未處於超級阿禾狀態
-                    hhh_appear = False
-                    #判斷是否有出現阿和
-                    if any(x == "B" for x in all_p):
-                            hhh_appear = True
-                    if SuperRam <= 15 and hhh_appear :#超級阿禾出現的機率
-                            SuperHHH = True
-                            SuperFirst = True
-                            superS += 1
-                            SuperTimes = 6
-                            KachuFalse()
-                
-
-
-        def switch_rate(normal_acc):
-                nonlocal super_acc
-                mod = now_mod()
-                if mod == "SuperHHH" :
-                    return super_acc
-                elif mod == "Normal" or mod == "GreenWei" or mod == "PiKaChu" :
-                    return normal_acc
-        
-        def super_double(all_SB, score, add):
-                """超級阿禾加倍 獲得當前分數0.5倍的分數"""
-                if all_SB :
-                    double_score = int(round(score / 2))
-                    add += double_score
-                    return add
-
-        def three_super(all_p, score, add):
-                nonlocal SuperHHH, SuperTimes, SuperFirst
-                """"檢查是否三個超級阿禾"""
-                if all(p == "B" for p in all_p) and SuperHHH and SuperFirst:
-                    all_SB = True
-                    add = super_double(all_SB, score, add)
-                    return add
-                else:
-                    return add
-                #endregion
-
-        #region 綠光阿瑋區
-        def green_times(Times) :
-                nonlocal GreenWei, GreenFirst
-                if GreenWei :
-                    GreenFirst = False
-                    Times -= 1
-                return Times
-
-        def green_ram(GreenRam):
-                """阿瑋隨機數"""
-                GreenRam = randint(1,100)
-                return GreenRam
-
-        def gss_acc_times(all_p):
-                """增加咖波累積數"""
-                nonlocal gss_times
-                if any(p == "A" for p in all_p) :
-                    for i in range(0,len(all_p)):
-                            if all_p[i] == "A" and gss_times < 20 :
-                                gss_times += 1
-
-        def judge_green(all_p, game_running = True, Kachu = False):
-                """判斷綠光阿瑋"""
-                nonlocal GreenRam, GreenWei, GreenTimes, GreenFirst, gss_times, greenS
-                if not game_running :
-                    GreenWei = False
-                    if Kachu == False:
-                            gss_times = 0
-                    return
-                
-                mod = now_mod()
-                gss_acc_times(all_p)
-                if mod == "GreenWei" : 
-                    if all(x == "A" for x in all_p):
-                            GreenTimes += 1
-                    if GreenTimes <= 0 : 
-                            GreenWei = False
-                            judge_super(all_p, ModEnd = True)
-                elif mod == "Normal" or mod == "PiKaChu"  : 
-                    gss_all = False
-
-                    if all(x == "A" for x in all_p):
-                            gss_all = True
-                    if GreenRam <= 35 and gss_all :#超級阿禾出現的機率
-                            GreenWei = True
-                            GreenFirst = True
-                            greenS += 1
-                            GreenTimes = 2
-                            KachuFalse()
-
-                    elif gss_times >= 20 : #咖波累積數達到20
-                            GreenWei = True
-                            GreenFirst = True
-                            greenS += 1
-                            GreenTimes = 2
-                            gss_times = 0
-                            KachuFalse()
-                
-        def switch_times():
-                """加分倍數"""
-                mod = now_mod()
-                if mod == "GreenWei" :#綠光阿瑋使得分增加2倍(*3)
-                    t = 3
-                elif mod == "Normal" or mod == "SuperHHH" or mod == "PiKaChu" :
-                    t = 1
-                return t
-        #endregion
-
-        #region 皮卡丘充電區
-        def KachuFalse():
-                """關掉皮卡丘"""
-                nonlocal PiKaChu
-                PiKaChu = False
-
-        def judge_kachu(all_p, times, ed,  game_running = True):
-                """判斷皮卡丘"""
-                nonlocal PiKaChu, kachuS
-                if not game_running:
-                    PiKaChu = False
-                    return
-                #遊戲進行
-                if ed + 1 >= times:
-                    kachu_appear = False
-                    if any(p == "E" for p in all_p) :
-                            kachu_appear = True
-                    if kachu_appear:
-                            PiKaChu = True
-                            ed -= 5
-                            kachuS += 1
-                            #關掉其他模式
-                            judge_super(all_p, False)
-                            judge_green(all_p, False, True)     
-                return ed
-        
-        #endregion
-
-        #遊戲運作區
-        while ed < times :
-                SuperTimes = super_times(SuperTimes)
-                GreenTimes = green_times(GreenTimes)
-
-                #隨機數
-                ram1 , ram2 , ram3 = randint(1,100) , randint(1,100) , randint(1,100)
-                SuperRam = super_ram(SuperRam)
-                GreenRam = green_ram(GreenRam)
-
-                #歸屬
-                use_rate = switch_rate(normal_acc)
-                p1 = change_rate(use_rate,ram1)
-                p2 = change_rate(use_rate,ram2)
-                p3 = change_rate(use_rate,ram3)
-                
-                all_p = [p1, p2, p3]
-                judge_super(all_p)
-
-                #增加分數
-                use_times = switch_times()
-                judge_green(all_p)
-                add = calculate_score(p1 , p2 , p3 , add)
-                add = three_super(all_p, score, add)
-                add *= use_times
-
-                result()
-                #遊戲繼續
-                ed = judge_kachu(all_p, times, ed)
-                
-        #遊戲結束
-        game_running = False
-        judge_super(all_p, game_running)
-        judge_green(all_p, game_running)
-        judge_kachu(all_p, times, ed, game_running)
-        
-        
-        if score > recent_max:
-            recent_max = score
-            if recent_max >= 950000:
-             commit_score('模擬測試最高分', recent_max)
-        print(f"第{i : {LOG}}次 分數：{score : 8} ({superS : 2} 次 超級阿禾 )({greenS : 2} 次 綠光阿瑋 )({kachuS : 2} 次  皮卡丘充電)【目前最大值：{recent_max}】")
-        return [score, superS, greenS, kachuS]
+    def reset(self):
+        """重置"""
     
+        self.played = 0
+        self.score = 0
+        self.margin_score= 0
+        
+        self.SuperHHH = False
+        self.SuperTimes = 0
+        self.superS =0
 
+        self.GreenWei = False
+        self.GreenTimes = 0
+        self.gss_times = 0
+        self.greenS = 0
+
+        self.PiKaChu = False
+        self.kachuS = 0
+
+    def Logic(self):
+        """邏輯流程"""
+        while self.GameRunning():
+            self.random() 
+            self.judge_super()
+            self.calculate_score()
+            self.judge_green()
+            self.result()
+            self.judge_kachu()
+        
+    
+    def GameRunning(self) -> bool:
+        """判斷一局遊戲是否繼續運行"""
+        return self.played < self.times
+
+    def now_mod(self)  -> str:
+        """現在模式"""
+        match True:
+            case self.SuperHHH:
+                return "SuperHHH"
+            case self.GreenWei:
+                return "GreenWei"
+            case self.PiKaChu:
+                return "PiKaChu"
+            case _: #default
+                return "Normal"
+        
+
+    def random(self):
+        """遊戲變數隨機產生"""
+        RandNums = [randint(1, 100), randint(1, 100), randint(1, 100)]
+        
+        def acc_rate():
+            res = list()
+            acc = 0
+            for i in self.P_dict:
+                acc += self.P_dict[i].rate_dict[self.now_mod()]
+                res.append(acc)
+            return res
+        
+        rate_range = acc_rate()
+
+        self.Ps = [None, None, None]
+        for i in range(3):
+            if RandNums[i] <= rate_range[0]:
+                self.Ps[i] = self.P_dict["Gss"]
+            elif RandNums[i] <= rate_range[1]:
+                self.Ps[i] = self.P_dict["Hhh"]
+            elif RandNums[i] <= rate_range[2]:
+                self.Ps[i] = self.P_dict["Hentai"]
+            elif RandNums[i] <= rate_range[3]:
+                self.Ps[i] = self.P_dict["Handsun"]
+            elif RandNums[i] <= rate_range[4]:
+                self.Ps[i] = self.P_dict["Kachu"]
+            elif RandNums[i] <= rate_range[5]:
+                self.Ps[i] = self.P_dict["Rrr"]
+
+    def calculate_score(self):
+        """計算分數"""
+        def margin_add(p: P, typ: int):
+            """p -> 使用 p 的分數列表\ntyp -> 得分型態"""
+            self.margin_score += p.score_list[typ]
+
+        if self.Ps[0] == self.Ps[1] == self.Ps[2]:
+            margin_add(self.Ps[0], 0)
+        elif self.Ps[0] == self.Ps[1]:
+            margin_add(self.Ps[0], 1)
+            margin_add(self.Ps[2], 2)
+            self.margin_score = round(self.margin_score / 1.3)
+        elif self.Ps[1] == self.Ps[2]:
+            margin_add(self.Ps[1], 1)
+            margin_add(self.Ps[0], 2)
+            self.margin_score = round(self.margin_score / 1.3)
+        elif self.Ps[2] == self.Ps[0]:
+            margin_add(self.Ps[2], 1)
+            margin_add(self.Ps[1], 2)
+            self.margin_score = round(self.margin_score / 1.3)  
+        elif self.Ps[0] != self.Ps[1] != self.Ps[2]:
+            margin_add(self.Ps[0], 2)
+            margin_add(self.Ps[1], 2)
+            margin_add(self.Ps[2], 2)
+            self.margin_score = round(self.margin_score / 3)
+
+        score_times = self.score_times_dict[self.now_mod()]
+        self.margin_score *= score_times
+        
+
+    def result(self):
+        """結果"""
+        self.played += 1
+        self.score += self.margin_score
+        self.margin_score = 0
+
+    #region 超級阿禾模式(SuperHHH)
+    def SuperFalse(self):
+        self.SuperHHH = False
+
+    def SuperRandom(self):
+        self.SuperNum = randint(1, 100) #隨機數
+
+    def judge_super(self):
+        """判斷超級阿禾"""
+        if not self.GameRunning:
+            self.SuperFalse()
+            return
+        
+        self.SuperFalse()
+        match self.now_mod():
+            case "SuperHHH":
+                self.SuperTimes -= 1
+
+                if all(p.code == "B" for p in self.Ps):
+                    self.SuperTimes += 2
+                if self.SuperTimes <= 0 : #超級阿禾次數用完
+                    self.SuperFalse()
+
+
+            case "Normal" | "PiKaChu":
+                hhh_appear = any(p.code == "B" for p in self.Ps) #判斷是否有出現阿和
+                if self.SuperNum <= self.SuperRate and hhh_appear:
+                    self.SuperHHH = True
+                    self.SuperTimes += 6
+                    if self.PiKaChu:
+                        self.KachuFalse()
+
+                    self.superS += 1
+
+                    #超級阿禾加倍
+                    if all(p.code == "B" for p in self.Ps):
+                        double_score = int(round(self.score / 2))
+                        self.margin_score += double_score
+            
+    #endregion
+
+    #region 綠光阿瑋模式(GreenWei)
+    def GreenFalse(self):
+        self.GreenWei = False
+
+    def GreenRandom(self):
+        self.GreenNum = randint(1, 100) #隨機數
+
+    def judge_green(self):
+        """判斷綠光阿瑋"""
+        if not self.GameRunning():
+            self.GreenFalse()
+            return
+        
+        #增加咖波累積數
+        for p in self.Ps:
+            if p.code == "A" and self.gss_times < 20 :
+                self.gss_times += 1
+
+        self.GreenRandom()
+        match self.now_mod():
+            case "GreenWei":
+                self.GreenTimes -= 1
+                if all(p.code == "A" for p in self.Ps):
+                    self.GreenTimes += 1
+                if self.GreenTimes <= 0 : #綠光阿瑋次數用完
+                    self.GreenFalse()
+                    self.judge_super()
+
+
+            case "Normal" | "PiKaChu":
+                gss_all = all(p.code == "A" for p in self.Ps) #判斷是否有出現並全部咖波
+                if self.GreenNum <= self.GreenRate and gss_all :
+                    self.GreenWei = True
+                    self.GreenTimes += 2
+                    if self.PiKaChu:
+                        self.KachuFalse()
+
+                    self.greenS += 1
+
+                elif self.gss_times >= 20 : #咖波累積數達到20
+                    self.GreenWei = True
+                    self.GreenTimes += 2
+                    self.gss_times = 0
+                    if self.PiKaChu:
+                        self.KachuFalse()
+                    
+                    self.greenS += 1
+
+    #endregion
+
+    #region 皮卡丘充電區(PiKaChu)
+    def KachuFalse(self):
+        self.PiKaChu = False
+
+    def judge_kachu(self):
+        """判斷皮卡丘"""
+        if not self.GameRunning() and any(p.code == "E" for p in self.Ps) :
+            self.PiKaChu = True
+            self.played -= 5
+            self.kachuS += 1
+            #關掉其他模式
+            self.SuperFalse()
+            self.GreenFalse()
+
+        else:
+            self.PiKaChu = False
+    #endregion
+        
 target = int (input("請輸入目標分數"))
 
+Game = LaBaG()
+
+recent_max = 0
 
 i = 0
 while True :
@@ -392,15 +341,18 @@ while True :
         LOG = 2
     else:
         LOG = int (round(math.log10(i)) + 2)
+    Game.reset()
+    Game.Logic()
 
-    i_data = game (i, LOG)
-
-    # 檢查(列表)的第一個索引值是否達到目標
-    if i_data[0] >= target:
+    print(f"第{i : {LOG}}次 分數：{Game.score : 8} ({Game.superS : 2} 次 超級阿禾 )({Game.greenS : 2} 次 綠光阿瑋 )({Game.kachuS : 2} 次  皮卡丘充電)【目前最大值：{recent_max}】")
+    # 檢查是否達到目標
+    if Game.score >= target:
         break  # 如果達到目標，則退出迴圈
-    
-
- 
-print (f"第{i: {LOG}}次達成： {i_data[0]} ({i_data[1] : 2} 次超級阿禾 )({i_data[2] : 2} 次綠光阿瑋 )({i_data[3] : 2} 次  皮卡丘充電)")  
+    elif Game.score > recent_max:
+        recent_max = Game.score
+        if recent_max >= 1000000:
+             commit_score('模擬測試最高分', recent_max)
+        
+print (f"第{i: {LOG}}次達成：{Game.score : 8} ({Game.superS : 2} 次 超級阿禾 )({Game.greenS : 2} 次 綠光阿瑋 )({Game.kachuS : 2} 次  皮卡丘充電)")  
 
 

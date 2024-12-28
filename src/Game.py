@@ -77,11 +77,13 @@ class LaBaG:
         #超級阿禾
         self.SuperRate = 15
         self.SuperHHH = False
+        self.SuperNum = 0
         self.SuperTimes = 0
 
         #綠光阿瑋
         self.GreenRate = 35
         self.GreenWei = False
+        self.GreenNum = 0
         self.GreenTimes = 0
         self.gss_times = 0 #咖波累積數
 
@@ -217,6 +219,10 @@ class LaBaG:
     #region 超級阿禾模式(SuperHHH)
     def SuperFalse(self):
         self.SuperHHH = False
+    
+    def SuperRandom(self):
+        self.SuperNum = randint(1, 100) #隨機數
+        print(f"超級阿禾隨機數為: {self.SuperNum}")
 
     def judge_super(self):
         """判斷超級阿禾"""
@@ -224,6 +230,7 @@ class LaBaG:
             self.SuperFalse()
             return
         
+        self.SuperRandom()
         match self.now_mod():
             case "SuperHHH":
                 self.SuperTimes -= 1
@@ -238,10 +245,9 @@ class LaBaG:
                     self.ModtoScreen = True
 
             case "Normal" | "PiKaChu":
-                RandNum = randint(1, 100) #隨機數
-                print(f"超級阿禾隨機數為: {RandNum}")
+                
                 hhh_appear = any(p.code == "B" for p in self.Ps) #判斷是否有出現阿和
-                if RandNum <= self.SuperRate and hhh_appear:
+                if self.SuperNum <= self.SuperRate and hhh_appear:
                     self.SuperHHH = True
                     self.SuperTimes += 6
                     print(f"超級阿禾出現")
@@ -261,6 +267,10 @@ class LaBaG:
     #region 綠光阿瑋模式(GreenWei)
     def GreenFalse(self):
         self.GreenWei = False
+    
+    def GreenRandom(self):
+        self.GreenNum = randint(1, 100) #隨機數
+        print(f"綠光阿瑋隨機數為: {self.GreenNum}")
 
     def judge_green(self):
         """判斷綠光阿瑋"""
@@ -273,6 +283,8 @@ class LaBaG:
             if p.code == "A" and self.gss_times < 20 :
                 self.gss_times += 1
         print(f"咖波累積數：{self.gss_times}")
+
+        self.GreenRandom()
         match self.now_mod():
             case "GreenWei":
                 self.GreenTimes -= 1
@@ -287,10 +299,9 @@ class LaBaG:
                     self.ModtoScreen = True
 
             case "Normal" | "PiKaChu":
-                RandNum = randint(1, 100) #隨機數
-                print(f"綠光阿瑋隨機數為: {RandNum}")
+    
                 gss_all = all(p.code == "A" for p in self.Ps) #判斷是否有出現並全部咖波
-                if RandNum <= self.GreenRate and gss_all :
+                if self.GreenNum <= self.GreenRate and gss_all :
                     self.GreenWei = True
                     self.GreenTimes += 2
                     print(f"綠光阿瑋出現")

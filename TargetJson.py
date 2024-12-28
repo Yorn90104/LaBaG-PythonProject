@@ -90,11 +90,13 @@ class LaBaG:
         #超級阿禾
         self.SuperRate = 15
         self.SuperHHH = False
+        self.SuperNum = 0
         self.SuperTimes = 0
 
         #綠光阿瑋
         self.GreenRate = 35
         self.GreenWei = False
+        self.GreenNum = 0
         self.GreenTimes = 0
         self.gss_times = 0 #咖波累積數
 
@@ -223,12 +225,17 @@ class LaBaG:
     def SuperFalse(self):
         self.SuperHHH = False
 
+    def SuperRandom(self):
+        self.SuperNum = randint(1, 100) #隨機數
+        self.OneData["SuperHHH"] = self.SuperNum
+
     def judge_super(self):
         """判斷超級阿禾"""
         if not self.GameRunning:
             self.SuperFalse()
             return
         
+        self.SuperFalse()
         match self.now_mod():
             case "SuperHHH":
                 self.SuperTimes -= 1
@@ -240,11 +247,8 @@ class LaBaG:
 
 
             case "Normal" | "PiKaChu":
-                RandNum = randint(1, 100) #隨機數
-                self.OneData["SuperHHH"] = RandNum
-
                 hhh_appear = any(p.code == "B" for p in self.Ps) #判斷是否有出現阿和
-                if RandNum <= self.SuperRate and hhh_appear:
+                if self.SuperNum <= self.SuperRate and hhh_appear:
                     self.SuperHHH = True
                     self.SuperTimes += 6
                     if self.PiKaChu:
@@ -262,6 +266,10 @@ class LaBaG:
     def GreenFalse(self):
         self.GreenWei = False
 
+    def GreenRandom(self):
+        self.GreenNum = randint(1, 100) #隨機數
+        self.OneData["GreenWei"] = self.GreenNum
+
     def judge_green(self):
         """判斷綠光阿瑋"""
         if not self.GameRunning():
@@ -272,6 +280,8 @@ class LaBaG:
         for p in self.Ps:
             if p.code == "A" and self.gss_times < 20 :
                 self.gss_times += 1
+
+        self.GreenRandom()
         match self.now_mod():
             case "GreenWei":
                 self.GreenTimes -= 1
@@ -283,11 +293,8 @@ class LaBaG:
 
 
             case "Normal" | "PiKaChu":
-                RandNum = randint(1, 100) #隨機數
-                self.OneData["GreenWei"] = RandNum
-
                 gss_all = all(p.code == "A" for p in self.Ps) #判斷是否有出現並全部咖波
-                if RandNum <= self.GreenRate and gss_all :
+                if self.GreenNum <= self.GreenRate and gss_all :
                     self.GreenWei = True
                     self.GreenTimes += 2
                     if self.PiKaChu:
@@ -326,6 +333,8 @@ target = int (input("請輸入目標分數"))
 
 Game = LaBaG()
 
+recent_max = 0
+
 i = 0
 while True :
     i += 1
@@ -336,10 +345,14 @@ while True :
     Game.reset()
     Game.Logic()
 
-    print(f"第{i : {LOG}}次 分數：{Game.score : 8}")
+    print(f"第{i : {LOG}}次 分數：{Game.score : 8}【目前最大值：{recent_max}】")
     # 檢查是否達到目標
     if Game.score >= target:
         break  # 如果達到目標，則退出迴圈
+    elif Game.score > recent_max:
+        recent_max = Game.score
+        if recent_max >= 1000000:
+             commit_score('模擬測試最高分', recent_max)
 
 with open("target.json", "w", encoding="utf-8") as file:
     json.dump(Game.AllData, file, indent=4)
