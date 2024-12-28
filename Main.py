@@ -283,6 +283,8 @@ def Begin():
 
 
     #Main
+    if "pop" in win.button_dict:
+        win.delete_button("pop")
     BeginUnable()
     resetQST()
     Game.Logic()

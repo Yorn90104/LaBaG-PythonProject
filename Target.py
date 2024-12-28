@@ -1,4 +1,5 @@
-#測試最大值
+#目標
+ 
 import sys , math
 sys.stdout.reconfigure(encoding='utf-8')
 
