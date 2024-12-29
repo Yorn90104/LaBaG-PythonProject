@@ -248,7 +248,7 @@ By August 2024, 🍚🐟 had graduated from high school and was preparing for co
 ├── PY.txt            # Uploadable to ChatGPT for explanation
 ├── Target.py         # Target score simulation tool
 ├── TargetJson.py     # Adds .json generation functionality to Target.py
-├── yieldb64.py          # Generates imageb64.py and soundb64.py from Base64 encoded assets
+├── yieldb64.py       # Generates imageb64.py and soundb64.py from Base64 encoded assets
 ├── README.md         # Documentation
 └── Superhhh.ico      # Icon for packaging
 ```
