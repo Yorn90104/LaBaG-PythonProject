@@ -5,17 +5,7 @@ sys.stdout.reconfigure(encoding='utf-8')
 from random import randint #隨機數字
 import json
 
-import subprocess
-def commit_score(name, score):
-    """上傳資料至試算表"""
-    if name != "" :
-        url = f"https://docs.google.com/forms/d/18dVGtPExBUc0p1VbsmMxCyujQoldI6GKQWZQGJQ-yzY/formResponse?entry.582969025={name}&entry.995493130={score}"
-        subprocess.Popen(['curl', url], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        print("資料已上傳")
-    else:
-        print("名稱為空，資料未上傳！")
-
-
+from src.Sheet import commit_score
 
 class P:
     def __init__(self, code: str = None, score_list: list[int] = None, rate_dict: dict[str, int]= 0):
@@ -354,8 +344,9 @@ while True :
         break  # 如果達到目標，則退出迴圈
     elif Game.score > recent_max:
         recent_max = Game.score
-        if recent_max >= 1000000:
-             commit_score('模擬測試最高分', recent_max)
+
+if Game.score > 1000000:
+    commit_score('模擬測試最高分', recent_max)
 
 with open(f"{Game.score}.json", "w", encoding="utf-8") as file:
     json.dump(Game.AllData, file, indent=4)
