@@ -104,7 +104,7 @@ def into_json():
 
     win.Canva("Game").itemconfig("PlayerName", text =  "正在使用 .json檔案模擬")
     print(f"使用 .json檔案模擬中")
-    Game.setup_path(".\\target.json")
+    Game.setup_path(".\\248119875.json")
 
     win.unbind('<Return>') # 解除綁定ENTER
     BeginAble()
