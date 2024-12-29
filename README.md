@@ -1,4 +1,4 @@
-# README
+# 啦八機
 
 ## 簡介
 
@@ -137,7 +137,7 @@
 
 ---
 
-# README (English Version)
+# LaBaG
 
 ## Introduction
 
