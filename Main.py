@@ -1,6 +1,6 @@
 from GUI import Window
 win = Window("啦八機", 450, 800) #先初始化 Tkinter 才能創建 ImageTk
-from src.game import LaBaG
+from src.game import LaBaG, JsonLaBaG
 from src.element import (
     BG, SuperBG, GreenBG, KachuBG,
     QST, SuperQST, GreenQST, KachuQST, 
@@ -17,49 +17,23 @@ from src.Sheet import get_data, find_history_score, commit_score
 
 get_data() #獲取啦八機試算表的資料
 
-Game = LaBaG()
+Games = {
+    "Game": LaBaG(),
+    "Json_Game" : JsonLaBaG() #.json檔案模擬用
+}  
+Game = Games["Game"] #預設
+
+
 win.save_icon_use(image_dict, "Superhhh")
 #創建 Screen(frame & canvas)
-win.setup_frame_and_canvas("Home", BG)
-win.setup_frame_and_canvas("Game", BG)
-win.setup_frame_and_canvas("End", BG)
+win.setup_frame_and_canvas("Home", BG) #首頁
+win.setup_frame_and_canvas("Game", BG) #遊戲畫面
+win.setup_frame_and_canvas("End", BG) #結算畫面
+win.setup_frame_and_canvas("Json_Game", BG) # .json檔案模擬遊戲畫面
+win.setup_frame_and_canvas("Json_End", BG) # .json檔案模擬結算畫面
 
 win.temp_files = music.temp_files # 連結臨時檔案 list
 
-def bgm_on_off(game_running: bool= True) :
-    """音樂開 & 關"""
-    match Game.now_mod():
-        case "SuperHHH":
-            file_name = "SuperMusic"
-        case "GreenWei":
-            file_name = "GreenMusic"
-        case "PiKaChu":
-            file_name = "KachuMusic"
-        case _:
-            file_name = "bgm"
-    
-    #關
-    if music.bgm_playing or not game_running:
-        music.stop_music()
-        win.Button("music").config(text="關", bg="#C0C0C0") 
-        print("BGM已停止")
-    #開
-    else :
-        music.play_music(file_name) 
-        win.Button("music").config(text="開", bg="#00FF00")
-        print("BGM已開啟")
-
-win.txt_button(
-    "music",
-    bgm_on_off,
-    "Game",
-    "關",
-    33, 33,
-    415, 765,
-    14,
-    "black",
-    "#C0C0C0"
-)
 
 #region Home Screen
 
@@ -67,12 +41,14 @@ win.load_picture("Home", SuperCircle, 50, 130, "SuperCircle")
 
 def into_game():
     """進入Game畫面"""
+    global Game
+    Game = Games["Game"]
     Game.name = win.get_input("Name")
     if Game.name != "" :
-        win.Canva("Game").itemconfig("PlayerName", text =  f"玩家名：{Game.name}")
+        win.update_text("Game", "PlayerName", f"玩家名：{Game.name}")
         print(f"玩家名：{Game.name}")
     else :
-        win.Canva("Game").itemconfig("PlayerName", text =  "")
+        win.update_text("Game", "PlayerName", f"")
         print(f"玩家名：無")
 
     Game.history_score = find_history_score(Game.name)
@@ -120,6 +96,34 @@ win.add_text(
     "white",
     "hint"
 )
+
+def into_json():
+    """進入Json_Game畫面"""
+    global Game
+    Game = Games["Json_Game"]
+
+    win.Canva("Game").itemconfig("PlayerName", text =  "正在使用 .json檔案模擬")
+    print(f"使用 .json檔案模擬中")
+    Game.setup_path(".\\target.json")
+
+    win.unbind('<Return>') # 解除綁定ENTER
+    BeginAble()
+    Game.reset()
+    init_Game_screen_item()
+    bgm_on_off()
+    win.switch_frame("Home", "Game") #切換畫面
+
+
+win.txt_button(
+    "toJson",
+    into_json,
+    "Home",
+    "使用 .json 檔案模擬遊戲",
+    10, 2,
+    110, 770,
+    12,
+    "black", "yellow"
+)
 #endregion
 
 #region Game Screen
@@ -138,7 +142,7 @@ def init_Game_screen_item():
     win.update_text("Game", "mod_2", f"")
     win.update_text("Game", "gss", f"咖波累積數：{Game.gss_times}")
 
-def back_home():
+def Game_to_Home():
     """返回首頁"""
     win.reset_input_box("Name", Game.name)
     win.unbind('<space>')  # 取消space鍵的綁定
@@ -149,7 +153,7 @@ def back_home():
 
 win.image_button(
     win,
-    back_home,
+    Game_to_Home,
     "Game",
     back,
     18, 18
@@ -189,6 +193,7 @@ def Begin():
         win.update_picture("Game", "RP", qstpic)
 
         win.update_text("Game", "MarginScore", "") #邊際分數文字清除
+        win.update_text("Game", "mod_2", "")
 
     def change_pic_per500ms():
         """每隔0.5秒改圖片"""
@@ -255,6 +260,8 @@ def Begin():
                 win.update_picture("Game", "Title", SuperTitle)
                 win.Canva("Game").itemconfig("mod_1", text = f"超級阿禾剩餘次數:{Game.SuperTimes}次", fill = "#FF00FF")
                 music.switch_music("SuperMusic")
+                if Game.double_score > 0:
+                    win.Canva("Game").itemconfig("mod_2", text = f"(超級阿禾加倍分:{Game.double_score})", fill = "yellow")
 
             case "GreenWei":
                 win.image_button("pop", lambda: win.delete_button("pop"), "Game", GreenPOP, 225 , 400, "flat", 0)
@@ -293,7 +300,7 @@ def Begin():
     if not Game.GameRunning():
         Game.GameOver()
         commit_score(Game.name, Game.score)
-        win.after(3500, game_over_to_END)
+        win.after(3500, Game_over_to_End)
         return
     if Game.ModtoScreen:
         win.after(2800, picture_and_sound)
@@ -357,6 +364,42 @@ win.add_text(
     "w" #靠左對齊
 )
 
+
+def bgm_on_off(game_running: bool= True) :
+    """音樂開 & 關"""
+    match Game.now_mod():
+        case "SuperHHH":
+            file_name = "SuperMusic"
+        case "GreenWei":
+            file_name = "GreenMusic"
+        case "PiKaChu":
+            file_name = "KachuMusic"
+        case _:
+            file_name = "bgm"
+    
+    #關
+    if music.bgm_playing or not game_running:
+        music.stop_music()
+        win.Button("music").config(text="關", bg="#C0C0C0") 
+        print("BGM已停止")
+    #開
+    else :
+        music.play_music(file_name) 
+        win.Button("music").config(text="開", bg="#00FF00")
+        print("BGM已開啟")
+
+win.txt_button(
+    "music",
+    bgm_on_off,
+    "Game",
+    "關",
+    33, 33,
+    415, 765,
+    14,
+    "black",
+    "#C0C0C0"
+)
+
 #特殊模式顯示次數文字
 win.add_text(
     "Game",
@@ -390,7 +433,7 @@ win.add_text(
 #endregion
 
 #region End Screen
-def game_over_to_END():
+def Game_over_to_End():
     bgm_on_off(Game.GameRunning())
     music.play_sound("Ding")
     print("切換至結束畫面")

@@ -71,6 +71,7 @@ class LaBaG:
             "GreenWei": 3,
             "PiKaChu": 1
         }
+        self.score_time = 1 #本次加分倍數
 
         #region 特殊模式
         self.ModtoScreen = False #模式影響畫面
@@ -79,6 +80,7 @@ class LaBaG:
         self.SuperHHH = False
         self.SuperNum = 0
         self.SuperTimes = 0
+        self.double_score = 0 #超級阿禾加倍分
 
         #綠光阿瑋
         self.GreenRate = 35
@@ -98,9 +100,11 @@ class LaBaG:
         self.played = 0
         self.score = 0
         self.margin_score= 0
+        self.score_time = 1
         
         self.SuperHHH = False
         self.SuperTimes = 0
+        self.double_score = 0
 
         self.GreenWei = False
         self.GreenTimes = 0
@@ -193,9 +197,9 @@ class LaBaG:
             margin_add(self.Ps[2], 2)
             self.margin_score = round(self.margin_score / 3)
 
-        score_times = self.score_times_dict[self.now_mod()]
-        self.margin_score *= score_times
-        print(f"加分倍數: {score_times}")
+        self.score_time = self.score_times_dict[self.now_mod()]
+        self.margin_score *= self.score_time
+        print(f"加分倍數: {self.score_time}")
         
 
     def result(self):
@@ -231,6 +235,7 @@ class LaBaG:
             return
         
         self.SuperRandom()
+        self.double_score  = 0
         match self.now_mod():
             case "SuperHHH":
                 self.SuperTimes -= 1
@@ -258,9 +263,13 @@ class LaBaG:
 
                     #超級阿禾加倍
                     if all(p.code == "B" for p in self.Ps):
-                        double_score = int(round(self.score / 2))
-                        self.margin_score += double_score
-                        print(f"(超級阿禾加倍分:{double_score})")
+                        self.double_score = int(round(self.score / 2))
+                        self.double_score *= self.score_time
+                        self.margin_score += self.double_score
+                        if self.score_time == 3:
+                            print(f"(超級阿禾 x 綠光阿瑋加倍分:{self.double_score})")
+                        else:
+                            print(f"(超級阿禾加倍分:{self.double_score})")
             
     #endregion
 
@@ -343,9 +352,97 @@ class LaBaG:
             self.PiKaChu = False
     #endregion
         
+import json
+class JsonLaBaG(LaBaG):
+    def __init__(self):
+        super().__init__()
+        self.json_data = None
+        self.BeginAble = True # 用於每次的模擬
+        self.index = "1" # 第 n 次的索引
         
+        self.simulation = False # 用於中斷&開始模擬
+
+    def reset(self):
+        """重置"""
+        self.played = 0
+        self.score = 0
+        self.margin_score= 0
+        
+        self.SuperHHH = False
+        self.SuperTimes = 0
+
+        self.GreenWei = False
+        self.GreenTimes = 0
+        self.gss_times = 0
+
+        self.PiKaChu = False
+        self.kachu_times = 0
+
+        self.BeginAble = True
+        self.index = "1" # 第 n 次的索引
+
+
+    def setup_path(self, jsondata_path: str = None):
+        """設置檔案路徑"""
+        with open(jsondata_path, "r", encoding="utf-8") as json_file:
+            self.json_data = json.load(json_file)
+            print(f"已設置路徑為：{jsondata_path}")
     
+    def index_plus(self):
+        """索引值 +1"""
+        self.index = str(int(self.index) + 1)
+
+    def random(self):
+        """遊戲變數隨機產生"""
+        RandNums = [self.json_data[self.index]["RandNums[0]"], self.json_data[self.index]["RandNums[1]"], self.json_data[self.index]["RandNums[2]"]]
+        print(f"P隨機數為：{RandNums[0]} | {RandNums[1]} | {RandNums[2]}")
+        def acc_rate():
+            res = list()
+            acc = 0
+            for i in self.P_dict:
+                acc += self.P_dict[i].rate_dict[self.now_mod()]
+                res.append(acc)
+            return res
         
+        rate_range = acc_rate()
+        print("機率區間：", rate_range)
+
+        self.Ps = [None, None, None]
+        for i in range(3):
+            if RandNums[i] <= rate_range[0]:
+                self.Ps[i] = self.P_dict["Gss"]
+            elif RandNums[i] <= rate_range[1]:
+                self.Ps[i] = self.P_dict["Hhh"]
+            elif RandNums[i] <= rate_range[2]:
+                self.Ps[i] = self.P_dict["Hentai"]
+            elif RandNums[i] <= rate_range[3]:
+                self.Ps[i] = self.P_dict["Handsun"]
+            elif RandNums[i] <= rate_range[4]:
+                self.Ps[i] = self.P_dict["Kachu"]
+            elif RandNums[i] <= rate_range[5]:
+                self.Ps[i] = self.P_dict["Rrr"]
+
+    def result(self):
+        """結果"""
+        self.index_plus()
+        self.played += 1
+        self.score += self.margin_score
+        print(f"")
+        print(f' | {self.Ps[0]} | {self.Ps[1]} | {self.Ps[2]} |')
+        print(f"+{self.margin_score}")
+        print(f"目前分數：{self.score}")
+        print(f"剩餘次數：{self.times - self.played}")
+
+    
+    def SuperRandom(self):
+        self.SuperNum = self.json_data[self.index]["SuperHHH"]
+        print(f"超級阿禾隨機數為: {self.SuperNum}")
+
+    def GreenRandom(self):
+        self.GreenNum = self.json_data[self.index]["GreenWei"]
+        print(f"綠光阿瑋隨機數為: {self.GreenNum}")
+
+
      
 
             

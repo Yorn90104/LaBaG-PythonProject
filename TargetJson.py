@@ -85,6 +85,7 @@ class LaBaG:
             "GreenWei": 3,
             "PiKaChu": 1
         }
+        self.score_time = 1
 
         #region 特殊模式
         #超級阿禾
@@ -113,6 +114,7 @@ class LaBaG:
         self.played = 0
         self.score = 0
         self.margin_score= 0
+        self.score_time = 1
         
         self.SuperHHH = False
         self.SuperTimes = 0
@@ -210,8 +212,8 @@ class LaBaG:
             margin_add(self.Ps[2], 2)
             self.margin_score = round(self.margin_score / 3)
 
-        score_times = self.score_times_dict[self.now_mod()]
-        self.margin_score *= score_times
+        self.score_time = self.score_times_dict[self.now_mod()]
+        self.margin_score *= self.score_time
         
 
     def result(self):
@@ -235,7 +237,7 @@ class LaBaG:
             self.SuperFalse()
             return
         
-        self.SuperFalse()
+        self.SuperRandom()
         match self.now_mod():
             case "SuperHHH":
                 self.SuperTimes -= 1
@@ -258,6 +260,7 @@ class LaBaG:
                     #超級阿禾加倍
                     if all(p.code == "B" for p in self.Ps):
                         double_score = int(round(self.score / 2))
+                        double_score *= self.score_time
                         self.margin_score += double_score
             
     #endregion
@@ -354,7 +357,7 @@ while True :
         if recent_max >= 1000000:
              commit_score('模擬測試最高分', recent_max)
 
-with open("target.json", "w", encoding="utf-8") as file:
+with open(f"{Game.score}.json", "w", encoding="utf-8") as file:
     json.dump(Game.AllData, file, indent=4)
 
         
