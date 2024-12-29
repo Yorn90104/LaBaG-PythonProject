@@ -354,6 +354,7 @@ class LaBaG:
         
 import json
 class JsonLaBaG(LaBaG):
+    """與json檔案連接的啦八機"""
     def __init__(self):
         super().__init__()
         self.json_data = None

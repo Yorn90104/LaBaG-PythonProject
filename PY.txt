@@ -42,6 +42,7 @@ win.load_picture("Home", SuperCircle, 50, 130, "SuperCircle")
 
 def into_game():
     """進入Game畫面"""
+    global Game
     Game = Games["Game"]
     Game.name = win.get_input("Name")
     if Game.name != "" :
@@ -99,11 +100,12 @@ win.add_text(
 
 def into_json():
     """進入Json_Game畫面"""
+    global Game
     Game = Games["Json_Game"]
 
     win.Canva("Game").itemconfig("PlayerName", text =  "正在使用 .json檔案模擬")
     print(f"使用 .json檔案模擬中")
-    Game.setup_path(".\\target.json")
+    Game.setup_path(".\\248119875.json")
 
     win.unbind('<Return>') # 解除綁定ENTER
     BeginAble()
@@ -192,6 +194,7 @@ def Begin():
         win.update_picture("Game", "RP", qstpic)
 
         win.update_text("Game", "MarginScore", "") #邊際分數文字清除
+        win.update_text("Game", "mod_2", "")
 
     def change_pic_per500ms():
         """每隔0.5秒改圖片"""
@@ -258,6 +261,8 @@ def Begin():
                 win.update_picture("Game", "Title", SuperTitle)
                 win.Canva("Game").itemconfig("mod_1", text = f"超級阿禾剩餘次數:{Game.SuperTimes}次", fill = "#FF00FF")
                 music.switch_music("SuperMusic")
+                if Game.double_score > 0:
+                    win.Canva("Game").itemconfig("mod_2", text = f"(超級阿禾加倍分:{Game.double_score})", fill = "yellow")
 
             case "GreenWei":
                 win.image_button("pop", lambda: win.delete_button("pop"), "Game", GreenPOP, 225 , 400, "flat", 0)
@@ -948,6 +953,7 @@ class LaBaG:
             "GreenWei": 3,
             "PiKaChu": 1
         }
+        self.score_time = 1
 
         #region 特殊模式
         #超級阿禾
@@ -976,6 +982,7 @@ class LaBaG:
         self.played = 0
         self.score = 0
         self.margin_score= 0
+        self.score_time = 1
         
         self.SuperHHH = False
         self.SuperTimes = 0
@@ -1073,8 +1080,8 @@ class LaBaG:
             margin_add(self.Ps[2], 2)
             self.margin_score = round(self.margin_score / 3)
 
-        score_times = self.score_times_dict[self.now_mod()]
-        self.margin_score *= score_times
+        self.score_time = self.score_times_dict[self.now_mod()]
+        self.margin_score *= self.score_time
         
 
     def result(self):
@@ -1121,6 +1128,7 @@ class LaBaG:
                     #超級阿禾加倍
                     if all(p.code == "B" for p in self.Ps):
                         double_score = int(round(self.score / 2))
+                        double_score *= self.score_time
                         self.margin_score += double_score
             
     #endregion
@@ -1217,7 +1225,7 @@ while True :
         if recent_max >= 1000000:
              commit_score('模擬測試最高分', recent_max)
 
-with open("target.json", "w", encoding="utf-8") as file:
+with open(f"{Game.score}.json", "w", encoding="utf-8") as file:
     json.dump(Game.AllData, file, indent=4)
 
         
@@ -1226,64 +1234,121 @@ with open("target.json", "w", encoding="utf-8") as file:
             
 
 @.\test.py
+data = {
+    "36": {
+        "RandNums[0]": 4,
+        "RandNums[1]": 3,
+        "RandNums[2]": 2,
+        "SuperHHH": 17,
+        "GreenWei": 3
+    },
+    "37": {
+        "RandNums[0]": 98,
+        "RandNums[1]": 99,
+        "RandNums[2]": 100,
+        "SuperHHH": 17,
+        "GreenWei": 3
+    },
+    "38": {
+        "RandNums[0]": 58,
+        "RandNums[1]": 59,
+        "RandNums[2]": 60,
+        "SuperHHH": 10,
+        "GreenWei": 3
+    },
+    "39": {
+        "RandNums[0]": 98,
+        "RandNums[1]": 99,
+        "RandNums[2]": 100,
+        "SuperHHH": 17,
+        "GreenWei": 3
+    },
+    "40": {
+        "RandNums[0]": 78,
+        "RandNums[1]": 79,
+        "RandNums[2]": 80,
+        "SuperHHH": 17,
+        "GreenWei": 3
+    },
+    "41": {
+        "RandNums[0]": 4,
+        "RandNums[1]": 3,
+        "RandNums[2]": 2,
+        "SuperHHH": 17,
+        "GreenWei": 3
+    },
+    "42": {
+        "RandNums[0]": 98,
+        "RandNums[1]": 99,
+        "RandNums[2]": 100,
+        "SuperHHH": 17,
+        "GreenWei": 3
+    },
+    "43": {
+        "RandNums[0]": 58,
+        "RandNums[1]": 59,
+        "RandNums[2]": 60,
+        "SuperHHH": 10,
+        "GreenWei": 3
+    },
+    "44": {
+        "RandNums[0]": 98,
+        "RandNums[1]": 99,
+        "RandNums[2]": 100,
+        "SuperHHH": 17,
+        "GreenWei": 3
+    },
+    "45": {
+        "RandNums[0]": 78,
+        "RandNums[1]": 79,
+        "RandNums[2]": 80,
+        "SuperHHH": 17,
+        "GreenWei": 3
+    },
+    "46": {
+        "RandNums[0]": 4,
+        "RandNums[1]": 3,
+        "RandNums[2]": 2,
+        "SuperHHH": 17,
+        "GreenWei": 3
+    },
+    "47": {
+        "RandNums[0]": 98,
+        "RandNums[1]": 99,
+        "RandNums[2]": 100,
+        "SuperHHH": 17,
+        "GreenWei": 3
+    },
+    "48": {
+        "RandNums[0]": 58,
+        "RandNums[1]": 59,
+        "RandNums[2]": 60,
+        "SuperHHH": 10,
+        "GreenWei": 3
+    },
+    "49": {
+        "RandNums[0]": 98,
+        "RandNums[1]": 99,
+        "RandNums[2]": 100,
+        "SuperHHH": 17,
+        "GreenWei": 3
+    },
+    "50": {
+        "RandNums[0]": 78,
+        "RandNums[1]": 79,
+        "RandNums[2]": 80,
+        "SuperHHH": 17,
+        "GreenWei": 3
+    }
+}
 
-#region Json_End Screen
-def Json_Game_over_to_End():
-    bgm_on_off(Json_Game.GameRunning())
-    music.play_sound("Ding")
-    print("切換至結束畫面")
-    win.update_text("Json_End", "PlayerName", f"{Json_Game.name}")
-    win.update_text("Json_End","over", "遊戲結束！") 
-    win.update_text("Json_End","final_score", f"最終分數：{Json_Game.score}")  # 最終分數顯示
-    win.switch_frame("Json_Game", "Json_End")
-    
+# 修改鍵值 "36" 到 "50" 為 "51" 到 "65"
+updated_data = {}
+for key, value in data.items():
+    new_key = str(int(key) + 15)  # 將鍵的值增加 15
+    updated_data[new_key] = value
 
-def json_game_again():
-    """再玩一次遊戲"""
-    win.Button("Begin").config(state='normal')
-    Json_Game.reset()
-    init_Json_Game_screen_item()
-    bgm_on_off()
-    win.switch_frame("Json_End", "Json_Game")
-
-win.add_text(
-    "Json_End",
-    "",
-    225, 175,
-    22,
-    "skyblue",
-    "PlayerName", #Json_Game.name
-)
-
-win.add_text(
-    "Json_End" ,
-    "結束！" ,
-    225 , 260 ,
-    42 ,
-    "white" ,
-    "over"
-)
-
-win.add_text(
-    "Json_End" ,
-    "" ,
-    225 , 325 ,
-    32 ,
-    "#FF0000" ,
-    "final_score" #Json_Game.score
-)
-
-
-win.image_button(
-    "Again",
-    json_game_again,
-    "Json_End",
-    AgainPIC,
-    225, 400
-)
-
-win.load_picture("Json_End" , SB, 0, 500, "SB")
-#endregion
+print(updated_data)
 
 @.\yieldb64.py
 #產生 base64 音訊與圖像
@@ -1936,6 +2001,7 @@ class LaBaG:
             "GreenWei": 3,
             "PiKaChu": 1
         }
+        self.score_time = 1 #本次加分倍數
 
         #region 特殊模式
         self.ModtoScreen = False #模式影響畫面
@@ -1944,6 +2010,7 @@ class LaBaG:
         self.SuperHHH = False
         self.SuperNum = 0
         self.SuperTimes = 0
+        self.double_score = 0 #超級阿禾加倍分
 
         #綠光阿瑋
         self.GreenRate = 35
@@ -1963,9 +2030,11 @@ class LaBaG:
         self.played = 0
         self.score = 0
         self.margin_score= 0
+        self.score_time = 1
         
         self.SuperHHH = False
         self.SuperTimes = 0
+        self.double_score = 0
 
         self.GreenWei = False
         self.GreenTimes = 0
@@ -2058,9 +2127,9 @@ class LaBaG:
             margin_add(self.Ps[2], 2)
             self.margin_score = round(self.margin_score / 3)
 
-        score_times = self.score_times_dict[self.now_mod()]
-        self.margin_score *= score_times
-        print(f"加分倍數: {score_times}")
+        self.score_time = self.score_times_dict[self.now_mod()]
+        self.margin_score *= self.score_time
+        print(f"加分倍數: {self.score_time}")
         
 
     def result(self):
@@ -2096,6 +2165,7 @@ class LaBaG:
             return
         
         self.SuperRandom()
+        self.double_score  = 0
         match self.now_mod():
             case "SuperHHH":
                 self.SuperTimes -= 1
@@ -2123,9 +2193,13 @@ class LaBaG:
 
                     #超級阿禾加倍
                     if all(p.code == "B" for p in self.Ps):
-                        double_score = int(round(self.score / 2))
-                        self.margin_score += double_score
-                        print(f"(超級阿禾加倍分:{double_score})")
+                        self.double_score = int(round(self.score / 2))
+                        self.double_score *= self.score_time
+                        self.margin_score += self.double_score
+                        if self.score_time == 3:
+                            print(f"(超級阿禾 x 綠光阿瑋加倍分:{self.double_score})")
+                        else:
+                            print(f"(超級阿禾加倍分:{self.double_score})")
             
     #endregion
 
@@ -2210,6 +2284,7 @@ class LaBaG:
         
 import json
 class JsonLaBaG(LaBaG):
+    """與json檔案連接的啦八機"""
     def __init__(self):
         super().__init__()
         self.json_data = None
