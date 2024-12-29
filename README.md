@@ -97,7 +97,7 @@
 ## 檔案結構
 
 ```plaintext
-├── main.py            # 主程式
+├── main.py           # 主程式
 ├── GUI               # 圖形介面相關模組 
 │   └── __init__.py
 ├── src               # 遊戲邏輯與資源
@@ -109,7 +109,7 @@
 ├── PY.txt            # 可上傳至 ChatGPT 使其說明此程式內容
 ├── Target.py         # 達成目標分數模擬工具
 ├── TargetJson.py     # 基於 Target.py 再增加產生 .json 檔案的工具
-├── yieldb64.py          # 產生 imageb64.py 與 soundb64.py 的 Base64 編碼 檔案
+├── yieldb64.py       # 產生 imageb64.py 與 soundb64.py 的 Base64 編碼 檔案
 ├── README.md         # 說明文件
 └── Superhhh.ico      # 打包用的圖標
 ```
@@ -236,7 +236,7 @@ By August 2024, 🍚🐟 had graduated from high school and was preparing for co
 ## File Structure
 
 ```plaintext
-├── main.py            # Main program
+├── main.py           # Main program
 ├── GUI               # GUI modules 
 │   └── __init__.py
 ├── src               # Game logic and resources

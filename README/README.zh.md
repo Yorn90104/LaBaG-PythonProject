@@ -97,7 +97,7 @@
 ## 檔案結構
 
 ```plaintext
-├── main.py            # 主程式
+├── main.py           # 主程式
 ├── GUI               # 圖形介面相關模組 
 │   └── __init__.py
 ├── src               # 遊戲邏輯與資源

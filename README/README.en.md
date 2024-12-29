@@ -97,7 +97,7 @@ By August 2024, 🍚🐟 had graduated from high school and was preparing for co
 ## File Structure
 
 ```plaintext
-├── main.py            # Main program
+├── main.py           # Main program
 ├── GUI               # GUI modules 
 │   └── __init__.py
 ├── src               # Game logic and resources
