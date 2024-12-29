@@ -6,7 +6,7 @@
 
 ## 創作背景
 
-2023年的那個夏天，治平高中商務二孝的那個本壘板 🍚🐟 正處於很無聊的狀態，於是想到國昌老師教的 [MIT App Inventor 2](https://ai2.appinventor.mit.edu/) 的存在，想無聊做個小遊戲，運用以前玩 Minecraft 做紅石機關的邏輯、從手機相簿裡面隨便找的幾張圖片，以及網路上隨便抓的垃X音效與音樂，於是第一代啦八機誕生了。
+2023年的那個夏天，[治平高中](https://www.cpshs.tyc.edu.tw/)商務二孝的那個本壘板 🍚🐟 正處於很無聊的狀態，於是想到國昌老師教的 [MIT App Inventor 2](https://ai2.appinventor.mit.edu/) 的存在，想無聊做個小遊戲，運用以前玩 Minecraft 做紅石機關的邏輯、從手機相簿裡面隨便找的幾張圖片，以及網路上隨便抓的垃X音效與音樂，於是第一代啦八機誕生了。
 
 後續陸續新增了 超級阿禾模式(SuperHHH)、綠光阿瑋模式(GreenWei)、皮卡丘充電(PiKaChu) 等模式。
 
@@ -140,7 +140,7 @@ This is a Python-based game application that integrates Tkinter for the graphica
 
 ## Background
 
-In the summer of 2023, 🍚🐟, a student from the Business class of Zhih-Ping High School, found themselves feeling bored. Inspired by the MIT App Inventor 2 taught by Mr. Kuo-Chang, they decided to create a simple game using their knowledge of Minecraft redstone logic, random images from their phone gallery, and sound effects/music sourced online. Thus, the first version of LABA Machine was born.
+In the summer of 2023, 🍚🐟, a student from the Business class of [Zhih-Ping High School](https://www.cpshs.tyc.edu.tw/), found themselves feeling bored. Inspired by the MIT App Inventor 2 taught by Mr. Kuo-Chang, they decided to create a simple game using their knowledge of Minecraft redstone logic, random images from their phone gallery, and sound effects/music sourced online. Thus, the first version of LABA Machine was born.
 
 Subsequent updates introduced modes such as SuperHHH, GreenWei, and PiKaChu.  
 
