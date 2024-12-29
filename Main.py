@@ -116,7 +116,15 @@ def into_json(json_path: str= None):
         win.switch_frame("Home", "Game") #切換畫面
         win.SubWindow("輸入路徑").destroy()
     else:
+        win.SubWindow("輸入路徑").message_text(
+            1000,
+            f"無效 or 不存在的路徑: {json_path}",
+            150, 130,
+            10,
+            "red"
+            )
         print(f"無效 or 不存在的路徑: {json_path}")
+
 
 def open_subwindow():
     """開啟子視窗"""
@@ -132,7 +140,7 @@ def open_subwindow():
         "path",
         "",
         150, 100,
-        16,
+        12,
         18
     )
     win.SubWindow("輸入路徑").txt_button(
