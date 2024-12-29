@@ -88,12 +88,7 @@ By August 2024, 🍚🐟 had graduated from high school and was preparing for co
    ```
 
 7. Follow the prompts to play the game.  
-   If you want to use a `.json` file for simulation, modify `main.py` as follows:
-
-   ```python
-   Game.setup_path(".\\248119875.json") # Replace with the path to your .json file
-   ```
-
+   
 ## File Structure
 
 ```plaintext

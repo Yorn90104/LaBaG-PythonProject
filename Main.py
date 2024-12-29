@@ -97,26 +97,57 @@ win.add_text(
     "hint"
 )
 
-def into_json():
+def into_json(json_path: str= None):
     """進入Json_Game畫面"""
-    global Game
-    Game = Games["Json_Game"]
+    import os
+    #判斷路徑是否為空、是否存在、是否為.json檔
+    if json_path is not None and os.path.exists(json_path) and os.path.splitext(json_path)[1] == ".json":
+        global Game
+        Game = Games["Json_Game"]
+        win.Canva("Game").itemconfig("PlayerName", text =  "正在使用 .json檔案模擬")
+        print(f"使用 .json檔案模擬中")
+        Game.setup_path(f"{json_path}")
 
-    win.Canva("Game").itemconfig("PlayerName", text =  "正在使用 .json檔案模擬")
-    print(f"使用 .json檔案模擬中")
-    Game.setup_path(".\\248119875.json")
+        win.unbind('<Return>') # 解除綁定ENTER
+        BeginAble()
+        Game.reset()
+        init_Game_screen_item()
+        bgm_on_off()
+        win.switch_frame("Home", "Game") #切換畫面
+        win.SubWindow("輸入路徑").destroy()
+    else:
+        print(f"無效 or 不存在的路徑: {json_path}")
 
-    win.unbind('<Return>') # 解除綁定ENTER
-    BeginAble()
-    Game.reset()
-    init_Game_screen_item()
-    bgm_on_off()
-    win.switch_frame("Home", "Game") #切換畫面
+def open_subwindow():
+    """開啟子視窗"""
+    win.setup_subwindow("輸入路徑", 300, 200, BG)
+    win.SubWindow("輸入路徑").add_text(
+        "請輸入 .json檔案之路徑\n      (絕對or相對都行)",
+        150, 50,
+        14,
+        "white",
+        "path"
+    )
+    win.SubWindow("輸入路徑").input_box(
+        "path",
+        "",
+        150, 100,
+        16,
+        18
+    )
+    win.SubWindow("輸入路徑").txt_button(
+        "commit_path",
+        lambda: into_json(win.SubWindow("輸入路徑").get_input("path")),
+        "提交路徑",
+        10, 2,
+        150, 160,
+        12
+    )
 
 
 win.txt_button(
     "toJson",
-    into_json,
+    open_subwindow,
     "Home",
     "使用 .json 檔案模擬遊戲",
     10, 2,
@@ -290,7 +321,7 @@ def Begin():
 
 
     #Main
-    if "pop" in win.button_dict:
+    if "pop" in win._button_dict:
         win.delete_button("pop")
     BeginUnable()
     resetQST()

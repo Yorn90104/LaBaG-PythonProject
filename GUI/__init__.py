@@ -7,13 +7,124 @@ import wave
 import tempfile
 from pygame import mixer
 
+class _SubWindow(tk.Toplevel):
+    def __init__(self, master :tk.Tk = None, window_name: str = None, width: int = 300, height: int = 300, BG_pic: ImageTk.PhotoImage = None):
+        """子視窗類別 (父視窗, 子視窗名稱, 寬, 高)"""
+        super().__init__(master)
+        self.master = master
+        self.title(self.master.title())
+        if window_name is not None:
+            self.title(window_name)
+
+        self.width = width
+        self.height = height
+        self.geometry(f"{width}x{height}")
+        self.resizable(False, False)  # 鎖定視窗大小
+
+        #畫面設置
+        self.Frame = tk.Frame(self, width= self.width, height= self.height, bg='lightblue')
+        self.Canvas = tk.Canvas(self.Frame, width= self.width, height= self.height)
+        self.Canvas.create_image(0, 0, image = BG_pic, anchor="nw", tag= "BG")
+        #畫面顯示
+        self.Canvas.pack(fill="both", expand=True)
+        self.Frame.pack(fill='both', expand=True) 
+
+        self._button_dict = dict()
+        self._entry_dict = dict()
+
+    def Button(self, button_name: str= None) -> tk.Button:
+        "使用 Tkinter.Button 相關操作"
+        if button_name in self._button_dict:
+            return self._button_dict[button_name]
+        else:
+            KeyError(f"無法從 {type(self).__name__}._button_dict 找到名為 {button_name} 的button")
+    
+    def Entry(self, entry_name: str= None) -> tk.Entry:
+        """使用 Tkinter.Entry 相關操作"""
+        if entry_name in self._entry_dict:
+            return self._entry_dict[entry_name]
+        else:
+            KeyError(f"無法從 {type(self).__name__}._entry_dict 找到名為 {entry_name} 的entry")
+
+    def load_picture(self, img: ImageTk.PhotoImage = None, x: int = 0, y: int = 0 , tg: str = ""):
+        """加載新的圖片並放在CANVA上 (照片, 水平座標, 垂直座標, 標記)"""
+        self.Canvas.create_image(x, y, image = img, anchor = "nw" , tag = tg)
+
+    def update_picture(self, tg: str = "", img: ImageTk.PhotoImage = None) :
+        """更換CANVA上的圖片 (標記, 圖)"""
+        self.Canvas.itemconfig(tg , image = img)
+
+    def add_text(self, txt: str = "", x: int = 0, y: int = 0, size: int = 12, color: str = "white" , tg: str = "", align: str = "center"):
+        """添加粗體文字(文字, 水平位置, 垂直位置, 大小, 顏色, 標記, 對齊方式[東南西北])"""
+        self.Canvas.create_text(
+                        x, y,
+                        text = txt ,
+                        font = ("Arial", size , "bold") ,
+                        fill = color ,
+                        tag = tg,
+                        anchor = align
+                        )
+        
+    def update_text(self, tg: str = "", txt: str = None) :
+        """更換CANVA上的文字 (標記, 文字)"""
+        self.Canvas.itemconfig(tg , text = txt)
+
+    def image_button(self, button_name: str, CMD, img: ImageTk.PhotoImage = None, x: int = 0, y: int = 0, rel: str = "raised", highlight: int = 1):
+        """添加圖片按鈕(按鈕名, 執行動作, 圖片, 水平座標, 垂直座標, 三圍邊框效果, 焦點邊框厚度)"""
+        button = tk.Button(
+                        self,
+                        image = img,
+                        command = CMD,
+                        relief =  rel,
+                        highlightthickness = highlight
+                        )
+        self.Canvas.create_window(x , y , window = button)
+        self._button_dict[button_name] = button
+
+    def txt_button(self, button_name: str, CMD, txt: str = None, w: int= 0, h: int= 0, x: int = 0, y: int = 0, size: int = 12, font_color: str = "black", bg_color: str = "white"):
+        """添加粗體文字按鈕(按鈕名, 執行動作, 文字, 按鈕寬度, 按鈕高度, 水平位置, 垂直位置, 文字大小, 文字顏色, 背景顏色)"""
+        button = tk.Button(
+                        self,
+                        text = txt ,
+                        command = CMD,
+                        font = ("Arial", size, "bold"),
+                        fg = font_color,
+                        bg = bg_color
+                                )
+        # 按钮的位置&像素大小
+        button.place(width=w, height=h)
+        self.Canvas.create_window(x , y , window = button)
+        self._button_dict[button_name] = button
+    
+    def delete_button(self, button_name: str):
+        """刪除按鈕"""
+        self.Button(button_name).destroy()
+
+    def input_box(self, entry_name: str= None,txt: str ="",x: int = 0, y: int = 0, size: int = 16, width: int = 12) :
+        """文字輸入盒(輸入盒名稱, 提示文字,水平座標,垂直座標,文字大小,寬度)"""
+        entry = tk.Entry(self, width = width, font=("Arial", size))
+        entry.insert(0, txt) 
+        self.Canvas.create_window(x, y, window = entry)
+        self._entry_dict[entry_name] = entry
+
+    def get_input(self, entry_name: str= None):
+        """獲取文字輸入盒內容"""
+        user_input = self.Entry(entry_name).get()
+        content = str(user_input.strip()) #去除字串前後空白
+        return content
+    
+    def reset_input_box(self, entry_name: str= None, content: str = ""):
+        """重新載入輸入盒內容"""
+        self.Entry(entry_name).delete(0, "end")
+        self.Entry(entry_name).insert(0, content)
+
+
 class Window(tk.Tk):
     def __init__(self, title: str= "",  width: int = 300, height: int= 300):
         """設置視窗(視窗名, 寬, 高)"""
         super().__init__()
         mixer.init()
         self.title(title)
-
         
         self.width = width
         self.height = height
@@ -21,10 +132,11 @@ class Window(tk.Tk):
         self.geometry(f"{self.width}x{self.height}") #視窗長寬
         self.resizable(False, False) #視窗大小鎖定
 
-        self.frame_dict = dict()
-        self.canvas_dict = dict()
-        self.button_dict = dict()
-        self.entry_dict = dict()
+        self._frame_dict = dict()
+        self._canvas_dict = dict()
+        self._button_dict = dict()
+        self._entry_dict = dict()
+        self._subwindow_dict = dict()
       
         self.temp_files = list() #臨時文件
 
@@ -50,31 +162,38 @@ class Window(tk.Tk):
 
     def Canva(self, canvas_name: str= None) -> tk.Canvas:
         "使用 Tkinter.Canvas 相關操作"
-        if canvas_name in self.canvas_dict:
-            return self.canvas_dict[canvas_name]
+        if canvas_name in self._canvas_dict:
+            return self._canvas_dict[canvas_name]
         else:
-            KeyError(f"無法從 {type(self).__name__}.canvas_dict 找到名為 {canvas_name} 的canvas")
+            KeyError(f"無法從 {type(self).__name__}._canvas_dict 找到名為 {canvas_name} 的canvas")
 
     def Frame(self, frame_name: str= None) -> tk.Frame:
         "使用 Tkinter.Frame 相關操作"
-        if frame_name in self.frame_dict:
-            return self.frame_dict[frame_name]
+        if frame_name in self._frame_dict:
+            return self._frame_dict[frame_name]
         else:
-            KeyError(f"無法從 {type(self).__name__}.frame_dict 找到名為 {frame_name} 的frame")
+            KeyError(f"無法從 {type(self).__name__}._frame_dict 找到名為 {frame_name} 的frame")
 
     def Button(self, button_name: str= None) -> tk.Button:
         "使用 Tkinter.Button 相關操作"
-        if button_name in self.button_dict:
-            return self.button_dict[button_name]
+        if button_name in self._button_dict:
+            return self._button_dict[button_name]
         else:
-            KeyError(f"無法從 {type(self).__name__}.button_dict 找到名為 {button_name} 的button")
+            KeyError(f"無法從 {type(self).__name__}._button_dict 找到名為 {button_name} 的button")
 
     def Entry(self, entry_name: str= None) -> tk.Entry:
-        "使用 Tkinter.Entry 相關操作"
-        if entry_name in self.entry_dict:
-            return self.entry_dict[entry_name]
+        """使用 Tkinter.Entry 相關操作"""
+        if entry_name in self._entry_dict:
+            return self._entry_dict[entry_name]
         else:
-            KeyError(f"無法從 {type(self).__name__}.entry_dict 找到名為 {entry_name} 的entry")
+            KeyError(f"無法從 {type(self).__name__}._entry_dict 找到名為 {entry_name} 的entry")
+    
+    def SubWindow(self, window_name: str = None) -> _SubWindow:
+        """使用 _SubWindow (Tkinter.Toplevel) 相關操作"""
+        if window_name in self._subwindow_dict:
+            return self._subwindow_dict[window_name]
+        else:
+            KeyError(f"無法從 {type(self).__name__}._subwindow_dict 找到名為 {window_name} 的subwindow")
 
     def setup_frame_and_canvas(self, name,  BG_pic: ImageTk.PhotoImage = None):
         """創建 & 設置畫面(畫面名稱, 背景圖片)"""
@@ -82,8 +201,8 @@ class Window(tk.Tk):
         Canvas = tk.Canvas(Frame, width= self.width, height= self.height)
         Canvas.pack(fill="both", expand=True)
         Canvas.create_image(0, 0, image = BG_pic, anchor="nw", tag= "BG")
-        self.frame_dict[name] = Frame
-        self.canvas_dict[name] = Canvas
+        self._frame_dict[name] = Frame
+        self._canvas_dict[name] = Canvas
     
     def switch_frame(self, frame1_name: str, frame2_name: str):
         """切換畫面(畫面1 to 畫面2)"""
@@ -136,7 +255,7 @@ class Window(tk.Tk):
                         highlightthickness = highlight
                         )
         self.Canva(canvas_name).create_window(x , y , window = button)
-        self.button_dict[button_name] = button
+        self._button_dict[button_name] = button
 
     def txt_button(self, button_name: str, CMD  ,canvas_name: str = None,  txt: str = None, w: int= 0, h: int= 0, x: int = 0, y: int = 0, size: int = 12, font_color: str = "black", bg_color: str = "white"):
         """添加粗體文字按鈕(按鈕名, 執行動作, 畫面名, 文字, 按鈕寬度, 按鈕高度, 水平位置, 垂直位置, 文字大小, 文字顏色, 背景顏色)"""
@@ -151,18 +270,18 @@ class Window(tk.Tk):
         # 按钮的位置&像素大小
         button.place(width=w, height=h)
         self.Canva(canvas_name).create_window(x , y , window = button)
-        self.button_dict[button_name] = button
+        self._button_dict[button_name] = button
 
     def delete_button(self, button_name: str):
         """刪除按鈕"""
         self.Button(button_name).destroy()
 
     def input_box(self, canvas_name: str = None, entry_name: str= None,txt: str ="",x: int = 0, y: int = 0, size: int = 16, width: int = 12) :
-        """文字輸入盒(視窗,畫面,提示文字,水平座標,垂直座標,文字大小,寬度)"""
+        """文字輸入盒(畫面名, 輸入盒名稱, 提示文字,水平座標,垂直座標,文字大小,寬度)"""
         entry = tk.Entry(self, width = width, font=("Arial", size))
         entry.insert(0, txt) 
         self.Canva(canvas_name).create_window(x, y, window = entry)
-        self.entry_dict[entry_name] = entry
+        self._entry_dict[entry_name] = entry
 
     def get_input(self, entry_name: str= None):
         """獲取文字輸入盒內容"""
@@ -175,6 +294,10 @@ class Window(tk.Tk):
         self.Entry(entry_name).delete(0, "end")
         self.Entry(entry_name).insert(0, content)
 
+    def setup_subwindow(self, window_name: str = None,  width: int = 300, height: int= 300, BG_pic: ImageTk.PhotoImage = None):
+        """建立子視窗(視窗, 寬, 高)"""
+        sw = _SubWindow(self, window_name, width, height, BG_pic)
+        self._subwindow_dict[window_name] = sw
 
 class Picture:
     @staticmethod

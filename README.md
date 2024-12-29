@@ -88,12 +88,7 @@
    ```
 
 7. 根據指引進行遊戲。
-   若想使用 `.json` 檔案執行模擬，請在 `main.py` 中:
-
-   ```python
-   Game.setup_path(".\\248119875.json") #更改為你的 .json 檔案路徑
-   ```
-
+   
 ## 檔案結構
 
 ```plaintext
