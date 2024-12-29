@@ -21,6 +21,7 @@ class LaBaG:
     def __init__(self):
         self.AllData = dict() #總資料
         self.OneData = dict() #單次資料
+        self.DataIndex = 0
 
         # 遊戲邏輯變數
         self.times = 30 #可遊玩次數 正常30
@@ -100,6 +101,7 @@ class LaBaG:
     def reset(self):
         """重置"""
         self.AllData = dict()
+        self.DataIndex = 0
         
         self.played = 0
         self.score = 0
@@ -209,9 +211,10 @@ class LaBaG:
     def result(self):
         """結果"""
         self.played += 1
+        self.DataIndex += 1
         self.score += self.margin_score
         self.margin_score = 0
-        self.AllData[f"{self.played}"] = self.OneData
+        self.AllData[f"{self.DataIndex}"] = self.OneData
 
     #region 超級阿禾模式(SuperHHH)
     def SuperFalse(self):
