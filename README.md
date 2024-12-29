@@ -140,7 +140,7 @@ This is a Python-based game application that integrates Tkinter for the graphica
 
 ## Background
 
-In the summer of 2023, 🍚🐟, a student from the Business class of [Zhih-Ping High School](https://www.cpshs.tyc.edu.tw/), found themselves feeling bored. Inspired by the MIT App Inventor 2 taught by Mr. Kuo-Chang, they decided to create a simple game using their knowledge of Minecraft redstone logic, random images from their phone gallery, and sound effects/music sourced online. Thus, the first version of LABA Machine was born.
+In the summer of 2023, 🍚🐟, a student from the Business class of [Zhih-Ping High School](https://www.cpshs.tyc.edu.tw/), found themselves feeling bored. Inspired by the MIT App Inventor 2 taught by Mr. Kuo-Chang, they decided to create a simple game using their knowledge of Minecraft redstone logic, random images from their phone gallery, and sound effects/music sourced online. Thus, the first version of LaBaG was born.
 
 Subsequent updates introduced modes such as SuperHHH, GreenWei, and PiKaChu.  
 
