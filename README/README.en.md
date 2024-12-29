@@ -75,10 +75,10 @@ By August 2024, 🍚🐟 had graduated from high school and was preparing for co
 
 4. Navigate to the project directory.
 
-5. Execute the `yield.py` file to generate `imageb64.py` and `soundb64.py`:
+5. Execute the `yieldb64.py` file to generate `imageb64.py` and `soundb64.py`:
 
    ```bash
-   python yield.py
+   python yieldb64.py
    ```
 
 6. Run the `main.py` file to start the game:
@@ -109,14 +109,14 @@ By August 2024, 🍚🐟 had graduated from high school and was preparing for co
 ├── PY.txt            # Uploadable to ChatGPT for explanation
 ├── Target.py         # Target score simulation tool
 ├── TargetJson.py     # Adds .json generation functionality to Target.py
-├── yield.py          # Generates imageb64.py and soundb64.py from Base64 encoded assets
+├── yieldb64.py       # Generates imageb64.py and soundb64.py from Base64 encoded assets
 ├── README.md         # Documentation
 └── Superhhh.ico      # Icon for packaging
 ```
 
 ## Notes
 
-1. The `yield.py` script decodes Base64 images and sounds. Do not delete the `src` and `Asset` folders.
+1. The `yieldb64.py` script decodes Base64 images and sounds. Do not delete the `src` and `Asset` folders.
 2. Temporary files created during gameplay will be automatically deleted after the game ends.
 3. If issues arise, ensure the correct dependencies are installed and troubleshoot using error messages.
 4. To package the program into a standalone `.exe` file, use the following command in the project directory:

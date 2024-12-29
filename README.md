@@ -75,10 +75,10 @@
 
 4. 進入程式目錄。
 
-5. 執行 `yield.py` 文件產生 `imageb64.py` 與 `soundb64.py`：
+5. 執行 `yieldb64.py` 文件產生 `imageb64.py` 與 `soundb64.py`：
 
    ```bash
-   python yield.py
+   python yieldb64.py
    ```
 
 6. 執行 `main.py` 文件:
@@ -109,14 +109,14 @@
 ├── PY.txt            # 可上傳至 ChatGPT 使其說明此程式內容
 ├── Target.py         # 達成目標分數模擬工具
 ├── TargetJson.py     # 基於 Target.py 再增加產生 .json 檔案的工具
-├── yield.py          # 產生 imageb64.py 與 soundb64.py 的 Base64 編碼 檔案
+├── yieldb64.py          # 產生 imageb64.py 與 soundb64.py 的 Base64 編碼 檔案
 ├── README.md         # 說明文件
 └── Superhhh.ico      # 打包用的圖標
 ```
 
 ## 注意事項
 
-1. `yield.py` 程式會解碼 Base64 圖像與音效，請勿隨意刪除 `src` 與 `Asset` 資料夾內的資源檔案。
+1. `yieldb64.py` 程式會解碼 Base64 圖像與音效，請勿隨意刪除 `src` 與 `Asset` 資料夾內的資源檔案。
 2. 遊戲過程中的臨時文件會在結束時自動刪除。
 3. 若遇到問題，請確保已安裝正確版本的依賴，並參考錯誤訊息進行調試。
 4. 若欲自行打包成單一 .exe 文件 (無其他依賴檔案)，可於程式目錄使用已下命令:
@@ -214,10 +214,10 @@ By August 2024, 🍚🐟 had graduated from high school and was preparing for co
 
 4. Navigate to the project directory.
 
-5. Execute the `yield.py` file to generate `imageb64.py` and `soundb64.py`:
+5. Execute the `yieldb64.py` file to generate `imageb64.py` and `soundb64.py`:
 
    ```bash
-   python yield.py
+   python yieldb64.py
    ```
 
 6. Run the `main.py` file to start the game:
@@ -248,14 +248,14 @@ By August 2024, 🍚🐟 had graduated from high school and was preparing for co
 ├── PY.txt            # Uploadable to ChatGPT for explanation
 ├── Target.py         # Target score simulation tool
 ├── TargetJson.py     # Adds .json generation functionality to Target.py
-├── yield.py          # Generates imageb64.py and soundb64.py from Base64 encoded assets
+├── yieldb64.py          # Generates imageb64.py and soundb64.py from Base64 encoded assets
 ├── README.md         # Documentation
 └── Superhhh.ico      # Icon for packaging
 ```
 
 ## Notes
 
-1. The `yield.py` script decodes Base64 images and sounds. Do not delete the `src` and `Asset` folders.
+1. The `yieldb64.py` script decodes Base64 images and sounds. Do not delete the `src` and `Asset` folders.
 2. Temporary files created during gameplay will be automatically deleted after the game ends.
 3. If issues arise, ensure the correct dependencies are installed and troubleshoot using error messages.
 4. To package the program into a standalone `.exe` file, use the following command in the project directory:
