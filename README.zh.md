@@ -98,7 +98,7 @@
 
 ```plaintext
 ├── main.py            # 主程式
-├── GUI               # 圖形介面相關模組 [GUI-simplify-Tkinter-Pygame-](https://github.com/Yorn90104/GUI-simplify-Tkinter-Pygame-.git)
+├── GUI               # 圖形介面相關模組 
 │   └── __init__.py
 ├── src               # 遊戲邏輯與資源
 │   ├── element.py
@@ -129,6 +129,12 @@
 
 此項目由 🍚🐟 創建，僅供學習與娛樂用途。所有音樂與圖片素材均來源於公開資源，若有侵權請聯繫刪除。
 
+## 資源連結
+
+- [MIT App Inventor 2](https://ai2.appinventor.mit.edu/)
+- [Pygame 官方文件](https://www.pygame.org/docs/)
+- [GUI-simplify-Tkinter-Pygame-](https://github.com/Yorn90104/GUI-simplify-Tkinter-Pygame-.git)
+
 ---
 
 # README (English Version)
@@ -139,7 +145,7 @@ This is a Python-based game application that integrates Tkinter for the graphica
 
 ## Background
 
-In the summer of 2023, 🍚🐟, a student from the Business class of Zhih-Ping High School, found themselves feeling bored. Inspired by the MIT App Inventor 2 taught by Mr. Kuo, they decided to create a simple game using their knowledge of Minecraft redstone logic, random images from their phone gallery, and sound effects/music sourced online. Thus, the first version of LABA Machine was born.
+In the summer of 2023, 🍚🐟, a student from the Business class of Zhih-Ping High School, found themselves feeling bored. Inspired by the MIT App Inventor 2 taught by Mr. Kuo-Chang, they decided to create a simple game using their knowledge of Minecraft redstone logic, random images from their phone gallery, and sound effects/music sourced online. Thus, the first version of LABA Machine was born.
 
 Subsequent updates introduced modes such as SuperHHH, GreenWei, and PiKaChu.  
 
@@ -226,12 +232,12 @@ By August 2024, 🍚🐟 had graduated from high school and was preparing for co
    ```python
    Game.setup_path(".\\248119875.json") # Replace with the path to your .json file
    ```
-   
+
 ## File Structure
 
 ```plaintext
 ├── main.py            # Main program
-├── GUI               # GUI modules [GUI-simplify-Tkinter-Pygame-](https://github.com/Yorn90104/GUI-simplify-Tkinter-Pygame-.git)
+├── GUI               # GUI modules 
 │   └── __init__.py
 ├── src               # Game logic and resources
 │   ├── element.py
@@ -259,5 +265,7 @@ By August 2024, 🍚🐟 had graduated from high school and was preparing for co
    ```
 
 ## License
+
+[GUI-simplify-Tkinter-Pygame-](https://github.com/Yorn90104/GUI-simplify-Tkinter-Pygame-.git)
 
 This project was created by 🍚🐟 for educational and entertainment purposes only. All music and image assets are sourced from public resources. For copyright concerns, please contact for removal.
