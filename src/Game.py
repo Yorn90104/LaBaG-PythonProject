@@ -2,9 +2,9 @@ from random import randint
 from src.element import Gss, Hhh, Hentai, Handsun, Kachu, Rrr
 
 class P:
-    def __init__(self, code: str = None, score_list: list[int] = None, rate_dict: dict[str, int]= 0, pic = None):
+    def __init__(self, code: str = None, score_list: list[int] = None, rate_dict: dict[str, int]= None, pic = None):
         self.code = code
-        self.score_list = score_list
+        self.score_list = score_list or []
         self.rate_dict = rate_dict or {"Normal": 0}
         self.picture = pic
 

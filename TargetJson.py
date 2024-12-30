@@ -8,9 +8,9 @@ import json
 from src.Sheet import commit_score
 
 class P:
-    def __init__(self, code: str = None, score_list: list[int] = None, rate_dict: dict[str, int]= 0):
+    def __init__(self, code: str = None, score_list: list[int] = None, rate_dict: dict[str, int]= None):
         self.code = code
-        self.score_list = score_list
+        self.score_list = score_list or []
         self.rate_dict = rate_dict or {"Normal": 0}
 
     def __str__(self):
@@ -100,9 +100,6 @@ class LaBaG:
 
     def reset(self):
         """重置"""
-        self.AllData = dict()
-        self.DataIndex = 0
-        
         self.played = 0
         self.score = 0
         self.margin_score= 0
@@ -120,6 +117,9 @@ class LaBaG:
 
     def Logic(self):
         """邏輯流程"""
+        self.AllData = dict()
+        self.DataIndex = 0
+        Game.reset()
         while self.GameRunning():
             self.OneData = dict()
             self.random() 
@@ -324,8 +324,15 @@ class LaBaG:
         else:
             self.PiKaChu = False
     #endregion
-        
-target = int (input("請輸入目標分數"))
+while True:   
+    try:
+        target = int (input("請輸入目標分數"))
+        if target > 0:
+            break
+        else:
+            print("目標分數必須大於 0")
+    except ValueError as e:
+        print(f"請輸入有效的數字: {e}")
 
 Game = LaBaG()
 
@@ -338,15 +345,16 @@ while True :
         LOG = 2
     else:
         LOG = int (round(math.log10(i)) + 2)
-    Game.reset()
+
     Game.Logic()
 
+    if Game.score > recent_max:
+        recent_max = Game.score
     print(f"第{i : {LOG}}次 分數：{Game.score : 8}【目前最大值：{recent_max}】")
     # 檢查是否達到目標
     if Game.score >= target:
         break  # 如果達到目標，則退出迴圈
-    elif Game.score > recent_max:
-        recent_max = Game.score
+    
 
 if Game.score > 1000000:
     commit_score('模擬測試最高分', recent_max)
