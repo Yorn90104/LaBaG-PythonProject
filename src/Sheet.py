@@ -1,19 +1,24 @@
 #https://script.google.com/macros/s/AKfycbzWA0mMx_B14vrHGW6-QK4tOClSIj1lw7udLJwp7XCg2nZ8hDxt7d-dqnc6WenqBM8FBA/exec
 
-import subprocess
 import requests 
 
 GetData = []
 data_dict = dict()
 
-def commit_score(name, score):
+def commit_score(name: str= None, score: int= 0):
     """上傳資料至試算表"""
-    if name != "" :
-        url = f"https://docs.google.com/forms/d/18dVGtPExBUc0p1VbsmMxCyujQoldI6GKQWZQGJQ-yzY/formResponse?entry.582969025={name}&entry.995493130={score}"
-        subprocess.Popen(['curl', url], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        print("資料已上傳")
+    if name is not None and name != "" :
+        if isinstance(score, int) and score >= 0:  # 檢查是否為正整數
+            url = f"https://docs.google.com/forms/d/18dVGtPExBUc0p1VbsmMxCyujQoldI6GKQWZQGJQ-yzY/formResponse?entry.582969025={name}&entry.995493130={score}"
+            web = requests.get(url)
+            if web.status_code == 200:
+                print("資料已上傳")
+            else:
+                    print(f"錯誤：HTTP狀態碼 {web.status_code}")
+        else:
+            print("分數無效，必須為正整數！")
     else:
-        print("名稱為空，資料未上傳！")
+            print("名稱為空，資料未上傳！")
 
 def tide_data():
     """整理資料至字典"""
@@ -53,3 +58,6 @@ def find_history_score(name = ""):
                 return data_dict[name]
         else:
             return 0
+        
+if __name__ == "__main__":
+    commit_score("測試", 0)
