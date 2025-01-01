@@ -189,6 +189,11 @@ class LaBaG:
             elif RandNums[i] <= rate_range[5]:
                 self.Ps[i] = P.Dict["F"]
 
+        #增加咖波累積數
+        for p in self.Ps:
+            if p.code == "A" and self.gss_times < 20 :
+                self.gss_times += 1
+
     def calculate_score(self):
         """計算分數"""
         def margin_add(p: P, typ: int):
@@ -244,10 +249,7 @@ class LaBaG:
                 self.PiKaChu = False
             return
         
-        #增加咖波累積數
-        for p in self.Ps:
-            if p.code == "A" and self.gss_times < 20 :
-                self.gss_times += 1
+        
         
         match self.now_mod():
             case "Normal" | "PiKaChu":
