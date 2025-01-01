@@ -396,8 +396,8 @@ class JsonLaBaG(LaBaG):
         def acc_rate():
             res = list()
             acc = 0
-            for i in self.P_dict:
-                acc += self.P_dict[i].rate_dict[self.now_mod()]
+            for i in P.Dict:
+                acc += P.Dict[i].rate_dict[self.now_mod()]
                 res.append(acc)
             return res
         
@@ -407,17 +407,23 @@ class JsonLaBaG(LaBaG):
         self.Ps = [None, None, None]
         for i in range(3):
             if RandNums[i] <= rate_range[0]:
-                self.Ps[i] = self.P_dict["Gss"]
+                self.Ps[i] = P.Dict["Gss"]
             elif RandNums[i] <= rate_range[1]:
-                self.Ps[i] = self.P_dict["Hhh"]
+                self.Ps[i] = P.Dict["Hhh"]
             elif RandNums[i] <= rate_range[2]:
-                self.Ps[i] = self.P_dict["Hentai"]
+                self.Ps[i] = P.Dict["Hentai"]
             elif RandNums[i] <= rate_range[3]:
-                self.Ps[i] = self.P_dict["Handsun"]
+                self.Ps[i] = P.Dict["Handsun"]
             elif RandNums[i] <= rate_range[4]:
-                self.Ps[i] = self.P_dict["Kachu"]
+                self.Ps[i] = P.Dict["Kachu"]
             elif RandNums[i] <= rate_range[5]:
-                self.Ps[i] = self.P_dict["Rrr"]
+                self.Ps[i] = P.Dict["Rrr"]
+
+        #增加咖波累積數
+        for p in self.Ps:
+            if p.code == "A" and self.gss_times < 20 :
+                self.gss_times += 1
+        print(f"咖波累積數：{self.gss_times}")
 
     def result(self):
         """結果"""
