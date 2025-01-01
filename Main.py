@@ -1,6 +1,6 @@
 from GUI import Window
 win = Window("啦八機", 450, 800) #先初始化 Tkinter 才能創建 ImageTk
-from src.game import LaBaG, JsonLaBaG
+from src.Game import LaBaG, JsonLaBaG
 from src.element import (
     BG, SuperBG, GreenBG, KachuBG,
     QST, SuperQST, GreenQST, KachuQST, 
