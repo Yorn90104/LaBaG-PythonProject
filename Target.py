@@ -23,10 +23,6 @@ class P:
         
 class LaBaG:
     def __init__(self):
-        self.AllData = dict() #總資料
-        self.OneData = dict() #單次資料
-        self.DataIndex = 0
-
         # 遊戲邏輯變數
         self.times = 30 #可遊玩次數 正常30
         self.played = 0 #已遊玩次數
@@ -124,11 +120,8 @@ class LaBaG:
 
     def Logic(self):
         """邏輯流程"""
-        self.AllData = dict()
-        self.DataIndex = 0
         self.reset()
         while self.GameRunning():
-            self.OneData = dict()
             self.random() 
             self.calculate_score()
             self.result()
@@ -154,13 +147,9 @@ class LaBaG:
     def random(self):
         """遊戲變數隨機產生"""
         RandNums = [randint(1, 100), randint(1, 100), randint(1, 100)]
-        for i in range(3):
-            self.OneData[f"RandNums[{i}]"] = RandNums[i]
 
         self.SuperNum = randint(1, 100) 
-        self.OneData["SuperHHH"] = self.SuperNum
         self.GreenNum = randint(1, 100) 
-        self.OneData["GreenWei"] = self.GreenNum
 
         def acc_rate():
             res = list()
@@ -223,7 +212,6 @@ class LaBaG:
         self.DataIndex += 1
         self.score += self.margin_score
         self.margin_score = 0
-        self.AllData[f"{self.DataIndex}"] = self.OneData
                     
     def judge_mod(self):
         """判斷模式"""
