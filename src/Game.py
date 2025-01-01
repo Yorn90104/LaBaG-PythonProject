@@ -1,4 +1,3 @@
-
 from random import randint
 from src.element import Gss, Hhh, Hentai, Handsun, Kachu, Rrr
 
@@ -118,6 +117,7 @@ class LaBaG:
         """邏輯流程"""
         self.ModtoScreen = False
         self.margin_score = 0
+        self.double_score  = 0
         self.random() 
         self.judge_super()
         self.calculate_score()
@@ -146,6 +146,13 @@ class LaBaG:
         """遊戲變數隨機產生"""
         RandNums = [randint(1, 100), randint(1, 100), randint(1, 100)]
         print(f"P隨機數為：{RandNums[0]} | {RandNums[1]} | {RandNums[2]}")
+
+        self.SuperNum = randint(1, 100) #隨機數
+        print(f"超級阿禾隨機數為: {self.SuperNum}")
+
+        self.GreenNum = randint(1, 100) #隨機數
+        print(f"綠光阿瑋隨機數為: {self.GreenNum}")
+
         def acc_rate():
             res = list()
             acc = 0
@@ -224,10 +231,6 @@ class LaBaG:
     #region 超級阿禾模式(SuperHHH)
     def SuperFalse(self):
         self.SuperHHH = False
-    
-    def SuperRandom(self):
-        self.SuperNum = randint(1, 100) #隨機數
-        print(f"超級阿禾隨機數為: {self.SuperNum}")
 
     def judge_super(self):
         """判斷超級阿禾"""
@@ -235,8 +238,6 @@ class LaBaG:
             self.SuperFalse()
             return
         
-        self.SuperRandom()
-        self.double_score  = 0
         match self.now_mod():
             case "SuperHHH":
                 self.SuperTimes -= 1
@@ -278,9 +279,6 @@ class LaBaG:
     def GreenFalse(self):
         self.GreenWei = False
     
-    def GreenRandom(self):
-        self.GreenNum = randint(1, 100) #隨機數
-        print(f"綠光阿瑋隨機數為: {self.GreenNum}")
 
     def judge_green(self):
         """判斷綠光阿瑋"""
@@ -294,7 +292,6 @@ class LaBaG:
                 self.gss_times += 1
         print(f"咖波累積數：{self.gss_times}")
 
-        self.GreenRandom()
         match self.now_mod():
             case "GreenWei":
                 self.GreenTimes -= 1
@@ -398,6 +395,14 @@ class JsonLaBaG(LaBaG):
         """遊戲變數隨機產生"""
         RandNums = [self.json_data[self.index]["RandNums[0]"], self.json_data[self.index]["RandNums[1]"], self.json_data[self.index]["RandNums[2]"]]
         print(f"P隨機數為：{RandNums[0]} | {RandNums[1]} | {RandNums[2]}")
+
+        self.SuperNum = self.json_data[self.index]["SuperHHH"]
+        print(f"超級阿禾隨機數為: {self.SuperNum}")
+
+        self.GreenNum = self.json_data[self.index]["GreenWei"]
+        print(f"綠光阿瑋隨機數為: {self.GreenNum}")
+
+
         def acc_rate():
             res = list()
             acc = 0
@@ -434,15 +439,6 @@ class JsonLaBaG(LaBaG):
         print(f"+{self.margin_score}")
         print(f"目前分數：{self.score}")
         print(f"剩餘次數：{self.times - self.played}")
-
-    
-    def SuperRandom(self):
-        self.SuperNum = self.json_data[self.index]["SuperHHH"]
-        print(f"超級阿禾隨機數為: {self.SuperNum}")
-
-    def GreenRandom(self):
-        self.GreenNum = self.json_data[self.index]["GreenWei"]
-        print(f"綠光阿瑋隨機數為: {self.GreenNum}")
 
 
      
