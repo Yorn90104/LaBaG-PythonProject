@@ -87,6 +87,7 @@ class LaBaG:
         self.SuperHHH = False
         self.SuperNum = 0
         self.SuperTimes = 0
+        self.superS = 0
 
         #綠光阿瑋
         self.GreenRate = 35
@@ -94,10 +95,11 @@ class LaBaG:
         self.GreenNum = 0
         self.GreenTimes = 0
         self.gss_times = 0 #咖波累積數
+        self.greenS = 0
 
         #皮卡丘
         self.PiKaChu = False
-        self.kachu_times = 0
+        self.kachuS = 0
 
         #endregion
 
@@ -110,13 +112,16 @@ class LaBaG:
         
         self.SuperHHH = False
         self.SuperTimes = 0
+        self.superS = 0
 
         self.GreenWei = False
         self.GreenTimes = 0
         self.gss_times = 0
+        self.greenS = 0
 
         self.PiKaChu = False
-        self.kachu_times = 0
+        self.kachuS = 0
+
 
     def Logic(self):
         """邏輯流程"""
@@ -224,7 +229,7 @@ class LaBaG:
             if any(p.code == "E" for p in self.Ps) :
                 self.PiKaChu = True
                 self.played -= 5
-                self.kachu_times += 1
+                self.kachuS += 1
                 self.ModtoScreen = True
             else:
                 self.PiKaChu = False
@@ -242,6 +247,7 @@ class LaBaG:
                 if self.SuperNum <= self.SuperRate and hhh_appear:
                     self.SuperHHH = True
                     self.SuperTimes += 6
+                    self.superS += 1
                     if self.PiKaChu:
                         self.PiKaChu = False
 
@@ -257,6 +263,7 @@ class LaBaG:
                 if self.GreenNum <= self.GreenRate and gss_all :
                     self.GreenWei = True
                     self.GreenTimes += 2
+                    self.greenS += 1
                     if self.PiKaChu:
                         self.PiKaChu = False
                     
@@ -266,6 +273,7 @@ class LaBaG:
                 elif self.gss_times >= 20 : #咖波累積數達到20
                     self.GreenWei = True
                     self.GreenTimes += 2
+                    self.greenS += 1
                     self.gss_times = 0
                     if self.PiKaChu:
                         self.PiKaChu = False
