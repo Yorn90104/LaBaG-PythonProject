@@ -2,14 +2,25 @@ from random import randint
 from src.element import Gss, Hhh, Hentai, Handsun, Kachu, Rrr
 
 class P:
+    """圖案符號"""
+    Dict = dict()
+
     def __init__(self, code: str = None, score_list: list[int] = None, rate_dict: dict[str, int]= None, pic = None):
         self.code = code
         self.score_list = score_list or []
         self.rate_dict = rate_dict or {"Normal": 0}
         self.picture = pic
+        
+        self.AddDict()
 
     def __str__(self):
         return self.code
+    
+    def AddDict(self):
+        """加入類字典中"""
+        if self.code not in P.Dict:
+            P.Dict[self.code] = self
+
 
         
 class LaBaG:
@@ -25,44 +36,47 @@ class LaBaG:
 
         self.history_score = 0
 
-        self.P_dict = {
-            "Gss":P("A",[625, 350, 150], {
+        P("A",[625, 350, 150], {
                 "Normal": 36,
                 "SuperHHH": 19,
                 "GreenWei": 36,
                 "PiKaChu": 36
-            }, Gss),
-            "Hhh":P("B",[1250, 650, 220], {
+            }, Gss)
+        
+        P("B",[1250, 650, 220], {
                 "Normal": 24,
                 "SuperHHH": 5,
                 "GreenWei": 24,
                 "PiKaChu": 24
-            }, Hhh),
-            "Hentai":P("C",[2100, 1080, 380], {
+            }, Hhh)
+        
+        P("C",[2100, 1080, 380], {
                 "Normal": 17,
                 "SuperHHH": 19,
                 "GreenWei": 17,
                 "PiKaChu": 17
-            }, Hentai),
-            "Handsun":P("D",[2500, 1250, 420], {
+            }, Hentai)
+        
+        P("D",[2500, 1250, 420], {
                 "Normal": 12,
                 "SuperHHH": 19,
                 "GreenWei": 12,
                 "PiKaChu": 12
-            }, Handsun),
-            "Kachu":P("E",[10000, 5000, 1250], {
+            }, Handsun)
+        
+        P("E",[10000, 5000, 1250], {
                 "Normal": 8,
                 "SuperHHH": 19,
                 "GreenWei": 8,
                 "PiKaChu": 8
-            }, Kachu),
-            "Rrr":P("F",[20000, 10000, 2500], {
+            }, Kachu)
+        
+        P("F",[20000, 10000, 2500], {
                 "Normal": 3,
                 "SuperHHH": 19,
                 "GreenWei": 3,
                 "PiKaChu": 3
-            }, Rrr),
-        }
+            }, Rrr)
 
         #加分倍數
         self.score_times_dict = {
@@ -145,17 +159,17 @@ class LaBaG:
         RandNums = [randint(1, 100), randint(1, 100), randint(1, 100)]
         print(f"P隨機數為：{RandNums[0]} | {RandNums[1]} | {RandNums[2]}")
 
-        self.SuperNum = randint(1, 100) #隨機數
+        self.SuperNum = randint(1, 100) 
         print(f"超級阿禾隨機數為: {self.SuperNum}")
 
-        self.GreenNum = randint(1, 100) #隨機數
+        self.GreenNum = randint(1, 100) 
         print(f"綠光阿瑋隨機數為: {self.GreenNum}")
 
         def acc_rate():
             res = list()
             acc = 0
-            for i in self.P_dict:
-                acc += self.P_dict[i].rate_dict[self.now_mod()]
+            for i in P.Dict:
+                acc += P.Dict[i].rate_dict[self.now_mod()]
                 res.append(acc)
             return res
         
@@ -165,17 +179,17 @@ class LaBaG:
         self.Ps = [None, None, None]
         for i in range(3):
             if RandNums[i] <= rate_range[0]:
-                self.Ps[i] = self.P_dict["Gss"]
+                self.Ps[i] = P.Dict["A"]
             elif RandNums[i] <= rate_range[1]:
-                self.Ps[i] = self.P_dict["Hhh"]
+                self.Ps[i] = P.Dict["B"]
             elif RandNums[i] <= rate_range[2]:
-                self.Ps[i] = self.P_dict["Hentai"]
+                self.Ps[i] = P.Dict["C"]
             elif RandNums[i] <= rate_range[3]:
-                self.Ps[i] = self.P_dict["Handsun"]
+                self.Ps[i] = P.Dict["D"]
             elif RandNums[i] <= rate_range[4]:
-                self.Ps[i] = self.P_dict["Kachu"]
+                self.Ps[i] = P.Dict["E"]
             elif RandNums[i] <= rate_range[5]:
-                self.Ps[i] = self.P_dict["Rrr"]
+                self.Ps[i] = P.Dict["F"]
 
     def calculate_score(self):
         """計算分數"""
@@ -266,8 +280,7 @@ class LaBaG:
 
                     #超級阿禾加倍
                     if all(p.code == "B" for p in self.Ps):
-                        self.double_score = int(round(self.score / 2))
-                        self.double_score *= self.score_time
+                        self.double_score = int(round(self.score / 2)) * self.score_time
                         self.margin_score += self.double_score
                         if self.score_time == 3:
                             print(f"(超級阿禾 x 綠光阿瑋加倍分:{self.double_score})")
