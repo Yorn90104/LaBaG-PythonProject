@@ -117,7 +117,7 @@ By August 2024, 🍚🐟 had graduated from high school and was preparing for co
 4. To package the program into a standalone `.exe` file, use the following command in the project directory:
 
    ```bash
-   pyinstaller --windowed -F --icon=Superhhh.ico Main.py  
+   pyinstaller --windowed -F --icon=Superhhh.ico --name=LaBaG Main.py 
    ```
 
 ## Resources Links

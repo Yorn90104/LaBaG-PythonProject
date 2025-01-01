@@ -88,11 +88,6 @@ By August 2024, 🍚🐟 had graduated from high school and was preparing for co
    ```
 
 7. Follow the prompts to play the game.  
-   If you want to use a `.json` file for simulation, modify `main.py` as follows:
-
-   ```python
-   Game.setup_path(".\\248119875.json") # Replace with the path to your .json file
-   ```
 
 ## File Structure
 
@@ -122,7 +117,7 @@ By August 2024, 🍚🐟 had graduated from high school and was preparing for co
 4. To package the program into a standalone `.exe` file, use the following command in the project directory:
 
    ```bash
-   pyinstaller --windowed -F --icon=Superhhh.ico Main.py  
+   pyinstaller --windowed -F --icon=Superhhh.ico --name=LaBaG Main.py  
    ```
 
 ## Resources Links

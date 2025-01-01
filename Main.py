@@ -108,6 +108,7 @@ def into_json(json_path: str= None):
         Game.setup_path(f"{json_path}")
 
         win.unbind('<Return>') # 解除綁定ENTER
+        win.SubWindow("輸入路徑").unbind('<Return>')
         BeginAble()
         Game.reset()
         init_Game_screen_item()
@@ -150,6 +151,7 @@ def jsonpath_subwindow():
         150, 160,
         12
     )
+    win.SubWindow("輸入路徑").bind('<Return>', lambda event: into_json(win.SubWindow("輸入路徑").get_input("path")))
 
 win.txt_button(
     "toJson",

@@ -118,7 +118,7 @@
 4. 若欲自行打包成單一 .exe 文件 (無其他依賴檔案)，可於程式目錄使用已下命令:
 
    ```bash
-   pyinstaller --windowed -F --icon=Superhhh.ico Main.py  
+   pyinstaller --windowed -F --icon=Superhhh.ico --name=LaBaG Main.py 
    ```
 
 ## 版權聲明

@@ -407,17 +407,17 @@ class JsonLaBaG(LaBaG):
         self.Ps = [None, None, None]
         for i in range(3):
             if RandNums[i] <= rate_range[0]:
-                self.Ps[i] = P.Dict["Gss"]
+                self.Ps[i] = P.Dict["A"]
             elif RandNums[i] <= rate_range[1]:
-                self.Ps[i] = P.Dict["Hhh"]
+                self.Ps[i] = P.Dict["B"]
             elif RandNums[i] <= rate_range[2]:
-                self.Ps[i] = P.Dict["Hentai"]
+                self.Ps[i] = P.Dict["C"]
             elif RandNums[i] <= rate_range[3]:
-                self.Ps[i] = P.Dict["Handsun"]
+                self.Ps[i] = P.Dict["D"]
             elif RandNums[i] <= rate_range[4]:
-                self.Ps[i] = P.Dict["Kachu"]
+                self.Ps[i] = P.Dict["E"]
             elif RandNums[i] <= rate_range[5]:
-                self.Ps[i] = P.Dict["Rrr"]
+                self.Ps[i] = P.Dict["F"]
 
         #增加咖波累積數
         for p in self.Ps:
