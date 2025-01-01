@@ -1,3 +1,4 @@
+
 from random import randint
 from src.element import Gss, Hhh, Hentai, Handsun, Kachu, Rrr
 
