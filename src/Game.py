@@ -119,12 +119,10 @@ class LaBaG:
         self.margin_score = 0
         self.double_score  = 0
         self.random() 
-        self.judge_super()
         self.calculate_score()
-        self.judge_green()
         self.result()
-        self.judge_kachu()
-    
+        self.judge_mod()
+
     def GameRunning(self) -> bool:
         """判斷一局遊戲是否繼續運行"""
         return self.played < self.times
@@ -228,38 +226,41 @@ class LaBaG:
         if self.score > self.history_score:
             self.history_score = self.score
 
-    #region 超級阿禾模式(SuperHHH)
-    def SuperFalse(self):
-        self.SuperHHH = False
+    def judge_mod(self):
+        """判斷模式"""
+        if not self.GameRunning():
+            #關掉其他模式
+            self.SuperHHH = False
+            self.GreenWei = False
 
-    def judge_super(self):
-        """判斷超級阿禾"""
-        if not self.GameRunning:
-            self.SuperFalse()
+            #判斷皮卡丘充電
+            if any(p.code == "E" for p in self.Ps) :
+                self.PiKaChu = True
+                self.played -= 5
+                self.kachu_times += 1
+                print(f"皮卡丘為你充電")
+                print(f"已觸發 {self.kachu_times} 次皮卡丘充電")
+                self.ModtoScreen = True
+            else:
+                self.PiKaChu = False
             return
         
+        #增加咖波累積數
+        for p in self.Ps:
+            if p.code == "A" and self.gss_times < 20 :
+                self.gss_times += 1
+        print(f"咖波累積數：{self.gss_times}")
+        
         match self.now_mod():
-            case "SuperHHH":
-                self.SuperTimes -= 1
-                print(f"超級阿禾剩餘次數:{self.SuperTimes}次")
-
-                if all(p.code == "B" for p in self.Ps):
-                    self.SuperTimes += 2
-                    print("全阿禾，次數不消耗且+1！")
-                if self.SuperTimes <= 0 : #超級阿禾次數用完
-                    self.SuperFalse()
-
-                    self.ModtoScreen = True
-
             case "Normal" | "PiKaChu":
-                
-                hhh_appear = any(p.code == "B" for p in self.Ps) #判斷是否有出現阿和
+                #判斷超級阿禾
+                hhh_appear = any(p.code == "B" for p in self.Ps) #判斷是否有任何阿禾
                 if self.SuperNum <= self.SuperRate and hhh_appear:
                     self.SuperHHH = True
                     self.SuperTimes += 6
                     print(f"超級阿禾出現")
                     if self.PiKaChu:
-                        self.KachuFalse()
+                        self.PiKaChu = False
 
                     self.ModtoScreen = True
 
@@ -272,50 +273,19 @@ class LaBaG:
                             print(f"(超級阿禾 x 綠光阿瑋加倍分:{self.double_score})")
                         else:
                             print(f"(超級阿禾加倍分:{self.double_score})")
-            
-    #endregion
-
-    #region 綠光阿瑋模式(GreenWei)
-    def GreenFalse(self):
-        self.GreenWei = False
-    
-
-    def judge_green(self):
-        """判斷綠光阿瑋"""
-        if not self.GameRunning():
-            self.GreenFalse()
-            return
-        
-        #增加咖波累積數
-        for p in self.Ps:
-            if p.code == "A" and self.gss_times < 20 :
-                self.gss_times += 1
-        print(f"咖波累積數：{self.gss_times}")
-
-        match self.now_mod():
-            case "GreenWei":
-                self.GreenTimes -= 1
-                print(f"綠光阿瑋剩餘次數:{self.GreenTimes}次")
-                if all(p.code == "A" for p in self.Ps):
-                    self.GreenTimes += 1
-                    print("全咖波，次數不消耗！")
-                if self.GreenTimes <= 0 : #綠光阿瑋次數用完
-                    self.GreenFalse()
-                    self.judge_super()
-
-                    self.ModtoScreen = True
-
-            case "Normal" | "PiKaChu":
-    
+                    
+                
+                #判斷綠光阿瑋
                 gss_all = all(p.code == "A" for p in self.Ps) #判斷是否有出現並全部咖波
                 if self.GreenNum <= self.GreenRate and gss_all :
                     self.GreenWei = True
                     self.GreenTimes += 2
                     print(f"綠光阿瑋出現")
                     if self.PiKaChu:
-                        self.KachuFalse()
+                        self.PiKaChu = False
                     
                     self.ModtoScreen = True
+                    return
 
                 elif self.gss_times >= 20 : #咖波累積數達到20
                     self.GreenWei = True
@@ -323,33 +293,39 @@ class LaBaG:
                     print(f"綠光阿瑋出現")
                     self.gss_times = 0
                     if self.PiKaChu:
-                        self.KachuFalse()
+                        self.PiKaChu = False
                     
                     self.ModtoScreen = True
+                    return
+            case "SuperHHH":
+                self.SuperTimes -= 1
+                print(f"超級阿禾剩餘次數:{self.SuperTimes}次")
 
-    #endregion
+                if all(p.code == "B" for p in self.Ps):
+                    self.SuperTimes += 2
+                    print("全阿禾，次數不消耗且+1！")
+                if self.SuperTimes <= 0 : #超級阿禾次數用完
+                    self.SuperHHH = False
+                    self.judge_mod() #判斷是否可再進入特殊模式
+                    self.ModtoScreen = True
 
-    #region 皮卡丘充電區(PiKaChu)
-    def KachuFalse(self):
-        self.PiKaChu = False
+                return
+            
+            case "GreenWei":
+                self.GreenTimes -= 1
+                print(f"綠光阿瑋剩餘次數:{self.GreenTimes}次")
+                if all(p.code == "A" for p in self.Ps):
+                    self.GreenTimes += 1
+                    print("全咖波，次數不消耗！")
+                if self.GreenTimes <= 0 : #綠光阿瑋次數用完
+                    self.GreenWei = False
+                    self.judge_mod() #判斷是否可再進入特殊模式
+                    self.ModtoScreen = True
+                
+                return
 
-    def judge_kachu(self):
-        """判斷皮卡丘"""
-        if not self.GameRunning() and any(p.code == "E" for p in self.Ps) :
-            self.PiKaChu = True
-            self.played -= 5
-            self.kachu_times += 1
-            print(f"皮卡丘為你充電")
-            print(f"已觸發 {self.kachu_times} 次皮卡丘充電")
-            #關掉其他模式
-            self.SuperFalse()
-            self.GreenFalse()
 
-            self.ModtoScreen = True
-        else:
-            self.PiKaChu = False
-    #endregion
-        
+#region JsonLaBaG
 import json
 class JsonLaBaG(LaBaG):
     """與json檔案連接的啦八機"""
@@ -359,7 +335,7 @@ class JsonLaBaG(LaBaG):
         self.BeginAble = True # 用於每次的模擬
         self.index = "1" # 第 n 次的索引
         
-        self.simulation = False # 用於中斷&開始模擬
+        self.simulation = False # 用於中斷 & 開始模擬
 
     def reset(self):
         """重置"""
@@ -439,6 +415,8 @@ class JsonLaBaG(LaBaG):
         print(f"+{self.margin_score}")
         print(f"目前分數：{self.score}")
         print(f"剩餘次數：{self.times - self.played}")
+#endregion
+
 
 
      
