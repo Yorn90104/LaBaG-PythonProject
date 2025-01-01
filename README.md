@@ -1,5 +1,5 @@
 # LaBaG
-[查看繁體中文版本](README/README.zh.md) | [English](README/README.en.md) 
+[查看繁體中文版本](README/README.zh.md) | [View English Version](README/README.en.md) 
 ## Introduction
 
 This is a Python-based game application that integrates Tkinter for the graphical interface and game logic. Players can choose different modes to play, achieve higher scores through randomly generated symbols, and trigger special modes. The program also supports score upload functionality, enabling players to save their records.
