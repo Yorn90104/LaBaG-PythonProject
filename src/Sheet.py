@@ -2,62 +2,58 @@
 
 import requests 
 
-GetData = []
-data_dict = dict()
-
-def commit_score(name: str= None, score: int= 0):
-    """上傳資料至試算表"""
-    if name is not None and name != "" :
-        if isinstance(score, int) and score >= 0:  # 檢查是否為正整數
-            url = f"https://docs.google.com/forms/d/18dVGtPExBUc0p1VbsmMxCyujQoldI6GKQWZQGJQ-yzY/formResponse?entry.582969025={name}&entry.995493130={score}"
-            web = requests.get(url)
-            if web.status_code == 200:
-                print("資料已上傳")
-            else:
-                    print(f"錯誤：HTTP狀態碼 {web.status_code}")
-        else:
-            print("分數無效，必須為正整數！")
-    else:
-            print("名稱為空，資料未上傳！")
-
-def tide_data():
-    """整理資料至字典"""
-    global GetData, data_dict
-    del GetData[0] #刪除第一列的欄名
-    for row in GetData : #對每一列的資料做
-        del row[0]  #刪除第一格的"時間戳記"
-
-        if row[0] != "" and row[1] != "" :#不為空
-            name = str(row[0]) #將名稱那格變為字串型態
-            score = int(row[1]) #將分數那格變為整數型態
-            if name in data_dict :
-                if score > data_dict[name] :
-                    data_dict[name] = score
-            else :
-                data_dict[name] = score
+class Sheet:
+    RawData = list()
+    SortedData = dict()
     
-    for d in data_dict :
-        print(f"{d}：{data_dict[d]:6}")
-        
-def get_data():
-    """從試算表抓取原資料"""
-    global GetData
-    web = requests.get("https://script.google.com/macros/s/AKfycbzWA0mMx_B14vrHGW6-QK4tOClSIj1lw7udLJwp7XCg2nZ8hDxt7d-dqnc6WenqBM8FBA/exec")
-    GetData = web.json()
+    @classmethod
+    def GetData(cls):
+        """獲取資料"""
+        url = "https://script.google.com/macros/s/AKfycbzWA0mMx_B14vrHGW6-QK4tOClSIj1lw7udLJwp7XCg2nZ8hDxt7d-dqnc6WenqBM8FBA/exec"
+        cls.RawData = requests.get(url).json()
+        cls.SortRawData()
 
-    tide_data()
-
-def find_history_score(name = ""):
-        """找歷史分數資料"""
-        global data_dict
-        if name != "" :
-            if name in data_dict: #檢查是否已在字典裡
-                return data_dict[name]
-            else : #沒有就新增一個
-                data_dict[name] = 0
-                return data_dict[name]
+    @classmethod
+    def SortRawData(cls):
+        """分類整理資料"""
+        if cls.RawData:
+            del cls.RawData[0] #刪除原始資料的第一個索引 (試算表的欄位名稱)
+        for row in cls.RawData : #對每一個的資料(試算表的列位)
+            if row:
+                del row[0]  #先刪除第一欄的"時間戳記"
+                #剩下的資料 [名稱, 分數]
+                if row[0] and row[1]: #皆唯「有效的值」
+                    name = str(row[0]) #將名稱那格變為字串型態
+                    score = int(row[1]) #將分數那格變為整數型態
+                    cls.SortedData[name] = max(cls.SortedData.get(name, 0), score) # 原分數與新分數取最大 如果還沒有資料則原分數為0
+                    
+        print("\n".join([f"{name}: {score}" for name, score in cls.SortedData.items()]))
+                    
+    @classmethod
+    def CommitScore(cls, name: str= None, score: int= 0):
+        """提交分數"""
+        if name: # 檢查是否是「有效的值」
+            if isinstance(score, int) and score >= 0:  # 檢查是否為正整數
+                url = f"https://docs.google.com/forms/d/18dVGtPExBUc0p1VbsmMxCyujQoldI6GKQWZQGJQ-yzY/formResponse?entry.582969025={name}&entry.995493130={score}"
+                web = requests.get(url)
+                if web.status_code == 200:
+                    cls.SortedData[name] = max(cls.SortedData.get(name, 0), score)
+                    print("資料已上傳")
+                else:
+                        print(f"錯誤：HTTP狀態碼 {web.status_code}")
+            else:
+                print("分數無效，必須為正整數！")
         else:
-            return 0
+                print("名稱為空，資料未上傳！")
+
+    @classmethod 
+    def GetScore(cls, name: str= None):
+        """名稱取得分數"""
+        if name: # 檢查是否是「有效的值」
+            return cls.SortedData.get(name, 0)
+        print("名稱無效！")
+        return None
         
+
 if __name__ == "__main__":
-    commit_score("測試", 0)
+    Sheet.GetData()

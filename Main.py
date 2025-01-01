@@ -13,9 +13,9 @@ from src.element import (
     green_wei, GreenLeft, GreenMid, GreenRight,
     pikachu
 )
-from src.Sheet import get_data, find_history_score, commit_score
+from src.Sheet import Sheet
 
-get_data() #獲取啦八機試算表的資料
+Sheet.GetData() #獲取啦八機試算表的資料
 
 Games = {
     "Game": LaBaG(),
@@ -30,7 +30,6 @@ win.setup_frame_and_canvas("Home", BG) #首頁
 win.setup_frame_and_canvas("Game", BG) #遊戲畫面
 win.setup_frame_and_canvas("End", BG) #結算畫面
 win.setup_frame_and_canvas("Json_Game", BG) # .json檔案模擬遊戲畫面
-win.setup_frame_and_canvas("Json_End", BG) # .json檔案模擬結算畫面
 
 win.temp_files = music.temp_files # 連結臨時檔案 list
 
@@ -51,7 +50,7 @@ def into_game():
         win.update_text("Game", "PlayerName", f"")
         print(f"玩家名：無")
 
-    Game.history_score = find_history_score(Game.name)
+    Game.history_score = Sheet.GetScore(Game.name)
     win.unbind('<Return>') # 解除綁定ENTER
     BeginAble()
     Game.reset()
@@ -126,7 +125,7 @@ def into_json(json_path: str= None):
         print(f"無效 or 不存在的路徑: {json_path}")
 
 
-def open_subwindow():
+def jsonpath_subwindow():
     """開啟子視窗"""
     win.setup_subwindow("輸入路徑", 300, 200, BG)
     win.SubWindow("輸入路徑").add_text(
@@ -152,16 +151,29 @@ def open_subwindow():
         12
     )
 
-
 win.txt_button(
     "toJson",
-    open_subwindow,
+    jsonpath_subwindow,
     "Home",
     "使用 .json 檔案模擬遊戲",
     10, 2,
     110, 770,
     12,
     "black", "yellow"
+)
+
+def rank_subwindow():
+    pass
+
+win.txt_button(
+    "toRank",
+    rank_subwindow,
+    "Home",
+    "查看排行榜",
+    10, 2,
+    225, 630,
+    12,
+    "black", "white"
 )
 #endregion
 
@@ -339,7 +351,7 @@ def Begin():
     win.after(3000, result_txt)
     if not Game.GameRunning():
         Game.GameOver()
-        commit_score(Game.name, Game.score)
+        Sheet.CommitScore(Game.name, Game.score)
         win.after(3500, Game_over_to_End)
         return
     if Game.ModtoScreen:
