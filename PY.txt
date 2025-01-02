@@ -1,8 +1,9 @@
 @.\main.py
 from GUI import Window
 win = Window("啦八機", 450, 800) #先初始化 Tkinter 才能創建 ImageTk
-from src.Game import LaBaG, JsonLaBaG
+from src.Game import P, LaBaG, JsonLaBaG
 from src.element import (
+    Gss, Hhh, Hentai, Handsun, Kachu, Rrr,
     BG, SuperBG, GreenBG, KachuBG,
     QST, SuperQST, GreenQST, KachuQST, 
     Title, SuperTitle, GreenTitle, KachuTitle, 
@@ -14,16 +15,21 @@ from src.element import (
     green_wei, GreenLeft, GreenMid, GreenRight,
     pikachu
 )
-from src.Sheet import get_data, find_history_score, commit_score
+from src.Sheet import Sheet
 
-get_data() #獲取啦八機試算表的資料
+Sheet.GetData() #獲取啦八機試算表的資料
 
 Games = {
     "Game": LaBaG(),
     "Json_Game" : JsonLaBaG() #.json檔案模擬用
 }  
 Game = Games["Game"] #預設
-
+P.Dict["A"].picture = Gss
+P.Dict["B"].picture = Hhh
+P.Dict["C"].picture = Hentai
+P.Dict["D"].picture = Handsun
+P.Dict["E"].picture = Kachu
+P.Dict["F"].picture = Rrr
 
 win.save_icon_use(image_dict, "Superhhh")
 #創建 Screen(frame & canvas)
@@ -31,7 +37,6 @@ win.setup_frame_and_canvas("Home", BG) #首頁
 win.setup_frame_and_canvas("Game", BG) #遊戲畫面
 win.setup_frame_and_canvas("End", BG) #結算畫面
 win.setup_frame_and_canvas("Json_Game", BG) # .json檔案模擬遊戲畫面
-win.setup_frame_and_canvas("Json_End", BG) # .json檔案模擬結算畫面
 
 win.temp_files = music.temp_files # 連結臨時檔案 list
 
@@ -45,14 +50,14 @@ def into_game():
     global Game
     Game = Games["Game"]
     Game.name = win.get_input("Name")
-    if Game.name != "" :
+    if Game.name:
         win.update_text("Game", "PlayerName", f"玩家名：{Game.name}")
         print(f"玩家名：{Game.name}")
     else :
         win.update_text("Game", "PlayerName", f"")
         print(f"玩家名：無")
 
-    Game.history_score = find_history_score(Game.name)
+    Game.history_score = Sheet.GetScore(Game.name)
     win.unbind('<Return>') # 解除綁定ENTER
     BeginAble()
     Game.reset()
@@ -110,6 +115,7 @@ def into_json(json_path: str= None):
         Game.setup_path(f"{json_path}")
 
         win.unbind('<Return>') # 解除綁定ENTER
+        win.SubWindow("輸入路徑").unbind('<Return>')
         BeginAble()
         Game.reset()
         init_Game_screen_item()
@@ -127,7 +133,7 @@ def into_json(json_path: str= None):
         print(f"無效 or 不存在的路徑: {json_path}")
 
 
-def open_subwindow():
+def jsonpath_subwindow():
     """開啟子視窗"""
     win.setup_subwindow("輸入路徑", 300, 200, BG)
     win.SubWindow("輸入路徑").add_text(
@@ -152,17 +158,31 @@ def open_subwindow():
         150, 160,
         12
     )
-
+    win.SubWindow("輸入路徑").bind('<Return>', lambda event: into_json(win.SubWindow("輸入路徑").get_input("path")))
 
 win.txt_button(
     "toJson",
-    open_subwindow,
+    jsonpath_subwindow,
     "Home",
     "使用 .json 檔案模擬遊戲",
     10, 2,
     110, 770,
     12,
     "black", "yellow"
+)
+
+def rank_subwindow():
+    pass
+
+win.txt_button(
+    "toRank",
+    rank_subwindow,
+    "Home",
+    "查看排行榜",
+    10, 2,
+    225, 630,
+    12,
+    "black", "white"
 )
 #endregion
 
@@ -340,7 +360,7 @@ def Begin():
     win.after(3000, result_txt)
     if not Game.GameRunning():
         Game.GameOver()
-        commit_score(Game.name, Game.score)
+        Sheet.CommitScore(Game.name, Game.score)
         win.after(3500, Game_over_to_End)
         return
     if Game.ModtoScreen:
@@ -545,33 +565,27 @@ win.first_window("Home")
 win.mainloop()
 
 @.\Target.py
-#產生目標分數的隨機數 json 檔
+#目標分數
 from random import randint
 import sys , math
 sys.stdout.reconfigure(encoding='utf-8')
-from random import randint #隨機數字
-import json
-
-import subprocess
-def commit_score(name, score):
-    """上傳資料至試算表"""
-    if name != "" :
-        url = f"https://docs.google.com/forms/d/18dVGtPExBUc0p1VbsmMxCyujQoldI6GKQWZQGJQ-yzY/formResponse?entry.582969025={name}&entry.995493130={score}"
-        subprocess.Popen(['curl', url], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        print("資料已上傳")
-    else:
-        print("名稱為空，資料未上傳！")
-
-
+from src.Sheet import Sheet
 
 class P:
-    def __init__(self, code: str = None, score_list: list[int] = None, rate_dict: dict[str, int]= 0):
-        self.code = code
-        self.score_list = score_list
-        self.rate_dict = rate_dict or {"Normal": 0}
+    """圖案符號"""
+    Dict = dict()
 
-    def __str__(self):
-        return self.code
+    def __init__(self, code: str = None, score_list: list[int] = None, rate_dict: dict[str, int]= None):
+        self.code = code
+        self.score_list = score_list or []
+        self.rate_dict = rate_dict or {"Normal": 0}
+        
+        self.AddDict()
+
+    def AddDict(self):
+        """加入類字典中"""
+        if self.code not in P.Dict:
+            P.Dict[self.code] = self
 
         
 class LaBaG:
@@ -583,45 +597,48 @@ class LaBaG:
         self.score = 0
         self.margin_score= 0
 
-        self.P_dict = {
-            "Gss":P("A",[625, 350, 150], {
+        P("A",[625, 350, 150], {
                 "Normal": 36,
                 "SuperHHH": 19,
                 "GreenWei": 36,
                 "PiKaChu": 36
-            }),
-            "Hhh":P("B",[1250, 650, 220], {
+            })
+        
+        P("B",[1250, 650, 220], {
                 "Normal": 24,
                 "SuperHHH": 5,
                 "GreenWei": 24,
                 "PiKaChu": 24
-            }),
-            "Hentai":P("C",[2100, 1080, 380], {
+            })
+        
+        P("C",[2100, 1080, 380], {
                 "Normal": 17,
                 "SuperHHH": 19,
                 "GreenWei": 17,
                 "PiKaChu": 17
-            }),
-            "Handsun":P("D",[2500, 1250, 420], {
+            })
+        
+        P("D",[2500, 1250, 420], {
                 "Normal": 12,
                 "SuperHHH": 19,
                 "GreenWei": 12,
                 "PiKaChu": 12
-            }),
-            "Kachu":P("E",[10000, 5000, 1250], {
+            })
+        
+        P("E",[10000, 5000, 1250], {
                 "Normal": 8,
                 "SuperHHH": 19,
                 "GreenWei": 8,
                 "PiKaChu": 8
-            }),
-            "Rrr":P("F",[20000, 10000, 2500], {
+            })
+        
+        P("F",[20000, 10000, 2500], {
                 "Normal": 3,
                 "SuperHHH": 19,
                 "GreenWei": 3,
                 "PiKaChu": 3
-            }),
-        }
-
+            })
+        
         #加分倍數
         self.score_times_dict = {
             "Normal": 1,
@@ -629,6 +646,7 @@ class LaBaG:
             "GreenWei": 3,
             "PiKaChu": 1
         }
+        self.score_time = 1
 
         #region 特殊模式
         #超級阿禾
@@ -636,7 +654,6 @@ class LaBaG:
         self.SuperHHH = False
         self.SuperNum = 0
         self.SuperTimes = 0
-
         self.superS = 0
 
         #綠光阿瑋
@@ -645,25 +662,24 @@ class LaBaG:
         self.GreenNum = 0
         self.GreenTimes = 0
         self.gss_times = 0 #咖波累積數
-
         self.greenS = 0
+
         #皮卡丘
         self.PiKaChu = False
-        
         self.kachuS = 0
 
         #endregion
 
     def reset(self):
         """重置"""
-    
         self.played = 0
         self.score = 0
         self.margin_score= 0
+        self.score_time = 1
         
         self.SuperHHH = False
         self.SuperTimes = 0
-        self.superS =0
+        self.superS = 0
 
         self.GreenWei = False
         self.GreenTimes = 0
@@ -673,16 +689,15 @@ class LaBaG:
         self.PiKaChu = False
         self.kachuS = 0
 
+
     def Logic(self):
         """邏輯流程"""
+        self.reset()
         while self.GameRunning():
             self.random() 
-            self.judge_super()
             self.calculate_score()
-            self.judge_green()
             self.result()
-            self.judge_kachu()
-        
+            self.judge_mod()        
     
     def GameRunning(self) -> bool:
         """判斷一局遊戲是否繼續運行"""
@@ -704,12 +719,15 @@ class LaBaG:
     def random(self):
         """遊戲變數隨機產生"""
         RandNums = [randint(1, 100), randint(1, 100), randint(1, 100)]
-        
+
+        self.SuperNum = randint(1, 100) 
+        self.GreenNum = randint(1, 100) 
+
         def acc_rate():
             res = list()
             acc = 0
-            for i in self.P_dict:
-                acc += self.P_dict[i].rate_dict[self.now_mod()]
+            for i in P.Dict:
+                acc += P.Dict[i].rate_dict[self.now_mod()]
                 res.append(acc)
             return res
         
@@ -718,17 +736,22 @@ class LaBaG:
         self.Ps = [None, None, None]
         for i in range(3):
             if RandNums[i] <= rate_range[0]:
-                self.Ps[i] = self.P_dict["Gss"]
+                self.Ps[i] = P.Dict["A"]
             elif RandNums[i] <= rate_range[1]:
-                self.Ps[i] = self.P_dict["Hhh"]
+                self.Ps[i] = P.Dict["B"]
             elif RandNums[i] <= rate_range[2]:
-                self.Ps[i] = self.P_dict["Hentai"]
+                self.Ps[i] = P.Dict["C"]
             elif RandNums[i] <= rate_range[3]:
-                self.Ps[i] = self.P_dict["Handsun"]
+                self.Ps[i] = P.Dict["D"]
             elif RandNums[i] <= rate_range[4]:
-                self.Ps[i] = self.P_dict["Kachu"]
+                self.Ps[i] = P.Dict["E"]
             elif RandNums[i] <= rate_range[5]:
-                self.Ps[i] = self.P_dict["Rrr"]
+                self.Ps[i] = P.Dict["F"]
+
+        #增加咖波累積數
+        for p in self.Ps:
+            if p.code == "A" and self.gss_times < 20 :
+                self.gss_times += 1
 
     def calculate_score(self):
         """計算分數"""
@@ -756,126 +779,106 @@ class LaBaG:
             margin_add(self.Ps[2], 2)
             self.margin_score = round(self.margin_score / 3)
 
-        score_times = self.score_times_dict[self.now_mod()]
-        self.margin_score *= score_times
+        self.score_time = self.score_times_dict[self.now_mod()]
+        self.margin_score *= self.score_time
         
 
     def result(self):
         """結果"""
         self.played += 1
+        self.DataIndex += 1
         self.score += self.margin_score
         self.margin_score = 0
+                    
+    def judge_mod(self):
+        """判斷模式"""
+        if not self.GameRunning():
+            #關掉其他模式
+            self.SuperHHH = False
+            self.GreenWei = False
 
-    #region 超級阿禾模式(SuperHHH)
-    def SuperFalse(self):
-        self.SuperHHH = False
-
-    def SuperRandom(self):
-        self.SuperNum = randint(1, 100) #隨機數
-
-    def judge_super(self):
-        """判斷超級阿禾"""
-        if not self.GameRunning:
-            self.SuperFalse()
+            #判斷皮卡丘充電
+            if any(p.code == "E" for p in self.Ps) :
+                self.PiKaChu = True
+                self.played -= 5
+                self.kachuS += 1
+                self.ModtoScreen = True
+            else:
+                self.PiKaChu = False
             return
         
-        self.SuperFalse()
         match self.now_mod():
+            case "Normal" | "PiKaChu":
+                #判斷超級阿禾
+                hhh_appear = any(p.code == "B" for p in self.Ps) #判斷是否有任何阿禾
+                if self.SuperNum <= self.SuperRate and hhh_appear:
+                    self.SuperHHH = True
+                    self.SuperTimes += 6
+                    self.superS += 1
+                    if self.PiKaChu:
+                        self.PiKaChu = False
+
+                    self.ModtoScreen = True
+
+                    #超級阿禾加倍
+                    if all(p.code == "B" for p in self.Ps):
+                        self.double_score = int(round(self.score / 2)) * self.score_time
+                        self.margin_score += self.double_score
+                
+                #判斷綠光阿瑋
+                gss_all = all(p.code == "A" for p in self.Ps) #判斷是否有出現並全部咖波
+                if self.GreenNum <= self.GreenRate and gss_all :
+                    self.GreenWei = True
+                    self.GreenTimes += 2
+                    self.greenS += 1
+                    if self.PiKaChu:
+                        self.PiKaChu = False
+                    
+                    self.ModtoScreen = True
+                    return
+
+                elif self.gss_times >= 20 : #咖波累積數達到20
+                    self.GreenWei = True
+                    self.GreenTimes += 2
+                    self.greenS += 1
+                    self.gss_times = 0
+                    if self.PiKaChu:
+                        self.PiKaChu = False
+                    
+                    self.ModtoScreen = True
+                    return
             case "SuperHHH":
                 self.SuperTimes -= 1
 
                 if all(p.code == "B" for p in self.Ps):
                     self.SuperTimes += 2
                 if self.SuperTimes <= 0 : #超級阿禾次數用完
-                    self.SuperFalse()
+                    self.SuperHHH = False
+                    self.judge_mod() #判斷是否可再進入特殊模式
+                    self.ModtoScreen = True
 
-
-            case "Normal" | "PiKaChu":
-                hhh_appear = any(p.code == "B" for p in self.Ps) #判斷是否有出現阿和
-                if self.SuperNum <= self.SuperRate and hhh_appear:
-                    self.SuperHHH = True
-                    self.SuperTimes += 6
-                    if self.PiKaChu:
-                        self.KachuFalse()
-
-                    self.superS += 1
-
-                    #超級阿禾加倍
-                    if all(p.code == "B" for p in self.Ps):
-                        double_score = int(round(self.score / 2))
-                        self.margin_score += double_score
+                return
             
-    #endregion
-
-    #region 綠光阿瑋模式(GreenWei)
-    def GreenFalse(self):
-        self.GreenWei = False
-
-    def GreenRandom(self):
-        self.GreenNum = randint(1, 100) #隨機數
-
-    def judge_green(self):
-        """判斷綠光阿瑋"""
-        if not self.GameRunning():
-            self.GreenFalse()
-            return
-        
-        #增加咖波累積數
-        for p in self.Ps:
-            if p.code == "A" and self.gss_times < 20 :
-                self.gss_times += 1
-
-        self.GreenRandom()
-        match self.now_mod():
             case "GreenWei":
                 self.GreenTimes -= 1
                 if all(p.code == "A" for p in self.Ps):
                     self.GreenTimes += 1
                 if self.GreenTimes <= 0 : #綠光阿瑋次數用完
-                    self.GreenFalse()
-                    self.judge_super()
-
-
-            case "Normal" | "PiKaChu":
-                gss_all = all(p.code == "A" for p in self.Ps) #判斷是否有出現並全部咖波
-                if self.GreenNum <= self.GreenRate and gss_all :
-                    self.GreenWei = True
-                    self.GreenTimes += 2
-                    if self.PiKaChu:
-                        self.KachuFalse()
-
-                    self.greenS += 1
-
-                elif self.gss_times >= 20 : #咖波累積數達到20
-                    self.GreenWei = True
-                    self.GreenTimes += 2
-                    self.gss_times = 0
-                    if self.PiKaChu:
-                        self.KachuFalse()
-                    
-                    self.greenS += 1
-
-    #endregion
-
-    #region 皮卡丘充電區(PiKaChu)
-    def KachuFalse(self):
-        self.PiKaChu = False
-
-    def judge_kachu(self):
-        """判斷皮卡丘"""
-        if not self.GameRunning() and any(p.code == "E" for p in self.Ps) :
-            self.PiKaChu = True
-            self.played -= 5
-            self.kachuS += 1
-            #關掉其他模式
-            self.SuperFalse()
-            self.GreenFalse()
-
+                    self.GreenWei = False
+                    self.judge_mod() #判斷是否可再進入特殊模式
+                    self.ModtoScreen = True
+                
+                return
+            
+while True:   
+    try:
+        target = int (input("請輸入目標分數"))
+        if target > 0:
+            break
         else:
-            self.PiKaChu = False
-    #endregion
-        
-target = int (input("請輸入目標分數"))
+            print("目標分數必須大於 0")
+    except ValueError as e:
+        print(f"請輸入有效的數字: {e}")
 
 Game = LaBaG()
 
@@ -898,7 +901,7 @@ while True :
     elif Game.score > recent_max:
         recent_max = Game.score
         if recent_max >= 1000000:
-             commit_score('模擬測試最高分', recent_max)
+            Sheet.CommitScore('模擬測試最高分', recent_max)
         
 print (f"第{i: {LOG}}次達成：{Game.score : 8} ({Game.superS : 2} 次 超級阿禾 )({Game.greenS : 2} 次 綠光阿瑋 )({Game.kachuS : 2} 次  皮卡丘充電)")  
 
@@ -910,19 +913,25 @@ print (f"第{i: {LOG}}次達成：{Game.score : 8} ({Game.superS : 2} 次 超級
 from random import randint
 import sys , math
 sys.stdout.reconfigure(encoding='utf-8')
-from random import randint #隨機數字
 import json
 
-from src.Sheet import commit_score
+from src.Sheet import Sheet
 
 class P:
+    """圖案符號"""
+    Dict = dict()
+
     def __init__(self, code: str = None, score_list: list[int] = None, rate_dict: dict[str, int]= None):
         self.code = code
         self.score_list = score_list or []
         self.rate_dict = rate_dict or {"Normal": 0}
+        
+        self.AddDict()
 
-    def __str__(self):
-        return self.code
+    def AddDict(self):
+        """加入類字典中"""
+        if self.code not in P.Dict:
+            P.Dict[self.code] = self
 
         
 class LaBaG:
@@ -938,45 +947,48 @@ class LaBaG:
         self.score = 0
         self.margin_score= 0
 
-        self.P_dict = {
-            "Gss":P("A",[625, 350, 150], {
+        P("A",[625, 350, 150], {
                 "Normal": 36,
                 "SuperHHH": 19,
                 "GreenWei": 36,
                 "PiKaChu": 36
-            }),
-            "Hhh":P("B",[1250, 650, 220], {
+            })
+        
+        P("B",[1250, 650, 220], {
                 "Normal": 24,
                 "SuperHHH": 5,
                 "GreenWei": 24,
                 "PiKaChu": 24
-            }),
-            "Hentai":P("C",[2100, 1080, 380], {
+            })
+        
+        P("C",[2100, 1080, 380], {
                 "Normal": 17,
                 "SuperHHH": 19,
                 "GreenWei": 17,
                 "PiKaChu": 17
-            }),
-            "Handsun":P("D",[2500, 1250, 420], {
+            })
+        
+        P("D",[2500, 1250, 420], {
                 "Normal": 12,
                 "SuperHHH": 19,
                 "GreenWei": 12,
                 "PiKaChu": 12
-            }),
-            "Kachu":P("E",[10000, 5000, 1250], {
+            })
+        
+        P("E",[10000, 5000, 1250], {
                 "Normal": 8,
                 "SuperHHH": 19,
                 "GreenWei": 8,
                 "PiKaChu": 8
-            }),
-            "Rrr":P("F",[20000, 10000, 2500], {
+            })
+        
+        P("F",[20000, 10000, 2500], {
                 "Normal": 3,
                 "SuperHHH": 19,
                 "GreenWei": 3,
                 "PiKaChu": 3
-            }),
-        }
-
+            })
+        
         #加分倍數
         self.score_times_dict = {
             "Normal": 1,
@@ -1027,16 +1039,13 @@ class LaBaG:
         """邏輯流程"""
         self.AllData = dict()
         self.DataIndex = 0
-        Game.reset()
+        self.reset()
         while self.GameRunning():
             self.OneData = dict()
             self.random() 
-            self.judge_super()
             self.calculate_score()
-            self.judge_green()
             self.result()
-            self.judge_kachu()
-        
+            self.judge_mod()        
     
     def GameRunning(self) -> bool:
         """判斷一局遊戲是否繼續運行"""
@@ -1061,11 +1070,16 @@ class LaBaG:
         for i in range(3):
             self.OneData[f"RandNums[{i}]"] = RandNums[i]
 
+        self.SuperNum = randint(1, 100) 
+        self.OneData["SuperHHH"] = self.SuperNum
+        self.GreenNum = randint(1, 100) 
+        self.OneData["GreenWei"] = self.GreenNum
+
         def acc_rate():
             res = list()
             acc = 0
-            for i in self.P_dict:
-                acc += self.P_dict[i].rate_dict[self.now_mod()]
+            for i in P.Dict:
+                acc += P.Dict[i].rate_dict[self.now_mod()]
                 res.append(acc)
             return res
         
@@ -1074,17 +1088,22 @@ class LaBaG:
         self.Ps = [None, None, None]
         for i in range(3):
             if RandNums[i] <= rate_range[0]:
-                self.Ps[i] = self.P_dict["Gss"]
+                self.Ps[i] = P.Dict["A"]
             elif RandNums[i] <= rate_range[1]:
-                self.Ps[i] = self.P_dict["Hhh"]
+                self.Ps[i] = P.Dict["B"]
             elif RandNums[i] <= rate_range[2]:
-                self.Ps[i] = self.P_dict["Hentai"]
+                self.Ps[i] = P.Dict["C"]
             elif RandNums[i] <= rate_range[3]:
-                self.Ps[i] = self.P_dict["Handsun"]
+                self.Ps[i] = P.Dict["D"]
             elif RandNums[i] <= rate_range[4]:
-                self.Ps[i] = self.P_dict["Kachu"]
+                self.Ps[i] = P.Dict["E"]
             elif RandNums[i] <= rate_range[5]:
-                self.Ps[i] = self.P_dict["Rrr"]
+                self.Ps[i] = P.Dict["F"]
+
+        #增加咖波累積數
+        for p in self.Ps:
+            if p.code == "A" and self.gss_times < 20 :
+                self.gss_times += 1
 
     def calculate_score(self):
         """計算分數"""
@@ -1123,115 +1142,86 @@ class LaBaG:
         self.score += self.margin_score
         self.margin_score = 0
         self.AllData[f"{self.DataIndex}"] = self.OneData
+                    
+    def judge_mod(self):
+        """判斷模式"""
+        if not self.GameRunning():
+            #關掉其他模式
+            self.SuperHHH = False
+            self.GreenWei = False
 
-    #region 超級阿禾模式(SuperHHH)
-    def SuperFalse(self):
-        self.SuperHHH = False
-
-    def SuperRandom(self):
-        self.SuperNum = randint(1, 100) #隨機數
-        self.OneData["SuperHHH"] = self.SuperNum
-
-    def judge_super(self):
-        """判斷超級阿禾"""
-        if not self.GameRunning:
-            self.SuperFalse()
+            #判斷皮卡丘充電
+            if any(p.code == "E" for p in self.Ps) :
+                self.PiKaChu = True
+                self.played -= 5
+                self.kachu_times += 1
+                self.ModtoScreen = True
+            else:
+                self.PiKaChu = False
             return
         
-        self.SuperRandom()
+        
+        
         match self.now_mod():
-            case "SuperHHH":
-                self.SuperTimes -= 1
-
-                if all(p.code == "B" for p in self.Ps):
-                    self.SuperTimes += 2
-                if self.SuperTimes <= 0 : #超級阿禾次數用完
-                    self.SuperFalse()
-
-
             case "Normal" | "PiKaChu":
-                hhh_appear = any(p.code == "B" for p in self.Ps) #判斷是否有出現阿和
+                #判斷超級阿禾
+                hhh_appear = any(p.code == "B" for p in self.Ps) #判斷是否有任何阿禾
                 if self.SuperNum <= self.SuperRate and hhh_appear:
                     self.SuperHHH = True
                     self.SuperTimes += 6
                     if self.PiKaChu:
-                        self.KachuFalse()
+                        self.PiKaChu = False
 
+                    self.ModtoScreen = True
 
                     #超級阿禾加倍
                     if all(p.code == "B" for p in self.Ps):
-                        double_score = int(round(self.score / 2))
-                        double_score *= self.score_time
-                        self.margin_score += double_score
-            
-    #endregion
-
-    #region 綠光阿瑋模式(GreenWei)
-    def GreenFalse(self):
-        self.GreenWei = False
-
-    def GreenRandom(self):
-        self.GreenNum = randint(1, 100) #隨機數
-        self.OneData["GreenWei"] = self.GreenNum
-
-    def judge_green(self):
-        """判斷綠光阿瑋"""
-        if not self.GameRunning():
-            self.GreenFalse()
-            return
-        
-        #增加咖波累積數
-        for p in self.Ps:
-            if p.code == "A" and self.gss_times < 20 :
-                self.gss_times += 1
-
-        self.GreenRandom()
-        match self.now_mod():
-            case "GreenWei":
-                self.GreenTimes -= 1
-                if all(p.code == "A" for p in self.Ps):
-                    self.GreenTimes += 1
-                if self.GreenTimes <= 0 : #綠光阿瑋次數用完
-                    self.GreenFalse()
-                    self.judge_super()
-
-
-            case "Normal" | "PiKaChu":
+                        self.double_score = int(round(self.score / 2)) * self.score_time
+                        self.margin_score += self.double_score
+                
+                #判斷綠光阿瑋
                 gss_all = all(p.code == "A" for p in self.Ps) #判斷是否有出現並全部咖波
                 if self.GreenNum <= self.GreenRate and gss_all :
                     self.GreenWei = True
                     self.GreenTimes += 2
                     if self.PiKaChu:
-                        self.KachuFalse()
+                        self.PiKaChu = False
                     
+                    self.ModtoScreen = True
+                    return
 
                 elif self.gss_times >= 20 : #咖波累積數達到20
                     self.GreenWei = True
                     self.GreenTimes += 2
                     self.gss_times = 0
                     if self.PiKaChu:
-                        self.KachuFalse()
+                        self.PiKaChu = False
                     
+                    self.ModtoScreen = True
+                    return
+            case "SuperHHH":
+                self.SuperTimes -= 1
 
-    #endregion
+                if all(p.code == "B" for p in self.Ps):
+                    self.SuperTimes += 2
+                if self.SuperTimes <= 0 : #超級阿禾次數用完
+                    self.SuperHHH = False
+                    self.judge_mod() #判斷是否可再進入特殊模式
+                    self.ModtoScreen = True
 
-    #region 皮卡丘充電區(PiKaChu)
-    def KachuFalse(self):
-        self.PiKaChu = False
+                return
+            
+            case "GreenWei":
+                self.GreenTimes -= 1
+                if all(p.code == "A" for p in self.Ps):
+                    self.GreenTimes += 1
+                if self.GreenTimes <= 0 : #綠光阿瑋次數用完
+                    self.GreenWei = False
+                    self.judge_mod() #判斷是否可再進入特殊模式
+                    self.ModtoScreen = True
+                
+                return
 
-    def judge_kachu(self):
-        """判斷皮卡丘"""
-        if not self.GameRunning() and any(p.code == "E" for p in self.Ps) :
-            self.PiKaChu = True
-            self.played -= 5
-            self.kachu_times += 1
-            #關掉其他模式
-            self.SuperFalse()
-            self.GreenFalse()
-
-        else:
-            self.PiKaChu = False
-    #endregion
 while True:   
     try:
         target = int (input("請輸入目標分數"))
@@ -1265,7 +1255,7 @@ while True :
     
 
 if Game.score > 1000000:
-    commit_score('模擬測試最高分', recent_max)
+    Sheet.CommitScore('模擬測試最高分', recent_max)
 
 with open(f"{Game.score}.json", "w", encoding="utf-8") as file:
     json.dump(Game.AllData, file, indent=4)
@@ -1775,17 +1765,27 @@ except Exception as e:
 
 @.\src\Game.py
 from random import randint
-from src.element import Gss, Hhh, Hentai, Handsun, Kachu, Rrr
 
 class P:
+    """圖案符號"""
+    Dict = dict()
+
     def __init__(self, code: str = None, score_list: list[int] = None, rate_dict: dict[str, int]= None, pic = None):
         self.code = code
         self.score_list = score_list or []
         self.rate_dict = rate_dict or {"Normal": 0}
         self.picture = pic
+        
+        self.AddDict()
 
     def __str__(self):
         return self.code
+    
+    def AddDict(self):
+        """加入類字典中"""
+        if self.code not in P.Dict:
+            P.Dict[self.code] = self
+
 
         
 class LaBaG:
@@ -1801,44 +1801,47 @@ class LaBaG:
 
         self.history_score = 0
 
-        self.P_dict = {
-            "Gss":P("A",[625, 350, 150], {
+        P("A",[625, 350, 150], {
                 "Normal": 36,
                 "SuperHHH": 19,
                 "GreenWei": 36,
                 "PiKaChu": 36
-            }, Gss),
-            "Hhh":P("B",[1250, 650, 220], {
+            })
+        
+        P("B",[1250, 650, 220], {
                 "Normal": 24,
                 "SuperHHH": 5,
                 "GreenWei": 24,
                 "PiKaChu": 24
-            }, Hhh),
-            "Hentai":P("C",[2100, 1080, 380], {
+            })
+        
+        P("C",[2100, 1080, 380], {
                 "Normal": 17,
                 "SuperHHH": 19,
                 "GreenWei": 17,
                 "PiKaChu": 17
-            }, Hentai),
-            "Handsun":P("D",[2500, 1250, 420], {
+            })
+        
+        P("D",[2500, 1250, 420], {
                 "Normal": 12,
                 "SuperHHH": 19,
                 "GreenWei": 12,
                 "PiKaChu": 12
-            }, Handsun),
-            "Kachu":P("E",[10000, 5000, 1250], {
+            })
+        
+        P("E",[10000, 5000, 1250], {
                 "Normal": 8,
                 "SuperHHH": 19,
                 "GreenWei": 8,
                 "PiKaChu": 8
-            }, Kachu),
-            "Rrr":P("F",[20000, 10000, 2500], {
+            })
+        
+        P("F",[20000, 10000, 2500], {
                 "Normal": 3,
                 "SuperHHH": 19,
                 "GreenWei": 3,
                 "PiKaChu": 3
-            }, Rrr),
-        }
+            })
 
         #加分倍數
         self.score_times_dict = {
@@ -1921,17 +1924,17 @@ class LaBaG:
         RandNums = [randint(1, 100), randint(1, 100), randint(1, 100)]
         print(f"P隨機數為：{RandNums[0]} | {RandNums[1]} | {RandNums[2]}")
 
-        self.SuperNum = randint(1, 100) #隨機數
+        self.SuperNum = randint(1, 100) 
         print(f"超級阿禾隨機數為: {self.SuperNum}")
 
-        self.GreenNum = randint(1, 100) #隨機數
+        self.GreenNum = randint(1, 100) 
         print(f"綠光阿瑋隨機數為: {self.GreenNum}")
 
         def acc_rate():
             res = list()
             acc = 0
-            for i in self.P_dict:
-                acc += self.P_dict[i].rate_dict[self.now_mod()]
+            for i in P.Dict:
+                acc += P.Dict[i].rate_dict[self.now_mod()]
                 res.append(acc)
             return res
         
@@ -1941,17 +1944,24 @@ class LaBaG:
         self.Ps = [None, None, None]
         for i in range(3):
             if RandNums[i] <= rate_range[0]:
-                self.Ps[i] = self.P_dict["Gss"]
+                self.Ps[i] = P.Dict["A"]
             elif RandNums[i] <= rate_range[1]:
-                self.Ps[i] = self.P_dict["Hhh"]
+                self.Ps[i] = P.Dict["B"]
             elif RandNums[i] <= rate_range[2]:
-                self.Ps[i] = self.P_dict["Hentai"]
+                self.Ps[i] = P.Dict["C"]
             elif RandNums[i] <= rate_range[3]:
-                self.Ps[i] = self.P_dict["Handsun"]
+                self.Ps[i] = P.Dict["D"]
             elif RandNums[i] <= rate_range[4]:
-                self.Ps[i] = self.P_dict["Kachu"]
+                self.Ps[i] = P.Dict["E"]
             elif RandNums[i] <= rate_range[5]:
-                self.Ps[i] = self.P_dict["Rrr"]
+                self.Ps[i] = P.Dict["F"]
+
+        #增加咖波累積數
+        for p in self.Ps:
+            if p.code == "A" and self.gss_times < 20 :
+                self.gss_times += 1
+        print(f"咖波累積數：{self.gss_times}")
+        
 
     def calculate_score(self):
         """計算分數"""
@@ -2021,12 +2031,6 @@ class LaBaG:
                 self.PiKaChu = False
             return
         
-        #增加咖波累積數
-        for p in self.Ps:
-            if p.code == "A" and self.gss_times < 20 :
-                self.gss_times += 1
-        print(f"咖波累積數：{self.gss_times}")
-        
         match self.now_mod():
             case "Normal" | "PiKaChu":
                 #判斷超級阿禾
@@ -2042,8 +2046,7 @@ class LaBaG:
 
                     #超級阿禾加倍
                     if all(p.code == "B" for p in self.Ps):
-                        self.double_score = int(round(self.score / 2))
-                        self.double_score *= self.score_time
+                        self.double_score = int(round(self.score / 2)) * self.score_time
                         self.margin_score += self.double_score
                         if self.score_time == 3:
                             print(f"(超級阿禾 x 綠光阿瑋加倍分:{self.double_score})")
@@ -2158,8 +2161,8 @@ class JsonLaBaG(LaBaG):
         def acc_rate():
             res = list()
             acc = 0
-            for i in self.P_dict:
-                acc += self.P_dict[i].rate_dict[self.now_mod()]
+            for i in P.Dict:
+                acc += P.Dict[i].rate_dict[self.now_mod()]
                 res.append(acc)
             return res
         
@@ -2169,17 +2172,23 @@ class JsonLaBaG(LaBaG):
         self.Ps = [None, None, None]
         for i in range(3):
             if RandNums[i] <= rate_range[0]:
-                self.Ps[i] = self.P_dict["Gss"]
+                self.Ps[i] = P.Dict["A"]
             elif RandNums[i] <= rate_range[1]:
-                self.Ps[i] = self.P_dict["Hhh"]
+                self.Ps[i] = P.Dict["B"]
             elif RandNums[i] <= rate_range[2]:
-                self.Ps[i] = self.P_dict["Hentai"]
+                self.Ps[i] = P.Dict["C"]
             elif RandNums[i] <= rate_range[3]:
-                self.Ps[i] = self.P_dict["Handsun"]
+                self.Ps[i] = P.Dict["D"]
             elif RandNums[i] <= rate_range[4]:
-                self.Ps[i] = self.P_dict["Kachu"]
+                self.Ps[i] = P.Dict["E"]
             elif RandNums[i] <= rate_range[5]:
-                self.Ps[i] = self.P_dict["Rrr"]
+                self.Ps[i] = P.Dict["F"]
+
+        #增加咖波累積數
+        for p in self.Ps:
+            if p.code == "A" and self.gss_times < 20 :
+                self.gss_times += 1
+        print(f"咖波累積數：{self.gss_times}")
 
     def result(self):
         """結果"""
@@ -2205,63 +2214,59 @@ class JsonLaBaG(LaBaG):
 
 import requests 
 
-GetData = []
-data_dict = dict()
-
-def commit_score(name: str= None, score: int= 0):
-    """上傳資料至試算表"""
-    if name is not None and name != "" :
-        if isinstance(score, int) and score >= 0:  # 檢查是否為正整數
-            url = f"https://docs.google.com/forms/d/18dVGtPExBUc0p1VbsmMxCyujQoldI6GKQWZQGJQ-yzY/formResponse?entry.582969025={name}&entry.995493130={score}"
-            web = requests.get(url)
-            if web.status_code == 200:
-                print("資料已上傳")
-            else:
-                    print(f"錯誤：HTTP狀態碼 {web.status_code}")
-        else:
-            print("分數無效，必須為正整數！")
-    else:
-            print("名稱為空，資料未上傳！")
-
-def tide_data():
-    """整理資料至字典"""
-    global GetData, data_dict
-    del GetData[0] #刪除第一列的欄名
-    for row in GetData : #對每一列的資料做
-        del row[0]  #刪除第一格的"時間戳記"
-
-        if row[0] != "" and row[1] != "" :#不為空
-            name = str(row[0]) #將名稱那格變為字串型態
-            score = int(row[1]) #將分數那格變為整數型態
-            if name in data_dict :
-                if score > data_dict[name] :
-                    data_dict[name] = score
-            else :
-                data_dict[name] = score
+class Sheet:
+    RawData = list()
+    SortedData = dict()
     
-    for d in data_dict :
-        print(f"{d}：{data_dict[d]:6}")
-        
-def get_data():
-    """從試算表抓取原資料"""
-    global GetData
-    web = requests.get("https://script.google.com/macros/s/AKfycbzWA0mMx_B14vrHGW6-QK4tOClSIj1lw7udLJwp7XCg2nZ8hDxt7d-dqnc6WenqBM8FBA/exec")
-    GetData = web.json()
+    @classmethod
+    def GetData(cls):
+        """獲取資料"""
+        url = "https://script.google.com/macros/s/AKfycbzWA0mMx_B14vrHGW6-QK4tOClSIj1lw7udLJwp7XCg2nZ8hDxt7d-dqnc6WenqBM8FBA/exec"
+        cls.RawData = requests.get(url).json()
+        cls.SortRawData()
 
-    tide_data()
-
-def find_history_score(name = ""):
-        """找歷史分數資料"""
-        global data_dict
-        if name != "" :
-            if name in data_dict: #檢查是否已在字典裡
-                return data_dict[name]
-            else : #沒有就新增一個
-                data_dict[name] = 0
-                return data_dict[name]
+    @classmethod
+    def SortRawData(cls):
+        """分類整理資料"""
+        if cls.RawData:
+            del cls.RawData[0] #刪除原始資料的第一個索引 (試算表的欄位名稱)
+        for row in cls.RawData : #對每一個的資料(試算表的列位)
+            if row:
+                del row[0]  #先刪除第一欄的"時間戳記"
+                #剩下的資料 [名稱, 分數]
+                if row[0] and row[1]: #皆唯「有效的值」
+                    name = str(row[0]) #將名稱那格變為字串型態
+                    score = int(row[1]) #將分數那格變為整數型態
+                    cls.SortedData[name] = max(cls.SortedData.get(name, 0), score) # 原分數與新分數取最大 如果還沒有資料則原分數為0
+                    
+        print("\n".join([f"{name}: {score}" for name, score in cls.SortedData.items()]))
+                    
+    @classmethod
+    def CommitScore(cls, name: str= None, score: int= 0):
+        """提交分數"""
+        if name: # 檢查是否是「有效的值」
+            if isinstance(score, int) and score >= 0:  # 檢查是否為正整數
+                url = f"https://docs.google.com/forms/d/18dVGtPExBUc0p1VbsmMxCyujQoldI6GKQWZQGJQ-yzY/formResponse?entry.582969025={name}&entry.995493130={score}"
+                web = requests.get(url)
+                if web.status_code == 200:
+                    cls.SortedData[name] = max(cls.SortedData.get(name, 0), score)
+                    print("資料已上傳")
+                else:
+                        print(f"錯誤：HTTP狀態碼 {web.status_code}")
+            else:
+                print("分數無效，必須為正整數！")
         else:
-            return 0
+                print("名稱為空，資料未上傳！")
+
+    @classmethod 
+    def GetScore(cls, name: str= None):
+        """名稱取得分數"""
+        if name: # 檢查是否是「有效的值」
+            return cls.SortedData.get(name, 0)
+        print("名稱無效！")
+        return None
         
+
 if __name__ == "__main__":
-    commit_score("測試", 0)
+    Sheet.GetData()
 

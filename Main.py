@@ -1,7 +1,8 @@
 from GUI import Window
 win = Window("啦八機", 450, 800) #先初始化 Tkinter 才能創建 ImageTk
-from src.Game import LaBaG, JsonLaBaG
+from src.Game import P, LaBaG, JsonLaBaG
 from src.element import (
+    Gss, Hhh, Hentai, Handsun, Kachu, Rrr,
     BG, SuperBG, GreenBG, KachuBG,
     QST, SuperQST, GreenQST, KachuQST, 
     Title, SuperTitle, GreenTitle, KachuTitle, 
@@ -22,7 +23,12 @@ Games = {
     "Json_Game" : JsonLaBaG() #.json檔案模擬用
 }  
 Game = Games["Game"] #預設
-
+P.Dict["A"].picture = Gss
+P.Dict["B"].picture = Hhh
+P.Dict["C"].picture = Hentai
+P.Dict["D"].picture = Handsun
+P.Dict["E"].picture = Kachu
+P.Dict["F"].picture = Rrr
 
 win.save_icon_use(image_dict, "Superhhh")
 #創建 Screen(frame & canvas)
@@ -43,7 +49,7 @@ def into_game():
     global Game
     Game = Games["Game"]
     Game.name = win.get_input("Name")
-    if Game.name != "" :
+    if Game.name:
         win.update_text("Game", "PlayerName", f"玩家名：{Game.name}")
         print(f"玩家名：{Game.name}")
     else :

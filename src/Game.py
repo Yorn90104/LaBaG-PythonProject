@@ -1,5 +1,4 @@
 from random import randint
-from src.element import Gss, Hhh, Hentai, Handsun, Kachu, Rrr
 
 class P:
     """圖案符號"""
@@ -41,42 +40,42 @@ class LaBaG:
                 "SuperHHH": 19,
                 "GreenWei": 36,
                 "PiKaChu": 36
-            }, Gss)
+            })
         
         P("B",[1250, 650, 220], {
                 "Normal": 24,
                 "SuperHHH": 5,
                 "GreenWei": 24,
                 "PiKaChu": 24
-            }, Hhh)
+            })
         
         P("C",[2100, 1080, 380], {
                 "Normal": 17,
                 "SuperHHH": 19,
                 "GreenWei": 17,
                 "PiKaChu": 17
-            }, Hentai)
+            })
         
         P("D",[2500, 1250, 420], {
                 "Normal": 12,
                 "SuperHHH": 19,
                 "GreenWei": 12,
                 "PiKaChu": 12
-            }, Handsun)
+            })
         
         P("E",[10000, 5000, 1250], {
                 "Normal": 8,
                 "SuperHHH": 19,
                 "GreenWei": 8,
                 "PiKaChu": 8
-            }, Kachu)
+            })
         
         P("F",[20000, 10000, 2500], {
                 "Normal": 3,
                 "SuperHHH": 19,
                 "GreenWei": 3,
                 "PiKaChu": 3
-            }, Rrr)
+            })
 
         #加分倍數
         self.score_times_dict = {
