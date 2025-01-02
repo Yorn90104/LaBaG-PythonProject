@@ -38,14 +38,14 @@ class _SubWindow(tk.Toplevel):
         if button_name in self._button_dict:
             return self._button_dict[button_name]
         else:
-            KeyError(f"無法從 {type(self).__name__}._button_dict 找到名為 {button_name} 的button")
+            raise KeyError(f"無法從 {type(self).__name__}._button_dict 找到名為 {button_name} 的button")
     
     def Entry(self, entry_name: str= None) -> tk.Entry:
         """使用 Tkinter.Entry 相關操作"""
         if entry_name in self._entry_dict:
             return self._entry_dict[entry_name]
         else:
-            KeyError(f"無法從 {type(self).__name__}._entry_dict 找到名為 {entry_name} 的entry")
+            raise KeyError(f"無法從 {type(self).__name__}._entry_dict 找到名為 {entry_name} 的entry")
 
     def load_picture(self, img: ImageTk.PhotoImage = None, x: int = 0, y: int = 0 , tg: str = ""):
         """加載新的圖片並放在CANVA上 (照片, 水平座標, 垂直座標, 標記)"""
@@ -175,35 +175,35 @@ class Window(tk.Tk):
         if canvas_name in self._canvas_dict:
             return self._canvas_dict[canvas_name]
         else:
-            KeyError(f"無法從 {type(self).__name__}._canvas_dict 找到名為 {canvas_name} 的canvas")
+            raise KeyError(f"無法從 {type(self).__name__}._canvas_dict 找到名為 {canvas_name} 的canvas")
 
     def Frame(self, frame_name: str= None) -> tk.Frame:
         "使用 Tkinter.Frame 相關操作"
         if frame_name in self._frame_dict:
             return self._frame_dict[frame_name]
         else:
-            KeyError(f"無法從 {type(self).__name__}._frame_dict 找到名為 {frame_name} 的frame")
+            raise KeyError(f"無法從 {type(self).__name__}._frame_dict 找到名為 {frame_name} 的frame")
 
     def Button(self, button_name: str= None) -> tk.Button:
         "使用 Tkinter.Button 相關操作"
         if button_name in self._button_dict:
             return self._button_dict[button_name]
         else:
-            KeyError(f"無法從 {type(self).__name__}._button_dict 找到名為 {button_name} 的button")
+            raise KeyError(f"無法從 {type(self).__name__}._button_dict 找到名為 {button_name} 的button")
 
     def Entry(self, entry_name: str= None) -> tk.Entry:
         """使用 Tkinter.Entry 相關操作"""
         if entry_name in self._entry_dict:
             return self._entry_dict[entry_name]
         else:
-            KeyError(f"無法從 {type(self).__name__}._entry_dict 找到名為 {entry_name} 的entry")
+            raise KeyError(f"無法從 {type(self).__name__}._entry_dict 找到名為 {entry_name} 的entry")
     
     def SubWindow(self, window_name: str = None) -> _SubWindow:
         """使用 _SubWindow (Tkinter.Toplevel) 相關操作"""
         if window_name in self._subwindow_dict:
             return self._subwindow_dict[window_name]
         else:
-            KeyError(f"無法從 {type(self).__name__}._subwindow_dict 找到名為 {window_name} 的subwindow")
+            raise KeyError(f"無法從 {type(self).__name__}._subwindow_dict 找到名為 {window_name} 的subwindow")
 
     def setup_frame_and_canvas(self, name,  BG_pic: ImageTk.PhotoImage = None):
         """創建 & 設置畫面(畫面名稱, 背景圖片)"""
