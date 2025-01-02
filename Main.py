@@ -293,7 +293,7 @@ def Begin():
         win.after(500, lambda: music.play_sound("Ding"))
         win.after(1000, lambda: music.play_sound("Ding"))
         win.after(1500, lambda: music.play_sound("Ding"))
-        
+
     def picture_and_sound():
         match Game.now_mod():
             case "Normal":
@@ -583,6 +583,60 @@ win.image_button(
     "End",
     AgainPIC,
     225, 400
+)
+
+def save_json():
+    """保存.json檔案"""
+    if isinstance(Game, JsonLaBaG):
+        print(f"此為json檔模擬模式 無法再次保存")
+        win.message_text(
+                2000,
+                "End",
+                f"此為json檔模擬模式 無法再次保存",
+                225, 730
+            )     
+        return
+
+    import os
+    import json
+    from datetime import datetime
+    # 確保目錄存在
+    output_dir = "C:\\JsonLaBaG\\"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    # 使用時間戳作為部分文件名
+    timestamp = datetime.now().strftime("%Y%m%d")
+    filename = f"{output_dir}{Game.score}_{timestamp}.json"
+    try: 
+        with open(filename, "w", encoding="utf-8") as file:
+            json.dump(Game.AllData, file, indent=4)
+            print(f"保存成功: {filename}")
+
+            win.message_text(
+                2000,
+                "End",
+                f"已成功保存至: {filename}",
+                225, 730
+            )
+    except Exception as e:
+        print(f"無法保存: {e}")
+        win.message_text(
+                2000,
+                "End",
+                f"無法保存: {e}",
+                225, 730
+            )
+
+win.txt_button(
+    "save_json",
+    save_json,
+    "End",
+    "保存本次紀錄(.json)",
+    10, 2,
+    225, 700,
+    12,
+    "black", "#00FF00"
+    
 )
 
 win.load_picture("End" , SB, 0, 500, "SB")

@@ -352,7 +352,7 @@ output_dir = "C:\\JsonLaBaG\\"
 if not os.path.exists(output_dir):
     os.makedirs(output_dir)
 # 使用時間戳作為部分文件名
-timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+timestamp = datetime.now().strftime("%Y%m%d")
 
 with open(f"{output_dir}{Game.score}_{timestamp}.json", "w", encoding="utf-8") as file:
     json.dump(Game.AllData, file, indent=4)

@@ -453,7 +453,11 @@ class JsonLaBaG(LaBaG):
 #endregion
 
 
-
+if __name__ == "__main__":
+    Game = LaBaG()
+    while Game.GameRunning():
+        Game.Logic()
+    Game.GameOver()
      
 
             

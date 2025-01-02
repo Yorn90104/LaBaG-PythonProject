@@ -52,7 +52,7 @@ class Sheet:
         if name: # 檢查是否是「有效的值」
             return cls.SortedData.get(name, 0)
         print("名稱無效！")
-        return None
+        return 0
     
     @classmethod
     def RankedData(cls):
