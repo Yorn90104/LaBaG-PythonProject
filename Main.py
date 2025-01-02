@@ -114,15 +114,15 @@ def into_json(json_path: str= None):
         Game.setup_path(f"{json_path}")
 
         win.unbind('<Return>') # 解除綁定ENTER
-        win.SubWindow("輸入路徑").unbind('<Return>')
+        win.SubWindow("JsonPath").unbind('<Return>')
         BeginAble()
         Game.reset()
         init_Game_screen_item()
         bgm_on_off()
         win.switch_frame("Home", "Game") #切換畫面
-        win.SubWindow("輸入路徑").destroy()
+        win.SubWindow("JsonPath").destroy()
     else:
-        win.SubWindow("輸入路徑").message_text(
+        win.SubWindow("JsonPath").message_text(
             1000,
             f"無效 or 不存在的路徑: {json_path}",
             150, 130,
@@ -133,31 +133,31 @@ def into_json(json_path: str= None):
 
 
 def jsonpath_subwindow():
-    """開啟子視窗"""
-    win.setup_subwindow("輸入路徑", 300, 200, BG)
-    win.SubWindow("輸入路徑").add_text(
+    """json路徑子視窗"""
+    win.setup_subwindow("JsonPath", 300, 200, BG)
+    win.SubWindow("JsonPath").add_text(
         "請輸入 .json檔案之路徑\n      (絕對or相對都行)",
         150, 50,
         14,
         "white",
         "path"
     )
-    win.SubWindow("輸入路徑").input_box(
+    win.SubWindow("JsonPath").input_box(
         "path",
         "",
         150, 100,
         12,
         18
     )
-    win.SubWindow("輸入路徑").txt_button(
+    win.SubWindow("JsonPath").txt_button(
         "commit_path",
-        lambda: into_json(win.SubWindow("輸入路徑").get_input("path")),
+        lambda: into_json(win.SubWindow("JsonPath").get_input("path")),
         "提交路徑",
         10, 2,
         150, 160,
         12
     )
-    win.SubWindow("輸入路徑").bind('<Return>', lambda event: into_json(win.SubWindow("輸入路徑").get_input("path")))
+    win.SubWindow("JsonPath").bind('<Return>', lambda event: into_json(win.SubWindow("JsonPath").get_input("path")))
 
 win.txt_button(
     "toJson",
@@ -171,7 +171,36 @@ win.txt_button(
 )
 
 def rank_subwindow():
-    pass
+    """排行榜子視窗"""
+    win.setup_subwindow("Rank", 450, 800, BG)
+
+    win.SubWindow("Rank").add_text(
+        "排行榜",
+        225, 50,
+        30,
+        "yellow",
+        "Title"
+        )
+    
+    
+    for index, data in enumerate(Sheet.RankedData()[:10]): # 顯示前 10 名
+        win.SubWindow("Rank").add_text(
+            f"{index + 1 :<2}. {data[0]:<10s} : {data[1] :>8,}",
+            50, 125 + index * 50,
+            16,
+            "white",
+            f"rank_{index}",
+            "w"
+            )
+    
+    win.SubWindow("Rank").txt_button(
+        "off_window",
+        win.SubWindow("Rank").destroy,
+        "關閉視窗",
+        100, 50,
+        225, 700,
+        16
+        )
 
 win.txt_button(
     "toRank",
@@ -179,7 +208,7 @@ win.txt_button(
     "Home",
     "查看排行榜",
     10, 2,
-    225, 630,
+    225, 50,
     12,
     "black", "white"
 )
