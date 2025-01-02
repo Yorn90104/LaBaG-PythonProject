@@ -57,7 +57,7 @@ class Sheet:
     @classmethod
     def RankedData(cls):
         """按分數排名過後的資料"""
-        return sorted(cls.SortedData.items(), key=lambda item: item[1], reverse=True) #.items() 回傳 tuple(key, value)
+        return dict(sorted(cls.SortedData.items(), key=lambda item: item[1], reverse=True)) #.items() 回傳 tuple(key, value)
         
 
 if __name__ == "__main__":
