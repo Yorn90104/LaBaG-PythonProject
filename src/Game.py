@@ -25,6 +25,9 @@ class P:
 class LaBaG:
     def __init__(self):
         self.name = "" #玩家名稱
+        self.AllData = dict() #總資料
+        self.OneData = dict() #單次資料
+        self.DataIndex = 0
 
         # 遊戲邏輯變數
         self.times = 30 #可遊玩次數 正常30
@@ -110,6 +113,9 @@ class LaBaG:
 
     def reset(self):
         """重置"""
+        self.AllData = dict()
+        self.DataIndex = 0
+
         self.played = 0
         self.score = 0
         self.margin_score= 0
@@ -129,6 +135,7 @@ class LaBaG:
     def Logic(self):
         """邏輯流程"""
         self.ModtoScreen = False
+        self.OneData = dict()
         self.margin_score = 0
         self.double_score  = 0
         self.random() 
@@ -163,6 +170,12 @@ class LaBaG:
 
         self.GreenNum = randint(1, 100) 
         print(f"綠光阿瑋隨機數為: {self.GreenNum}")
+
+        for i in range(3):
+            self.OneData[f"RandNums[{i}]"] = RandNums[i]
+        self.OneData["SuperHHH"] = self.SuperNum
+        self.OneData["GreenWei"] = self.GreenNum
+
 
         def acc_rate():
             res = list()
@@ -231,12 +244,15 @@ class LaBaG:
     def result(self):
         """結果"""
         self.played += 1
+        self.DataIndex += 1
         self.score += self.margin_score
         print(f"")
         print(f' | {self.Ps[0]} | {self.Ps[1]} | {self.Ps[2]} |')
         print(f"+{self.margin_score}")
         print(f"目前分數：{self.score}")
         print(f"剩餘次數：{self.times - self.played}")
+        self.AllData[f"{self.DataIndex}"] = self.OneData
+
         
 
     def GameOver(self):
@@ -281,7 +297,7 @@ class LaBaG:
                     #超級阿禾加倍
                     if all(p.code == "B" for p in self.Ps):
                         self.double_score = int(round(self.score / 2)) * self.score_time
-                        self.margin_score += self.double_score
+                        self.score += self.double_score
                         if self.score_time == 3:
                             print(f"(超級阿禾 x 綠光阿瑋加倍分:{self.double_score})")
                         else:

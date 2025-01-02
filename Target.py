@@ -256,7 +256,7 @@ class LaBaG:
                     #超級阿禾加倍
                     if all(p.code == "B" for p in self.Ps):
                         self.double_score = int(round(self.score / 2)) * self.score_time
-                        self.margin_score += self.double_score
+                        self.score += self.double_score
                 
                 #判斷綠光阿瑋
                 gss_all = all(p.code == "A" for p in self.Ps) #判斷是否有出現並全部咖波

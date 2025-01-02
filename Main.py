@@ -183,7 +183,7 @@ def rank_subwindow():
         )
     
     
-    for index, data in enumerate(Sheet.RankedData()[:10]): # 顯示前 10 名
+    for index, data in enumerate(list(Sheet.RankedData().items())[:10]): # 顯示前 10 名
         win.SubWindow("Rank").add_text(
             f"{index + 1 :<2}. {data[0]:<10s} : {data[1] :>8,}",
             50, 125 + index * 50,
@@ -293,7 +293,7 @@ def Begin():
         win.after(500, lambda: music.play_sound("Ding"))
         win.after(1000, lambda: music.play_sound("Ding"))
         win.after(1500, lambda: music.play_sound("Ding"))
-
+        
     def picture_and_sound():
         match Game.now_mod():
             case "Normal":

@@ -1,7 +1,8 @@
 #產生目標分數的隨機數 json 檔
 from random import randint
-import sys , math
-sys.stdout.reconfigure(encoding='utf-8')
+import math
+import os
+from datetime import datetime
 import json
 
 from src.Sheet import Sheet
@@ -266,7 +267,7 @@ class LaBaG:
                     #超級阿禾加倍
                     if all(p.code == "B" for p in self.Ps):
                         self.double_score = int(round(self.score / 2)) * self.score_time
-                        self.margin_score += self.double_score
+                        self.score += self.double_score
                 
                 #判斷綠光阿瑋
                 gss_all = all(p.code == "A" for p in self.Ps) #判斷是否有出現並全部咖波
@@ -346,7 +347,14 @@ while True :
 if Game.score > 1000000:
     Sheet.CommitScore('模擬測試最高分', recent_max)
 
-with open(f"{Game.score}.json", "w", encoding="utf-8") as file:
+# 確保目錄存在
+output_dir = "C:\\JsonLaBaG\\"
+if not os.path.exists(output_dir):
+    os.makedirs(output_dir)
+# 使用時間戳作為部分文件名
+timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+with open(f"{output_dir}{Game.score}_{timestamp}.json", "w", encoding="utf-8") as file:
     json.dump(Game.AllData, file, indent=4)
 
         
