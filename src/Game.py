@@ -328,11 +328,11 @@ class LaBaG:
                     return
             case "SuperHHH":
                 self.SuperTimes -= 1
-                print(f"超級阿禾剩餘次數:{self.SuperTimes}次")
-
                 if all(p.code == "B" for p in self.Ps):
                     self.SuperTimes += 2
                     print("全阿禾，次數不消耗且+1！")
+                print(f"超級阿禾剩餘次數:{self.SuperTimes}次")
+
                 if self.SuperTimes <= 0 : #超級阿禾次數用完
                     self.SuperHHH = False
                     self.judge_mod() #判斷是否可再進入特殊模式
@@ -342,10 +342,11 @@ class LaBaG:
             
             case "GreenWei":
                 self.GreenTimes -= 1
-                print(f"綠光阿瑋剩餘次數:{self.GreenTimes}次")
                 if all(p.code == "A" for p in self.Ps):
                     self.GreenTimes += 1
                     print("全咖波，次數不消耗！")
+                print(f"綠光阿瑋剩餘次數:{self.GreenTimes}次")
+                
                 if self.GreenTimes <= 0 : #綠光阿瑋次數用完
                     self.GreenWei = False
                     self.judge_mod() #判斷是否可再進入特殊模式
