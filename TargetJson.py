@@ -325,15 +325,18 @@ while True:
 Game = LaBaG()
 
 recent_max = 0
+recent_total = 0
 
 i = 0
 while True :
-    i += 1
     Game.Logic()
 
+    i += 1
+    recent_total += Game.score
     if Game.score > recent_max:
         recent_max = Game.score
-    print(f"第{i : {2 if i < 10 else int (round(math.log10(i)) + 2)}}次 分數：{Game.score : 8}【目前最大值：{recent_max}】")
+    print(f"第{i : {2 if i < 10 else int (round(math.log10(i)) + 2)}}次 分數：{Game.score : 8}【目前最大值：{recent_max}】【目前平均值：{recent_total / i :.2f}】")
+
     # 檢查是否達到目標
     if Game.score >= target:
         break  # 如果達到目標，則退出迴圈
