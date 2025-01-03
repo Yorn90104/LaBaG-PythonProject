@@ -328,6 +328,7 @@ recent_max = 0
 
 i = 0
 while True :
+    i += 1
     Game.Logic()
 
     if Game.score > recent_max:
