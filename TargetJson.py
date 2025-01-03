@@ -328,17 +328,11 @@ recent_max = 0
 
 i = 0
 while True :
-    i += 1
-    if i < 10 :
-        LOG = 2
-    else:
-        LOG = int (round(math.log10(i)) + 2)
-
     Game.Logic()
 
     if Game.score > recent_max:
         recent_max = Game.score
-    print(f"第{i : {LOG}}次 分數：{Game.score : 8}【目前最大值：{recent_max}】")
+    print(f"第{i : {2 if i < 10 else int (round(math.log10(i)) + 2)}}次 分數：{Game.score : 8}【目前最大值：{recent_max}】")
     # 檢查是否達到目標
     if Game.score >= target:
         break  # 如果達到目標，則退出迴圈
@@ -349,8 +343,7 @@ if Game.score > 1000000:
 
 # 確保目錄存在
 output_dir = "C:\\JsonLaBaG\\"
-if not os.path.exists(output_dir):
-    os.makedirs(output_dir)
+os.makedirs(output_dir, exist_ok=True)
 # 使用時間戳作為部分文件名
 timestamp = datetime.now().strftime("%Y%m%d")
 
