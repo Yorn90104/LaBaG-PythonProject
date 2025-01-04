@@ -229,7 +229,7 @@ def init_Game_screen_item():
     win.update_text("Game", "history_score", f"歷史最高分數：{Game.history_score}")
     win.update_text("Game", "mod_1", f"")
     win.update_text("Game", "mod_2", f"")
-    win.update_text("Game", "gss", f"咖波累積數：{Game.gss_times}")
+    win.update_text("Game", "gss", f"咖波累積數：{Game.GssNum}")
 
 def Game_to_Home():
     """返回首頁"""
@@ -370,7 +370,7 @@ def Begin():
         win.update_text("Game", "MarginScore", f"+{Game.margin_score}")
         win.update_text("Game", "Score", f"目前分數：{Game.score}")
         win.update_text("Game", "Times", f"剩餘次數：{Game.times - Game.played}")
-        win.update_text("Game", "gss", f"咖波累積數：{Game.gss_times}")
+        win.update_text("Game", "gss", f"咖波累積數：{Game.GssNum}")
         match Game.now_mod():
             case "SuperHHH":
                 win.Canva("Game").itemconfig("mod_1", text = f"超級阿禾剩餘次數:{Game.SuperTimes}次", fill = "#FF00FF")
