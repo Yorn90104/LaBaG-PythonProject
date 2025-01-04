@@ -344,7 +344,7 @@ while True :
     
 
 if Game.score > 1000000:
-    Sheet.CommitScore('模擬測試最高分', recent_max)
+    Sheet.CommitScore('模擬測試最高分', Game.score)
 
 # 確保目錄存在
 output_dir = "C:\\JsonLaBaG\\"
