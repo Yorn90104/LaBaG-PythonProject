@@ -94,7 +94,7 @@ class LaBaG:
         self.GreenWei = False
         self.GreenNum = 0
         self.GreenTimes = 0
-        self.gss_times = 0 #咖波累積數
+        self.GssNum = 0 #咖波累積數
         self.greenS = 0
 
         #皮卡丘
@@ -116,7 +116,7 @@ class LaBaG:
 
         self.GreenWei = False
         self.GreenTimes = 0
-        self.gss_times = 0
+        self.GssNum = 0
         self.greenS = 0
 
         self.PiKaChu = False
@@ -183,8 +183,8 @@ class LaBaG:
 
         #增加咖波累積數
         for p in self.Ps:
-            if p.code == "A" and self.gss_times < 20 :
-                self.gss_times += 1
+            if p.code == "A" and self.GssNum < 20 :
+                self.GssNum += 1
 
     def calculate_score(self):
         """計算分數"""
@@ -270,11 +270,11 @@ class LaBaG:
                     self.ModtoScreen = True
                     return
 
-                elif self.gss_times >= 20 : #咖波累積數達到20
+                elif self.GssNum >= 20 : #咖波累積數達到20
                     self.GreenWei = True
                     self.GreenTimes += 2
                     self.greenS += 1
-                    self.gss_times = 0
+                    self.GssNum = 0
                     if self.PiKaChu:
                         self.PiKaChu = False
                     

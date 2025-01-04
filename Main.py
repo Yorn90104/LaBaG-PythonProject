@@ -510,7 +510,7 @@ win.add_text(
 
 win.add_text(
     "Game",
-    f"咖波累積數：{Game.gss_times}" ,
+    f"咖波累積數：{Game.GssNum}" ,
     445 , 50 ,
     14 ,
     "#00FF00",
