@@ -108,7 +108,7 @@ class LaBaG:
 
         #endregion
 
-    def reset(self):
+    def Reset(self):
         """重置"""
         self.played = 0
         self.score = 0
@@ -129,19 +129,19 @@ class LaBaG:
         """邏輯流程"""
         self.AllData = dict()
         self.DataIndex = 0
-        self.reset()
+        self.Reset()
         while self.GameRunning():
             self.OneData = dict()
-            self.random() 
-            self.calculate_score()
-            self.result()
-            self.judge_mod()        
+            self.Random() 
+            self.Calculate_score()
+            self.Result()
+            self.JudgeMode()        
     
     def GameRunning(self) -> bool:
         """判斷一局遊戲是否繼續運行"""
         return self.played < self.times
 
-    def now_mod(self)  -> str:
+    def NowMode(self)  -> str:
         """現在模式"""
         match True:
             case self.SuperHHH:
@@ -154,7 +154,7 @@ class LaBaG:
                 return "Normal"
         
 
-    def random(self):
+    def Random(self):
         """遊戲變數隨機產生"""
         RandNums = [randint(1, 100), randint(1, 100), randint(1, 100)]
         for i in range(3):
@@ -169,7 +169,7 @@ class LaBaG:
             res = list()
             acc = 0
             for i in P.Dict:
-                acc += P.Dict[i].rate_dict[self.now_mod()]
+                acc += P.Dict[i].rate_dict[self.NowMode()]
                 res.append(acc)
             return res
         
@@ -195,7 +195,7 @@ class LaBaG:
             if p.code == "A" and self.GssNum < 20 :
                 self.GssNum += 1
 
-    def calculate_score(self):
+    def Calculate_score(self):
         """計算分數"""
         def margin_add(p: P, typ: int):
             """p -> 使用 p 的分數列表\ntyp -> 得分型態"""
@@ -221,11 +221,11 @@ class LaBaG:
             margin_add(self.Ps[2], 2)
             self.margin_score = round(self.margin_score / 3)
 
-        self.score_time = self.score_times_dict[self.now_mod()]
+        self.score_time = self.score_times_dict[self.NowMode()]
         self.margin_score *= self.score_time
         
 
-    def result(self):
+    def Result(self):
         """結果"""
         self.played += 1
         self.DataIndex += 1
@@ -233,7 +233,7 @@ class LaBaG:
         self.margin_score = 0
         self.AllData[f"{self.DataIndex}"] = self.OneData
                     
-    def judge_mod(self):
+    def JudgeMode(self):
         """判斷模式"""
         if not self.GameRunning():
             #關掉其他模式
@@ -252,7 +252,7 @@ class LaBaG:
         
         
         
-        match self.now_mod():
+        match self.NowMode():
             case "Normal" | "PiKaChu":
                 #判斷超級阿禾
                 hhh_appear = any(p.code == "B" for p in self.Ps) #判斷是否有任何阿禾
@@ -268,6 +268,7 @@ class LaBaG:
                     if all(p.code == "B" for p in self.Ps):
                         self.double_score = int(round(self.score / 2)) * self.score_time
                         self.score += self.double_score
+                    return
                 
                 #判斷綠光阿瑋
                 gss_all = all(p.code == "A" for p in self.Ps) #判斷是否有出現並全部咖波
@@ -296,7 +297,7 @@ class LaBaG:
                     self.SuperTimes += 2
                 if self.SuperTimes <= 0 : #超級阿禾次數用完
                     self.SuperHHH = False
-                    self.judge_mod() #判斷是否可再進入特殊模式
+                    self.JudgeMode() #判斷是否可再進入特殊模式
                     self.ModtoScreen = True
 
                 return
@@ -307,7 +308,7 @@ class LaBaG:
                     self.GreenTimes += 1
                 if self.GreenTimes <= 0 : #綠光阿瑋次數用完
                     self.GreenWei = False
-                    self.judge_mod() #判斷是否可再進入特殊模式
+                    self.JudgeMode() #判斷是否可再進入特殊模式
                     self.ModtoScreen = True
                 
                 return

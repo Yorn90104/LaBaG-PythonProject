@@ -12,9 +12,6 @@ class P:
         
         self.AddDict()
 
-    def __str__(self):
-        return self.code
-    
     def AddDict(self):
         """加入類字典中"""
         if self.code not in P.Dict:
@@ -111,7 +108,7 @@ class LaBaG:
 
         #endregion
 
-    def reset(self):
+    def Reset(self):
         """重置"""
         self.AllData = dict()
         self.DataIndex = 0
@@ -138,16 +135,16 @@ class LaBaG:
         self.OneData = dict()
         self.margin_score = 0
         self.double_score  = 0
-        self.random() 
-        self.calculate_score()
-        self.result()
-        self.judge_mod()
+        self.Random() 
+        self.CalculateScore()
+        self.Result()
+        self.JudgeMode()
 
     def GameRunning(self) -> bool:
         """判斷一局遊戲是否繼續運行"""
         return self.played < self.times
 
-    def now_mod(self)  -> str:
+    def NowMode(self)  -> str:
         """現在模式"""
         match True:
             case self.SuperHHH:
@@ -160,7 +157,7 @@ class LaBaG:
                 return "Normal"
         
 
-    def random(self):
+    def Random(self):
         """遊戲變數隨機產生"""
         RandNums = [randint(1, 100), randint(1, 100), randint(1, 100)]
         print(f"P隨機數為：{RandNums[0]} | {RandNums[1]} | {RandNums[2]}")
@@ -181,7 +178,7 @@ class LaBaG:
             res = list()
             acc = 0
             for i in P.Dict:
-                acc += P.Dict[i].rate_dict[self.now_mod()]
+                acc += P.Dict[i].rate_dict[self.NowMode()]
                 res.append(acc)
             return res
         
@@ -210,7 +207,7 @@ class LaBaG:
         print(f"咖波累積數：{self.GssNum}")
         
 
-    def calculate_score(self):
+    def CalculateScore(self):
         """計算分數"""
         def margin_add(p: P, typ: int):
             """p -> 使用 p 的分數列表\ntyp -> 得分型態"""
@@ -236,18 +233,18 @@ class LaBaG:
             margin_add(self.Ps[2], 2)
             self.margin_score = round(self.margin_score / 3)
 
-        self.score_time = self.score_times_dict[self.now_mod()]
+        self.score_time = self.score_times_dict[self.NowMode()]
         self.margin_score *= self.score_time
         print(f"加分倍數: {self.score_time}")
         
 
-    def result(self):
+    def Result(self):
         """結果"""
         self.played += 1
         self.DataIndex += 1
         self.score += self.margin_score
         print(f"")
-        print(f' | {self.Ps[0]} | {self.Ps[1]} | {self.Ps[2]} |')
+        print(f' | {self.Ps[0].code} | {self.Ps[1].code} | {self.Ps[2].code} |')
         print(f"+{self.margin_score}")
         print(f"目前分數：{self.score}")
         print(f"剩餘次數：{self.times - self.played}")
@@ -262,7 +259,7 @@ class LaBaG:
         if self.score > self.history_score:
             self.history_score = self.score
 
-    def judge_mod(self):
+    def JudgeMode(self):
         """判斷模式"""
         if not self.GameRunning():
             #關掉其他模式
@@ -281,7 +278,7 @@ class LaBaG:
                 self.PiKaChu = False
             return
         
-        match self.now_mod():
+        match self.NowMode():
             case "Normal" | "PiKaChu":
                 #判斷超級阿禾
                 hhh_appear = any(p.code == "B" for p in self.Ps) #判斷是否有任何阿禾
@@ -302,6 +299,7 @@ class LaBaG:
                             print(f"(超級阿禾 x 綠光阿瑋加倍分:{self.double_score})")
                         else:
                             print(f"(超級阿禾加倍分:{self.double_score})")
+                    return
                     
                 
                 #判斷綠光阿瑋
@@ -335,7 +333,7 @@ class LaBaG:
 
                 if self.SuperTimes <= 0 : #超級阿禾次數用完
                     self.SuperHHH = False
-                    self.judge_mod() #判斷是否可再進入特殊模式
+                    self.JudgeMode() #判斷是否可再進入特殊模式
                     self.ModtoScreen = True
 
                 return
@@ -349,7 +347,7 @@ class LaBaG:
                 
                 if self.GreenTimes <= 0 : #綠光阿瑋次數用完
                     self.GreenWei = False
-                    self.judge_mod() #判斷是否可再進入特殊模式
+                    self.JudgeMode() #判斷是否可再進入特殊模式
                     self.ModtoScreen = True
                 
                 return
@@ -367,7 +365,7 @@ class JsonLaBaG(LaBaG):
         
         self.simulation = False # 用於中斷 & 開始模擬
 
-    def reset(self):
+    def Reset(self):
         """重置"""
         self.played = 0
         self.score = 0
@@ -397,7 +395,7 @@ class JsonLaBaG(LaBaG):
         """索引值 +1"""
         self.index = str(int(self.index) + 1)
 
-    def random(self):
+    def Random(self):
         """遊戲變數隨機產生"""
         RandNums = [self.json_data[self.index]["RandNums[0]"], self.json_data[self.index]["RandNums[1]"], self.json_data[self.index]["RandNums[2]"]]
         print(f"P隨機數為：{RandNums[0]} | {RandNums[1]} | {RandNums[2]}")
@@ -413,7 +411,7 @@ class JsonLaBaG(LaBaG):
             res = list()
             acc = 0
             for i in P.Dict:
-                acc += P.Dict[i].rate_dict[self.now_mod()]
+                acc += P.Dict[i].rate_dict[self.NowMode()]
                 res.append(acc)
             return res
         
@@ -441,7 +439,7 @@ class JsonLaBaG(LaBaG):
                 self.GssNum += 1
         print(f"咖波累積數：{self.GssNum}")
 
-    def result(self):
+    def Result(self):
         """結果"""
         self.index_plus()
         self.played += 1

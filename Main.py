@@ -22,7 +22,7 @@ Games = {
     "Game": LaBaG(),
     "Json_Game" : JsonLaBaG() #.json檔案模擬用
 }  
-Game = Games["Game"] #預設
+Game = LaBaG() #預設
 P.Dict["A"].picture = Gss
 P.Dict["B"].picture = Hhh
 P.Dict["C"].picture = Hentai
@@ -59,7 +59,7 @@ def into_game():
     Game.history_score = Sheet.GetScore(Game.name)
     win.unbind('<Return>') # 解除綁定ENTER
     BeginAble()
-    Game.reset()
+    Game.Reset()
     init_Game_screen_item()
     bgm_on_off()
     win.switch_frame("Home", "Game") #切換畫面
@@ -116,7 +116,7 @@ def into_json(json_path: str= None):
         win.unbind('<Return>') # 解除綁定ENTER
         win.SubWindow("JsonPath").unbind('<Return>')
         BeginAble()
-        Game.reset()
+        Game.Reset()
         init_Game_screen_item()
         bgm_on_off()
         win.switch_frame("Home", "Game") #切換畫面
@@ -267,7 +267,7 @@ def Begin():
     """開始"""  
     def resetQST():
         """根據模式重置QST圖片"""
-        match Game.now_mod():
+        match Game.N():
             case "SuperHHH":
                 qstpic = SuperQST
             case "GreenWei":
@@ -295,7 +295,7 @@ def Begin():
         win.after(1500, lambda: music.play_sound("Ding"))
 
     def picture_and_sound():
-        match Game.now_mod():
+        match Game.NowMode():
             case "Normal":
                 return
             
@@ -336,7 +336,7 @@ def Begin():
 
     def screen_pop_music():
         """畫面、彈出圖片、音樂"""
-        match Game.now_mod():
+        match Game.NowMode():
             case "Normal":
                 win.update_picture("Game", "BG", BG)
                 win.update_picture("Game", "Title", Title)
@@ -371,7 +371,7 @@ def Begin():
         win.update_text("Game", "Score", f"目前分數：{Game.score}")
         win.update_text("Game", "Times", f"剩餘次數：{Game.times - Game.played}")
         win.update_text("Game", "gss", f"咖波累積數：{Game.GssNum}")
-        match Game.now_mod():
+        match Game.N():
             case "SuperHHH":
                 win.Canva("Game").itemconfig("mod_1", text = f"超級阿禾剩餘次數:{Game.SuperTimes}次", fill = "#FF00FF")
             case "GreenWei":
@@ -456,7 +456,7 @@ win.add_text(
 
 def bgm_on_off(game_running: bool= True) :
     """音樂開 & 關"""
-    match Game.now_mod():
+    match Game.NowMode():
         case "SuperHHH":
             file_name = "SuperMusic"
         case "GreenWei":
@@ -536,7 +536,7 @@ def Game_over_to_End():
 def game_again():
     """再玩一次遊戲"""
     BeginAble()
-    Game.reset()
+    Game.Reset()
     init_Game_screen_item()
     bgm_on_off()
     win.switch_frame("End", "Game")
