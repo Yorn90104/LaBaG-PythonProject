@@ -15,7 +15,7 @@ By August 2024, 🍚🐟 had graduated from high school and was preparing for co
 ## Features
 
 - Supports multiple game modes:
-  - Standard mode.
+  - **Normal** mode.
   - **SuperHHH** mode.
   - **GreenWei** mode.
   - **PiKaChu** mode.
