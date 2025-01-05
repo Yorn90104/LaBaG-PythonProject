@@ -445,7 +445,7 @@ class JsonLaBaG(LaBaG):
         self.played += 1
         self.score += self.margin_score
         print(f"")
-        print(f' | {self.Ps[0]} | {self.Ps[1]} | {self.Ps[2]} |')
+        print(f' | {self.Ps[0].code} | {self.Ps[1].code} | {self.Ps[2].code} |')
         print(f"+{self.margin_score}")
         print(f"目前分數：{self.score}")
         print(f"剩餘次數：{self.times - self.played}")

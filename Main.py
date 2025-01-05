@@ -371,7 +371,7 @@ def Begin():
         win.update_text("Game", "Score", f"目前分數：{Game.score}")
         win.update_text("Game", "Times", f"剩餘次數：{Game.times - Game.played}")
         win.update_text("Game", "gss", f"咖波累積數：{Game.GssNum}")
-        match Game.N():
+        match Game.NowMode():
             case "SuperHHH":
                 win.Canva("Game").itemconfig("mod_1", text = f"超級阿禾剩餘次數:{Game.SuperTimes}次", fill = "#FF00FF")
             case "GreenWei":
