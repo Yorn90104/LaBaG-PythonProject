@@ -267,7 +267,7 @@ def Begin():
     """開始"""  
     def resetQST():
         """根據模式重置QST圖片"""
-        match Game.N():
+        match Game.NowMode():
             case "SuperHHH":
                 qstpic = SuperQST
             case "GreenWei":
