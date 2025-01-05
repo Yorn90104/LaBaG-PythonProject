@@ -62,3 +62,4 @@ class Sheet:
 
 if __name__ == "__main__":
     Sheet.GetData()
+    Sheet.CommitScore("測試", Sheet.GetScore("測試"))
