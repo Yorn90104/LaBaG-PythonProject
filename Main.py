@@ -22,7 +22,7 @@ Games = {
     "Game": LaBaG(),
     "Json_Game" : JsonLaBaG() #.json檔案模擬用
 }  
-Game = LaBaG() #預設
+Game = Games["Game"] #預設
 P.Dict["A"].picture = Gss
 P.Dict["B"].picture = Hhh
 P.Dict["C"].picture = Hentai
