@@ -10,6 +10,7 @@ class Sheet:
     def GetData(cls):
         """獲取資料"""
         url = "https://script.google.com/macros/s/AKfycbzWA0mMx_B14vrHGW6-QK4tOClSIj1lw7udLJwp7XCg2nZ8hDxt7d-dqnc6WenqBM8FBA/exec"
+        cls.RawData.clear()
         cls.RawData = requests.get(url).json()
         cls.SortRawData()
 

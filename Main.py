@@ -172,6 +172,7 @@ win.txt_button(
 
 def rank_subwindow():
     """排行榜子視窗"""
+    Sheet.GetData() #重新獲取資料
     win.setup_subwindow("Rank", 450, 800, BG)
 
     win.SubWindow("Rank").add_text(
