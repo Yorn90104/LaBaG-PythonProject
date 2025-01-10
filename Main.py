@@ -35,7 +35,6 @@ win.save_icon_use(image_dict, "Superhhh")
 win.setup_frame_and_canvas("Home", BG) #首頁
 win.setup_frame_and_canvas("Game", BG) #遊戲畫面
 win.setup_frame_and_canvas("End", BG) #結算畫面
-win.setup_frame_and_canvas("Json_Game", BG) # .json檔案模擬遊戲畫面
 
 win.temp_files = music.temp_files # 連結臨時檔案 list
 
