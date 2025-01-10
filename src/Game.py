@@ -360,10 +360,8 @@ class JsonLaBaG(LaBaG):
     def __init__(self):
         super().__init__()
         self.json_data = None
-        self.BeginAble = True # 用於每次的模擬
         self.index = "1" # 第 n 次的索引
         
-        self.simulation = False # 用於中斷 & 開始模擬
 
     def Reset(self):
         """重置"""
