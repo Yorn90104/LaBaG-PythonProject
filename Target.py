@@ -324,7 +324,6 @@ while True :
         LOG = 2
     else:
         LOG = int (round(math.log10(i)) + 2)
-    Game.Reset()
     Game.Logic()
 
     print(f"第{i : {LOG}}次 分數：{Game.score : 8} ({Game.superS : 2} 次 超級阿禾 )({Game.greenS : 2} 次 綠光阿瑋 )({Game.kachuS : 2} 次  皮卡丘充電)【目前最大值：{recent_max}】")

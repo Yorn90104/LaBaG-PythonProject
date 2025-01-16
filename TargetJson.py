@@ -337,7 +337,7 @@ while True :
 
     if Game.score > recent_max:
         recent_max = Game.score
-    print(f"第{i : {2 if i < 10 else int (round(math.log10(i)) + 2)}}次 分數：{Game.score : 8}【目前最大值：{recent_max}】【目前平均值：{recent_total / i :.2f}】")
+    print(f"第{i : {2 if i < 10 else int (round(math.log10(i)) + 2)}}次 分數：{Game.score : 8}【目前最大值：{recent_max}】【目前平均值：{recent_total / i % 1000000000000000 :.2f}】")
 
     # 檢查是否達到目標
     if Game.score >= target:
