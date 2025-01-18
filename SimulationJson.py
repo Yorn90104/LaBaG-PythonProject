@@ -1,11 +1,26 @@
-#產生目標分數的隨機數 json 檔
 from random import randint
-import math
-import os
-from datetime import datetime
-import json
 
-from src.Sheet import Sheet
+class Simulation:
+    """模擬"""
+    AllSituation = dict()
+
+    @classmethod
+    def SimulationSituation(cls, RateRange: list[int]):
+        """模擬狀況"""
+        cls.AllSituation.clear()
+        for r1 in RateRange:
+            for r2 in RateRange:
+                for r3 in RateRange:
+                    for rSuper in RateRange:
+                        for rGreen in RateRange:
+                            cls.AllSituation[tuple(r1, r2, r3, rSuper, rGreen,)] = _ # 將每種情況的分數加入字典 
+
+
+    @classmethod
+    def GetRandNum(cls, RateRange: list[int]):
+        """獲得分數最大的那組隨機數"""
+        cls.SimulationSituation(RateRange)
+        return max(cls.AllSituation, key= cls.AllSituation.get)
 
 class P:
     """圖案符號"""
@@ -23,7 +38,6 @@ class P:
         if self.code not in P.Dict:
             P.Dict[self.code] = self
 
-        
 class LaBaG:
     def __init__(self):
         self.AllData = dict() #總資料
@@ -151,19 +165,10 @@ class LaBaG:
             self.PiKaChu: "PiKaChu"
         }
         return modes.get(True, "Normal")
-        
 
     def Random(self):
         """遊戲變數隨機產生"""
-        RandNums = [randint(1, 100), randint(1, 100), randint(1, 100)]
-        for i in range(3):
-            self.OneData[f"RandNums[{i}]"] = RandNums[i]
-
-        self.SuperNum = randint(1, 100) 
-        self.OneData["SuperHHH"] = self.SuperNum
-        self.GreenNum = randint(1, 100) 
-        self.OneData["GreenWei"] = self.GreenNum
-
+        
         def acc_rate():
             res = list()
             acc = 0
@@ -173,6 +178,15 @@ class LaBaG:
             return res
         
         rate_range = acc_rate()
+
+        
+        RandNums, self.SuperNum, self.GreenNum = Simulation.GetRandNum(rate_range)[:3], Simulation.GetRandNum(rate_range)[3], Simulation.GetRandNum(rate_range)[4]
+
+        for i in range(3):
+            self.OneData[f"RandNums[{i}]"] = RandNums[i]
+
+        self.OneData["SuperHHH"] = self.SuperNum
+        self.OneData["GreenWei"] = self.GreenNum
 
         for i in range(3):
             if RandNums[i] <= rate_range[0]:
@@ -310,51 +324,3 @@ class LaBaG:
                     self.ModtoScreen = True
                 
                 return
-
-while True:   
-    try:
-        target = int (input("請輸入目標分數"))
-        if target > 0:
-            break
-        else:
-            print("目標分數必須大於 0")
-    except ValueError as e:
-        print(f"請輸入有效的數字: {e}")
-
-Game = LaBaG()
-
-recent_max = 0
-recent_total = 0
-
-i = 0
-while True :
-    Game.Logic()
-
-    i += 1
-    recent_total = (recent_total + Game.score) % 1000000000000000
-
-    if Game.score > recent_max:
-        recent_max = Game.score
-    print(f"第{i : {2 if i < 10 else int (round(math.log10(i)) + 2)}}次 分數：{Game.score : 8}【目前最大值：{recent_max}】【目前平均值：{recent_total / i % 1000000000000000 :.2f}】")
-
-    # 檢查是否達到目標
-    if Game.score >= target:
-        break  # 如果達到目標，則退出迴圈
-    
-
-if Game.score > 1000000:
-    Sheet.CommitScore('模擬測試最高分', Game.score)
-
-# 確保目錄存在
-output_dir = "C:\\JsonLaBaG\\"
-os.makedirs(output_dir, exist_ok=True)
-# 使用時間戳作為部分文件名
-timestamp = datetime.now().strftime("%Y%m%d")
-
-with open(f"{output_dir}{Game.score}_{timestamp}.json", "w", encoding="utf-8") as file:
-    json.dump(Game.AllData, file, indent=4)
-
-        
-     
-
-            

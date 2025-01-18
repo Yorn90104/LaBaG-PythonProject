@@ -149,15 +149,12 @@ class LaBaG:
 
     def NowMode(self)  -> str:
         """現在模式"""
-        match True:
-            case self.SuperHHH:
-                return "SuperHHH"
-            case self.GreenWei:
-                return "GreenWei"
-            case self.PiKaChu:
-                return "PiKaChu"
-            case _: #default
-                return "Normal"
+        modes = {
+            self.SuperHHH: "SuperHHH",
+            self.GreenWei: "GreenWei",
+            self.PiKaChu: "PiKaChu"
+        }
+        return modes.get(True, "Normal")
         
 
     def Random(self):
