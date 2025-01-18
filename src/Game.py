@@ -16,8 +16,7 @@ class P:
         if self.code not in P.Dict:
             P.Dict[self.code] = self
 
-
-        
+    
 class LaBaG:
     def __init__(self):
         self.name = "" #玩家名稱
