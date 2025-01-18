@@ -135,7 +135,7 @@ class LaBaG:
         while self.GameRunning():
             self.OneData = dict()
             self.Random() 
-            self.Calculate_score()
+            self.CalculateScore()
             self.Result()
             self.JudgeMode()        
     
@@ -196,7 +196,7 @@ class LaBaG:
             if p.code == "A" and self.GssNum < 20 :
                 self.GssNum += 1
 
-    def Calculate_score(self):
+    def CalculateScore(self):
         """計算分數"""
         def margin_add(p: P, typ: int):
             """p -> 使用 p 的分數列表\ntyp -> 得分型態"""
