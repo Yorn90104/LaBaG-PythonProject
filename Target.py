@@ -29,6 +29,7 @@ class LaBaG:
         self.score = 0
         self.margin_score= 0
 
+        self.Ps = [None, None, None]
         P("A",[625, 350, 150], {
                 "Normal": 36,
                 "SuperHHH": 19,
@@ -108,6 +109,7 @@ class LaBaG:
         self.score = 0
         self.margin_score= 0
         self.score_time = 1
+        self.Ps = [None, None, None]
         
         self.SuperHHH = False
         self.SuperTimes = 0
@@ -165,7 +167,6 @@ class LaBaG:
         
         rate_range = acc_rate()
 
-        self.Ps = [None, None, None]
         for i in range(3):
             if RandNums[i] <= rate_range[0]:
                 self.Ps[i] = P.Dict["A"]
