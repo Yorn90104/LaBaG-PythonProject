@@ -4,11 +4,10 @@ class P:
     """圖案符號"""
     Dict = dict()
 
-    def __init__(self, code: str = None, score_list: list[int] = None, rate_dict: dict[str, int]= None, pic = None):
+    def __init__(self, code: str = None, score_list: list[int] = None, rate_dict: dict[str, int]= None):
         self.code = code
         self.score_list = score_list or []
         self.rate_dict = rate_dict or {"Normal": 0}
-        self.picture = pic
         
         self.AddDict()
 
