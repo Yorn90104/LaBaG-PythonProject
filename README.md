@@ -94,7 +94,8 @@ By August 2024, 🍚🐟 had graduated from high school and was preparing for co
 ```plaintext
 ├── main.py           # Main program
 ├── GUI               # GUI modules 
-│   └── __init__.py
+│   ├── __init__.py
+|   └── yieldb64.py       # Generates imageb64.py and soundb64.py from Base64 encoded assets
 ├── src               # Game logic and resources
 │   ├── element.py
 │   ├── imageb64.py   # Base64 encoded image resources
@@ -104,7 +105,6 @@ By August 2024, 🍚🐟 had graduated from high school and was preparing for co
 ├── PY.txt            # Uploadable to ChatGPT for explanation
 ├── Target.py         # Target score simulation tool
 ├── TargetJson.py     # Adds .json generation functionality to Target.py
-├── yieldb64.py       # Generates imageb64.py and soundb64.py from Base64 encoded assets
 ├── README.md         # Documentation
 └── Superhhh.ico      # Icon for packaging
 ```
