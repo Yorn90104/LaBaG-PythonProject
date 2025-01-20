@@ -1,0 +1,46 @@
+# Python 編譯產生的檔案
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# 虛擬環境
+venv/
+env/
+.venv/
+
+# 建置（Build）產生的檔案
+*.egg
+*.egg-info/
+dist/
+build/
+*.wheel
+
+# 環境變數檔案
+.env
+.env.*
+
+# 日誌檔案
+*.log
+*.out
+*.err
+
+# 開發工具的設定檔案
+.idea/       # PyCharm
+.vscode/     # VSCode
+
+# 測試報告
+.coverage
+coverage.xml
+htmlcov/
+
+# 臨時檔案
+*.tmp
+*.bak
+*.swp
+
+# 資料庫檔案
+*.sqlite3
+
+/src/soundb64.py
+/src/imageb64.py

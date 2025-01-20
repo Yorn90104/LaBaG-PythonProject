@@ -13,7 +13,6 @@ class _SubWindow(tk.Toplevel):
         super().__init__(master)
         self.master = master
         self.title(self.master.title())
-        self.iconbitmap(self.master.iconbitmap())
         if window_name is not None:
             self.title(window_name)
 
