@@ -36,7 +36,6 @@ win.save_icon_use(image_dict, "Superhhh")
 win.setup_frame_and_canvas("Home", BG) #首頁
 win.setup_frame_and_canvas("Game", BG) #遊戲畫面
 win.setup_frame_and_canvas("End", BG) #結算畫面
-win.setup_frame_and_canvas("Json_Game", BG) # .json檔案模擬遊戲畫面
 
 win.temp_files = music.temp_files # 連結臨時檔案 list
 
@@ -60,7 +59,7 @@ def into_game():
     Game.history_score = Sheet.GetScore(Game.name)
     win.unbind('<Return>') # 解除綁定ENTER
     BeginAble()
-    Game.reset()
+    Game.Reset()
     init_Game_screen_item()
     bgm_on_off()
     win.switch_frame("Home", "Game") #切換畫面
@@ -117,7 +116,7 @@ def into_json(json_path: str= None):
         win.unbind('<Return>') # 解除綁定ENTER
         win.SubWindow("JsonPath").unbind('<Return>')
         BeginAble()
-        Game.reset()
+        Game.Reset()
         init_Game_screen_item()
         bgm_on_off()
         win.switch_frame("Home", "Game") #切換畫面
@@ -173,6 +172,7 @@ win.txt_button(
 
 def rank_subwindow():
     """排行榜子視窗"""
+    Sheet.GetData() #重新獲取資料
     win.setup_subwindow("Rank", 450, 800, BG)
 
     win.SubWindow("Rank").add_text(
@@ -230,7 +230,7 @@ def init_Game_screen_item():
     win.update_text("Game", "history_score", f"歷史最高分數：{Game.history_score}")
     win.update_text("Game", "mod_1", f"")
     win.update_text("Game", "mod_2", f"")
-    win.update_text("Game", "gss", f"咖波累積數：{Game.gss_times}")
+    win.update_text("Game", "gss", f"咖波累積數：{Game.GssNum}")
 
 def Game_to_Home():
     """返回首頁"""
@@ -268,7 +268,7 @@ def Begin():
     """開始"""  
     def resetQST():
         """根據模式重置QST圖片"""
-        match Game.now_mod():
+        match Game.NowMode():
             case "SuperHHH":
                 qstpic = SuperQST
             case "GreenWei":
@@ -296,7 +296,7 @@ def Begin():
         win.after(1500, lambda: music.play_sound("Ding"))
 
     def picture_and_sound():
-        match Game.now_mod():
+        match Game.NowMode():
             case "Normal":
                 return
             
@@ -337,7 +337,7 @@ def Begin():
 
     def screen_pop_music():
         """畫面、彈出圖片、音樂"""
-        match Game.now_mod():
+        match Game.NowMode():
             case "Normal":
                 win.update_picture("Game", "BG", BG)
                 win.update_picture("Game", "Title", Title)
@@ -371,8 +371,8 @@ def Begin():
         win.update_text("Game", "MarginScore", f"+{Game.margin_score}")
         win.update_text("Game", "Score", f"目前分數：{Game.score}")
         win.update_text("Game", "Times", f"剩餘次數：{Game.times - Game.played}")
-        win.update_text("Game", "gss", f"咖波累積數：{Game.gss_times}")
-        match Game.now_mod():
+        win.update_text("Game", "gss", f"咖波累積數：{Game.GssNum}")
+        match Game.NowMode():
             case "SuperHHH":
                 win.Canva("Game").itemconfig("mod_1", text = f"超級阿禾剩餘次數:{Game.SuperTimes}次", fill = "#FF00FF")
             case "GreenWei":
@@ -457,7 +457,7 @@ win.add_text(
 
 def bgm_on_off(game_running: bool= True) :
     """音樂開 & 關"""
-    match Game.now_mod():
+    match Game.NowMode():
         case "SuperHHH":
             file_name = "SuperMusic"
         case "GreenWei":
@@ -511,7 +511,7 @@ win.add_text(
 
 win.add_text(
     "Game",
-    f"咖波累積數：{Game.gss_times}" ,
+    f"咖波累積數：{Game.GssNum}" ,
     445 , 50 ,
     14 ,
     "#00FF00",
@@ -537,7 +537,7 @@ def Game_over_to_End():
 def game_again():
     """再玩一次遊戲"""
     BeginAble()
-    Game.reset()
+    Game.Reset()
     init_Game_screen_item()
     bgm_on_off()
     win.switch_frame("End", "Game")
@@ -586,6 +586,60 @@ win.image_button(
     225, 400
 )
 
+def save_json():
+    """保存.json檔案"""
+    if isinstance(Game, JsonLaBaG):
+        print(f"此為json檔模擬模式 無法再次保存")
+        win.message_text(
+                2000,
+                "End",
+                f"此為json檔模擬模式 無法再次保存",
+                225, 730
+            )     
+        return
+
+    import os
+    import json
+    from datetime import datetime
+    # 確保目錄存在
+    output_dir = "C:\\JsonLaBaG\\"
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    # 使用時間戳作為部分文件名
+    timestamp = datetime.now().strftime("%Y%m%d")
+    filename = f"{output_dir}{Game.score}_{timestamp}.json"
+    try: 
+        with open(filename, "w", encoding="utf-8") as file:
+            json.dump(Game.AllData, file, indent=4)
+            print(f"保存成功: {filename}")
+
+            win.message_text(
+                2000,
+                "End",
+                f"已成功保存至: {filename}",
+                225, 730
+            )
+    except Exception as e:
+        print(f"無法保存: {e}")
+        win.message_text(
+                2000,
+                "End",
+                f"無法保存: {e}",
+                225, 730
+            )
+
+win.txt_button(
+    "save_json",
+    save_json,
+    "End",
+    "保存本次紀錄(.json)",
+    10, 2,
+    225, 700,
+    12,
+    "black", "#00FF00"
+    
+)
+
 win.load_picture("End" , SB, 0, 500, "SB")
 #endregion
 
@@ -596,8 +650,7 @@ win.mainloop()
 @.\Target.py
 #目標分數
 from random import randint
-import sys , math
-sys.stdout.reconfigure(encoding='utf-8')
+import math
 from src.Sheet import Sheet
 
 class P:
@@ -626,6 +679,7 @@ class LaBaG:
         self.score = 0
         self.margin_score= 0
 
+        self.Ps = [None, None, None]
         P("A",[625, 350, 150], {
                 "Normal": 36,
                 "SuperHHH": 19,
@@ -690,7 +744,7 @@ class LaBaG:
         self.GreenWei = False
         self.GreenNum = 0
         self.GreenTimes = 0
-        self.gss_times = 0 #咖波累積數
+        self.GssNum = 0 #咖波累積數
         self.greenS = 0
 
         #皮卡丘
@@ -699,12 +753,13 @@ class LaBaG:
 
         #endregion
 
-    def reset(self):
+    def Reset(self):
         """重置"""
         self.played = 0
         self.score = 0
         self.margin_score= 0
         self.score_time = 1
+        self.Ps = [None, None, None]
         
         self.SuperHHH = False
         self.SuperTimes = 0
@@ -712,7 +767,7 @@ class LaBaG:
 
         self.GreenWei = False
         self.GreenTimes = 0
-        self.gss_times = 0
+        self.GssNum = 0
         self.greenS = 0
 
         self.PiKaChu = False
@@ -721,31 +776,28 @@ class LaBaG:
 
     def Logic(self):
         """邏輯流程"""
-        self.reset()
+        self.Reset()
         while self.GameRunning():
-            self.random() 
-            self.calculate_score()
-            self.result()
-            self.judge_mod()        
+            self.Random() 
+            self.CalculateScore()
+            self.Result()
+            self.JudgeMode()        
     
     def GameRunning(self) -> bool:
         """判斷一局遊戲是否繼續運行"""
         return self.played < self.times
 
-    def now_mod(self)  -> str:
+    def NowMode(self)  -> str:
         """現在模式"""
-        match True:
-            case self.SuperHHH:
-                return "SuperHHH"
-            case self.GreenWei:
-                return "GreenWei"
-            case self.PiKaChu:
-                return "PiKaChu"
-            case _: #default
-                return "Normal"
+        modes = {
+            self.SuperHHH: "SuperHHH",
+            self.GreenWei: "GreenWei",
+            self.PiKaChu: "PiKaChu"
+        }
+        return modes.get(True, "Normal")
         
 
-    def random(self):
+    def Random(self):
         """遊戲變數隨機產生"""
         RandNums = [randint(1, 100), randint(1, 100), randint(1, 100)]
 
@@ -756,13 +808,12 @@ class LaBaG:
             res = list()
             acc = 0
             for i in P.Dict:
-                acc += P.Dict[i].rate_dict[self.now_mod()]
+                acc += P.Dict[i].rate_dict[self.NowMode()]
                 res.append(acc)
             return res
         
         rate_range = acc_rate()
 
-        self.Ps = [None, None, None]
         for i in range(3):
             if RandNums[i] <= rate_range[0]:
                 self.Ps[i] = P.Dict["A"]
@@ -779,10 +830,10 @@ class LaBaG:
 
         #增加咖波累積數
         for p in self.Ps:
-            if p.code == "A" and self.gss_times < 20 :
-                self.gss_times += 1
+            if p.code == "A" and self.GssNum < 20 :
+                self.GssNum += 1
 
-    def calculate_score(self):
+    def CalculateScore(self):
         """計算分數"""
         def margin_add(p: P, typ: int):
             """p -> 使用 p 的分數列表\ntyp -> 得分型態"""
@@ -808,18 +859,18 @@ class LaBaG:
             margin_add(self.Ps[2], 2)
             self.margin_score = round(self.margin_score / 3)
 
-        self.score_time = self.score_times_dict[self.now_mod()]
+        self.score_time = self.score_times_dict[self.NowMode()]
         self.margin_score *= self.score_time
         
 
-    def result(self):
+    def Result(self):
         """結果"""
         self.played += 1
         self.DataIndex += 1
         self.score += self.margin_score
         self.margin_score = 0
                     
-    def judge_mod(self):
+    def JudgeMode(self):
         """判斷模式"""
         if not self.GameRunning():
             #關掉其他模式
@@ -836,7 +887,7 @@ class LaBaG:
                 self.PiKaChu = False
             return
         
-        match self.now_mod():
+        match self.NowMode():
             case "Normal" | "PiKaChu":
                 #判斷超級阿禾
                 hhh_appear = any(p.code == "B" for p in self.Ps) #判斷是否有任何阿禾
@@ -853,6 +904,7 @@ class LaBaG:
                     if all(p.code == "B" for p in self.Ps):
                         self.double_score = int(round(self.score / 2)) * self.score_time
                         self.score += self.double_score
+                    return
                 
                 #判斷綠光阿瑋
                 gss_all = all(p.code == "A" for p in self.Ps) #判斷是否有出現並全部咖波
@@ -866,11 +918,11 @@ class LaBaG:
                     self.ModtoScreen = True
                     return
 
-                elif self.gss_times >= 20 : #咖波累積數達到20
+                elif self.GssNum >= 20 : #咖波累積數達到20
                     self.GreenWei = True
                     self.GreenTimes += 2
                     self.greenS += 1
-                    self.gss_times = 0
+                    self.GssNum = 0
                     if self.PiKaChu:
                         self.PiKaChu = False
                     
@@ -883,7 +935,7 @@ class LaBaG:
                     self.SuperTimes += 2
                 if self.SuperTimes <= 0 : #超級阿禾次數用完
                     self.SuperHHH = False
-                    self.judge_mod() #判斷是否可再進入特殊模式
+                    self.JudgeMode() #判斷是否可再進入特殊模式
                     self.ModtoScreen = True
 
                 return
@@ -894,7 +946,7 @@ class LaBaG:
                     self.GreenTimes += 1
                 if self.GreenTimes <= 0 : #綠光阿瑋次數用完
                     self.GreenWei = False
-                    self.judge_mod() #判斷是否可再進入特殊模式
+                    self.JudgeMode() #判斷是否可再進入特殊模式
                     self.ModtoScreen = True
                 
                 return
@@ -920,7 +972,6 @@ while True :
         LOG = 2
     else:
         LOG = int (round(math.log10(i)) + 2)
-    Game.reset()
     Game.Logic()
 
     print(f"第{i : {LOG}}次 分數：{Game.score : 8} ({Game.superS : 2} 次 超級阿禾 )({Game.greenS : 2} 次 綠光阿瑋 )({Game.kachuS : 2} 次  皮卡丘充電)【目前最大值：{recent_max}】")
@@ -977,6 +1028,7 @@ class LaBaG:
         self.score = 0
         self.margin_score= 0
 
+        self.Ps = [None, None, None]
         P("A",[625, 350, 150], {
                 "Normal": 36,
                 "SuperHHH": 19,
@@ -1040,7 +1092,7 @@ class LaBaG:
         self.GreenWei = False
         self.GreenNum = 0
         self.GreenTimes = 0
-        self.gss_times = 0 #咖波累積數
+        self.GssNum = 0 #咖波累積數
 
         #皮卡丘
         self.PiKaChu = False
@@ -1048,19 +1100,20 @@ class LaBaG:
 
         #endregion
 
-    def reset(self):
+    def Reset(self):
         """重置"""
         self.played = 0
         self.score = 0
         self.margin_score= 0
         self.score_time = 1
+        self.Ps = [None, None, None]
         
         self.SuperHHH = False
         self.SuperTimes = 0
 
         self.GreenWei = False
         self.GreenTimes = 0
-        self.gss_times = 0
+        self.GssNum = 0
 
         self.PiKaChu = False
         self.kachu_times = 0
@@ -1069,32 +1122,29 @@ class LaBaG:
         """邏輯流程"""
         self.AllData = dict()
         self.DataIndex = 0
-        self.reset()
+        self.Reset()
         while self.GameRunning():
             self.OneData = dict()
-            self.random() 
-            self.calculate_score()
-            self.result()
-            self.judge_mod()        
+            self.Random() 
+            self.CalculateScore()
+            self.Result()
+            self.JudgeMode()        
     
     def GameRunning(self) -> bool:
         """判斷一局遊戲是否繼續運行"""
         return self.played < self.times
 
-    def now_mod(self)  -> str:
+    def NowMode(self)  -> str:
         """現在模式"""
-        match True:
-            case self.SuperHHH:
-                return "SuperHHH"
-            case self.GreenWei:
-                return "GreenWei"
-            case self.PiKaChu:
-                return "PiKaChu"
-            case _: #default
-                return "Normal"
+        modes = {
+            self.SuperHHH: "SuperHHH",
+            self.GreenWei: "GreenWei",
+            self.PiKaChu: "PiKaChu"
+        }
+        return modes.get(True, "Normal")
         
 
-    def random(self):
+    def Random(self):
         """遊戲變數隨機產生"""
         RandNums = [randint(1, 100), randint(1, 100), randint(1, 100)]
         for i in range(3):
@@ -1109,13 +1159,12 @@ class LaBaG:
             res = list()
             acc = 0
             for i in P.Dict:
-                acc += P.Dict[i].rate_dict[self.now_mod()]
+                acc += P.Dict[i].rate_dict[self.NowMode()]
                 res.append(acc)
             return res
         
         rate_range = acc_rate()
 
-        self.Ps = [None, None, None]
         for i in range(3):
             if RandNums[i] <= rate_range[0]:
                 self.Ps[i] = P.Dict["A"]
@@ -1132,10 +1181,10 @@ class LaBaG:
 
         #增加咖波累積數
         for p in self.Ps:
-            if p.code == "A" and self.gss_times < 20 :
-                self.gss_times += 1
+            if p.code == "A" and self.GssNum < 20 :
+                self.GssNum += 1
 
-    def calculate_score(self):
+    def CalculateScore(self):
         """計算分數"""
         def margin_add(p: P, typ: int):
             """p -> 使用 p 的分數列表\ntyp -> 得分型態"""
@@ -1161,11 +1210,11 @@ class LaBaG:
             margin_add(self.Ps[2], 2)
             self.margin_score = round(self.margin_score / 3)
 
-        self.score_time = self.score_times_dict[self.now_mod()]
+        self.score_time = self.score_times_dict[self.NowMode()]
         self.margin_score *= self.score_time
         
 
-    def result(self):
+    def Result(self):
         """結果"""
         self.played += 1
         self.DataIndex += 1
@@ -1173,7 +1222,7 @@ class LaBaG:
         self.margin_score = 0
         self.AllData[f"{self.DataIndex}"] = self.OneData
                     
-    def judge_mod(self):
+    def JudgeMode(self):
         """判斷模式"""
         if not self.GameRunning():
             #關掉其他模式
@@ -1192,7 +1241,7 @@ class LaBaG:
         
         
         
-        match self.now_mod():
+        match self.NowMode():
             case "Normal" | "PiKaChu":
                 #判斷超級阿禾
                 hhh_appear = any(p.code == "B" for p in self.Ps) #判斷是否有任何阿禾
@@ -1208,6 +1257,7 @@ class LaBaG:
                     if all(p.code == "B" for p in self.Ps):
                         self.double_score = int(round(self.score / 2)) * self.score_time
                         self.score += self.double_score
+                    return
                 
                 #判斷綠光阿瑋
                 gss_all = all(p.code == "A" for p in self.Ps) #判斷是否有出現並全部咖波
@@ -1220,10 +1270,10 @@ class LaBaG:
                     self.ModtoScreen = True
                     return
 
-                elif self.gss_times >= 20 : #咖波累積數達到20
+                elif self.GssNum >= 20 : #咖波累積數達到20
                     self.GreenWei = True
                     self.GreenTimes += 2
-                    self.gss_times = 0
+                    self.GssNum = 0
                     if self.PiKaChu:
                         self.PiKaChu = False
                     
@@ -1236,7 +1286,7 @@ class LaBaG:
                     self.SuperTimes += 2
                 if self.SuperTimes <= 0 : #超級阿禾次數用完
                     self.SuperHHH = False
-                    self.judge_mod() #判斷是否可再進入特殊模式
+                    self.JudgeMode() #判斷是否可再進入特殊模式
                     self.ModtoScreen = True
 
                 return
@@ -1247,7 +1297,7 @@ class LaBaG:
                     self.GreenTimes += 1
                 if self.GreenTimes <= 0 : #綠光阿瑋次數用完
                     self.GreenWei = False
-                    self.judge_mod() #判斷是否可再進入特殊模式
+                    self.JudgeMode() #判斷是否可再進入特殊模式
                     self.ModtoScreen = True
                 
                 return
@@ -1265,34 +1315,32 @@ while True:
 Game = LaBaG()
 
 recent_max = 0
+recent_total = 0
 
 i = 0
 while True :
-    i += 1
-    if i < 10 :
-        LOG = 2
-    else:
-        LOG = int (round(math.log10(i)) + 2)
-
     Game.Logic()
+
+    i += 1
+    recent_total = (recent_total + Game.score) % 1000000000000000
 
     if Game.score > recent_max:
         recent_max = Game.score
-    print(f"第{i : {LOG}}次 分數：{Game.score : 8}【目前最大值：{recent_max}】")
+    print(f"第{i : {2 if i < 10 else int (round(math.log10(i)) + 2)}}次 分數：{Game.score : 8}【目前最大值：{recent_max}】【目前平均值：{recent_total / i % 1000000000000000 :.2f}】")
+
     # 檢查是否達到目標
     if Game.score >= target:
         break  # 如果達到目標，則退出迴圈
     
 
 if Game.score > 1000000:
-    Sheet.CommitScore('模擬測試最高分', recent_max)
+    Sheet.CommitScore('模擬測試最高分', Game.score)
 
 # 確保目錄存在
 output_dir = "C:\\JsonLaBaG\\"
-if not os.path.exists(output_dir):
-    os.makedirs(output_dir)
+os.makedirs(output_dir, exist_ok=True)
 # 使用時間戳作為部分文件名
-timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+timestamp = datetime.now().strftime("%Y%m%d")
 
 with open(f"{output_dir}{Game.score}_{timestamp}.json", "w", encoding="utf-8") as file:
     json.dump(Game.AllData, file, indent=4)
@@ -1367,14 +1415,14 @@ class _SubWindow(tk.Toplevel):
         if button_name in self._button_dict:
             return self._button_dict[button_name]
         else:
-            KeyError(f"無法從 {type(self).__name__}._button_dict 找到名為 {button_name} 的button")
+            raise KeyError(f"無法從 {type(self).__name__}._button_dict 找到名為 {button_name} 的button")
     
     def Entry(self, entry_name: str= None) -> tk.Entry:
         """使用 Tkinter.Entry 相關操作"""
         if entry_name in self._entry_dict:
             return self._entry_dict[entry_name]
         else:
-            KeyError(f"無法從 {type(self).__name__}._entry_dict 找到名為 {entry_name} 的entry")
+            raise KeyError(f"無法從 {type(self).__name__}._entry_dict 找到名為 {entry_name} 的entry")
 
     def load_picture(self, img: ImageTk.PhotoImage = None, x: int = 0, y: int = 0 , tg: str = ""):
         """加載新的圖片並放在CANVA上 (照片, 水平座標, 垂直座標, 標記)"""
@@ -1504,35 +1552,35 @@ class Window(tk.Tk):
         if canvas_name in self._canvas_dict:
             return self._canvas_dict[canvas_name]
         else:
-            KeyError(f"無法從 {type(self).__name__}._canvas_dict 找到名為 {canvas_name} 的canvas")
+            raise KeyError(f"無法從 {type(self).__name__}._canvas_dict 找到名為 {canvas_name} 的canvas")
 
     def Frame(self, frame_name: str= None) -> tk.Frame:
         "使用 Tkinter.Frame 相關操作"
         if frame_name in self._frame_dict:
             return self._frame_dict[frame_name]
         else:
-            KeyError(f"無法從 {type(self).__name__}._frame_dict 找到名為 {frame_name} 的frame")
+            raise KeyError(f"無法從 {type(self).__name__}._frame_dict 找到名為 {frame_name} 的frame")
 
     def Button(self, button_name: str= None) -> tk.Button:
         "使用 Tkinter.Button 相關操作"
         if button_name in self._button_dict:
             return self._button_dict[button_name]
         else:
-            KeyError(f"無法從 {type(self).__name__}._button_dict 找到名為 {button_name} 的button")
+            raise KeyError(f"無法從 {type(self).__name__}._button_dict 找到名為 {button_name} 的button")
 
     def Entry(self, entry_name: str= None) -> tk.Entry:
         """使用 Tkinter.Entry 相關操作"""
         if entry_name in self._entry_dict:
             return self._entry_dict[entry_name]
         else:
-            KeyError(f"無法從 {type(self).__name__}._entry_dict 找到名為 {entry_name} 的entry")
+            raise KeyError(f"無法從 {type(self).__name__}._entry_dict 找到名為 {entry_name} 的entry")
     
     def SubWindow(self, window_name: str = None) -> _SubWindow:
         """使用 _SubWindow (Tkinter.Toplevel) 相關操作"""
         if window_name in self._subwindow_dict:
             return self._subwindow_dict[window_name]
         else:
-            KeyError(f"無法從 {type(self).__name__}._subwindow_dict 找到名為 {window_name} 的subwindow")
+            raise KeyError(f"無法從 {type(self).__name__}._subwindow_dict 找到名為 {window_name} 的subwindow")
 
     def setup_frame_and_canvas(self, name,  BG_pic: ImageTk.PhotoImage = None):
         """創建 & 設置畫面(畫面名稱, 背景圖片)"""
@@ -1808,24 +1856,19 @@ class P:
     """圖案符號"""
     Dict = dict()
 
-    def __init__(self, code: str = None, score_list: list[int] = None, rate_dict: dict[str, int]= None, pic = None):
+    def __init__(self, code: str = None, score_list: list[int] = None, rate_dict: dict[str, int]= None):
         self.code = code
         self.score_list = score_list or []
         self.rate_dict = rate_dict or {"Normal": 0}
-        self.picture = pic
         
         self.AddDict()
 
-    def __str__(self):
-        return self.code
-    
     def AddDict(self):
         """加入類字典中"""
         if self.code not in P.Dict:
             P.Dict[self.code] = self
 
-
-        
+    
 class LaBaG:
     def __init__(self):
         self.name = "" #玩家名稱
@@ -1841,6 +1884,8 @@ class LaBaG:
         self.margin_score= 0
 
         self.history_score = 0
+
+        self.Ps = [None, None, None]
 
         P("A",[625, 350, 150], {
                 "Normal": 36,
@@ -1907,7 +1952,7 @@ class LaBaG:
         self.GreenWei = False
         self.GreenNum = 0
         self.GreenTimes = 0
-        self.gss_times = 0 #咖波累積數
+        self.GssNum = 0 #咖波累積數
 
         #皮卡丘
         self.PiKaChu = False
@@ -1915,7 +1960,7 @@ class LaBaG:
 
         #endregion
 
-    def reset(self):
+    def Reset(self):
         """重置"""
         self.AllData = dict()
         self.DataIndex = 0
@@ -1924,6 +1969,7 @@ class LaBaG:
         self.score = 0
         self.margin_score= 0
         self.score_time = 1
+        self.Ps = [None, None, None]
         
         self.SuperHHH = False
         self.SuperTimes = 0
@@ -1931,7 +1977,7 @@ class LaBaG:
 
         self.GreenWei = False
         self.GreenTimes = 0
-        self.gss_times = 0
+        self.GssNum = 0
 
         self.PiKaChu = False
         self.kachu_times = 0
@@ -1942,29 +1988,26 @@ class LaBaG:
         self.OneData = dict()
         self.margin_score = 0
         self.double_score  = 0
-        self.random() 
-        self.calculate_score()
-        self.result()
-        self.judge_mod()
+        self.Random() 
+        self.CalculateScore()
+        self.Result()
+        self.JudgeMode()
 
     def GameRunning(self) -> bool:
         """判斷一局遊戲是否繼續運行"""
         return self.played < self.times
 
-    def now_mod(self)  -> str:
+    def NowMode(self)  -> str:
         """現在模式"""
-        match True:
-            case self.SuperHHH:
-                return "SuperHHH"
-            case self.GreenWei:
-                return "GreenWei"
-            case self.PiKaChu:
-                return "PiKaChu"
-            case _: #default
-                return "Normal"
+        modes = {
+            self.SuperHHH: "SuperHHH",
+            self.GreenWei: "GreenWei",
+            self.PiKaChu: "PiKaChu"
+        }
+        return modes.get(True, "Normal")
         
 
-    def random(self):
+    def Random(self):
         """遊戲變數隨機產生"""
         RandNums = [randint(1, 100), randint(1, 100), randint(1, 100)]
         print(f"P隨機數為：{RandNums[0]} | {RandNums[1]} | {RandNums[2]}")
@@ -1985,14 +2028,13 @@ class LaBaG:
             res = list()
             acc = 0
             for i in P.Dict:
-                acc += P.Dict[i].rate_dict[self.now_mod()]
+                acc += P.Dict[i].rate_dict[self.NowMode()]
                 res.append(acc)
             return res
         
         rate_range = acc_rate()
         print("機率區間：", rate_range)
 
-        self.Ps = [None, None, None]
         for i in range(3):
             if RandNums[i] <= rate_range[0]:
                 self.Ps[i] = P.Dict["A"]
@@ -2009,12 +2051,12 @@ class LaBaG:
 
         #增加咖波累積數
         for p in self.Ps:
-            if p.code == "A" and self.gss_times < 20 :
-                self.gss_times += 1
-        print(f"咖波累積數：{self.gss_times}")
+            if p.code == "A" and self.GssNum < 20 :
+                self.GssNum += 1
+        print(f"咖波累積數：{self.GssNum}")
         
 
-    def calculate_score(self):
+    def CalculateScore(self):
         """計算分數"""
         def margin_add(p: P, typ: int):
             """p -> 使用 p 的分數列表\ntyp -> 得分型態"""
@@ -2040,18 +2082,18 @@ class LaBaG:
             margin_add(self.Ps[2], 2)
             self.margin_score = round(self.margin_score / 3)
 
-        self.score_time = self.score_times_dict[self.now_mod()]
+        self.score_time = self.score_times_dict[self.NowMode()]
         self.margin_score *= self.score_time
         print(f"加分倍數: {self.score_time}")
         
 
-    def result(self):
+    def Result(self):
         """結果"""
         self.played += 1
         self.DataIndex += 1
         self.score += self.margin_score
         print(f"")
-        print(f' | {self.Ps[0]} | {self.Ps[1]} | {self.Ps[2]} |')
+        print(f' | {self.Ps[0].code} | {self.Ps[1].code} | {self.Ps[2].code} |')
         print(f"+{self.margin_score}")
         print(f"目前分數：{self.score}")
         print(f"剩餘次數：{self.times - self.played}")
@@ -2066,7 +2108,7 @@ class LaBaG:
         if self.score > self.history_score:
             self.history_score = self.score
 
-    def judge_mod(self):
+    def JudgeMode(self):
         """判斷模式"""
         if not self.GameRunning():
             #關掉其他模式
@@ -2085,7 +2127,7 @@ class LaBaG:
                 self.PiKaChu = False
             return
         
-        match self.now_mod():
+        match self.NowMode():
             case "Normal" | "PiKaChu":
                 #判斷超級阿禾
                 hhh_appear = any(p.code == "B" for p in self.Ps) #判斷是否有任何阿禾
@@ -2106,6 +2148,7 @@ class LaBaG:
                             print(f"(超級阿禾 x 綠光阿瑋加倍分:{self.double_score})")
                         else:
                             print(f"(超級阿禾加倍分:{self.double_score})")
+                    return
                     
                 
                 #判斷綠光阿瑋
@@ -2120,11 +2163,11 @@ class LaBaG:
                     self.ModtoScreen = True
                     return
 
-                elif self.gss_times >= 20 : #咖波累積數達到20
+                elif self.GssNum >= 20 : #咖波累積數達到20
                     self.GreenWei = True
                     self.GreenTimes += 2
                     print(f"綠光阿瑋出現")
-                    self.gss_times = 0
+                    self.GssNum = 0
                     if self.PiKaChu:
                         self.PiKaChu = False
                     
@@ -2132,27 +2175,28 @@ class LaBaG:
                     return
             case "SuperHHH":
                 self.SuperTimes -= 1
-                print(f"超級阿禾剩餘次數:{self.SuperTimes}次")
-
                 if all(p.code == "B" for p in self.Ps):
                     self.SuperTimes += 2
                     print("全阿禾，次數不消耗且+1！")
+                print(f"超級阿禾剩餘次數:{self.SuperTimes}次")
+
                 if self.SuperTimes <= 0 : #超級阿禾次數用完
                     self.SuperHHH = False
-                    self.judge_mod() #判斷是否可再進入特殊模式
+                    self.JudgeMode() #判斷是否可再進入特殊模式
                     self.ModtoScreen = True
 
                 return
             
             case "GreenWei":
                 self.GreenTimes -= 1
-                print(f"綠光阿瑋剩餘次數:{self.GreenTimes}次")
                 if all(p.code == "A" for p in self.Ps):
                     self.GreenTimes += 1
                     print("全咖波，次數不消耗！")
+                print(f"綠光阿瑋剩餘次數:{self.GreenTimes}次")
+                
                 if self.GreenTimes <= 0 : #綠光阿瑋次數用完
                     self.GreenWei = False
-                    self.judge_mod() #判斷是否可再進入特殊模式
+                    self.JudgeMode() #判斷是否可再進入特殊模式
                     self.ModtoScreen = True
                 
                 return
@@ -2165,23 +2209,22 @@ class JsonLaBaG(LaBaG):
     def __init__(self):
         super().__init__()
         self.json_data = None
-        self.BeginAble = True # 用於每次的模擬
         self.index = "1" # 第 n 次的索引
         
-        self.simulation = False # 用於中斷 & 開始模擬
 
-    def reset(self):
+    def Reset(self):
         """重置"""
         self.played = 0
         self.score = 0
         self.margin_score= 0
+        self.Ps = [None, None, None]
         
         self.SuperHHH = False
         self.SuperTimes = 0
 
         self.GreenWei = False
         self.GreenTimes = 0
-        self.gss_times = 0
+        self.GssNum = 0
 
         self.PiKaChu = False
         self.kachu_times = 0
@@ -2200,7 +2243,7 @@ class JsonLaBaG(LaBaG):
         """索引值 +1"""
         self.index = str(int(self.index) + 1)
 
-    def random(self):
+    def Random(self):
         """遊戲變數隨機產生"""
         RandNums = [self.json_data[self.index]["RandNums[0]"], self.json_data[self.index]["RandNums[1]"], self.json_data[self.index]["RandNums[2]"]]
         print(f"P隨機數為：{RandNums[0]} | {RandNums[1]} | {RandNums[2]}")
@@ -2216,14 +2259,13 @@ class JsonLaBaG(LaBaG):
             res = list()
             acc = 0
             for i in P.Dict:
-                acc += P.Dict[i].rate_dict[self.now_mod()]
+                acc += P.Dict[i].rate_dict[self.NowMode()]
                 res.append(acc)
             return res
         
         rate_range = acc_rate()
         print("機率區間：", rate_range)
 
-        self.Ps = [None, None, None]
         for i in range(3):
             if RandNums[i] <= rate_range[0]:
                 self.Ps[i] = P.Dict["A"]
@@ -2240,24 +2282,28 @@ class JsonLaBaG(LaBaG):
 
         #增加咖波累積數
         for p in self.Ps:
-            if p.code == "A" and self.gss_times < 20 :
-                self.gss_times += 1
-        print(f"咖波累積數：{self.gss_times}")
+            if p.code == "A" and self.GssNum < 20 :
+                self.GssNum += 1
+        print(f"咖波累積數：{self.GssNum}")
 
-    def result(self):
+    def Result(self):
         """結果"""
         self.index_plus()
         self.played += 1
         self.score += self.margin_score
         print(f"")
-        print(f' | {self.Ps[0]} | {self.Ps[1]} | {self.Ps[2]} |')
+        print(f' | {self.Ps[0].code} | {self.Ps[1].code} | {self.Ps[2].code} |')
         print(f"+{self.margin_score}")
         print(f"目前分數：{self.score}")
         print(f"剩餘次數：{self.times - self.played}")
 #endregion
 
 
-
+if __name__ == "__main__":
+    Game = LaBaG()
+    while Game.GameRunning():
+        Game.Logic()
+    Game.GameOver()
      
 
             
@@ -2276,6 +2322,7 @@ class Sheet:
     def GetData(cls):
         """獲取資料"""
         url = "https://script.google.com/macros/s/AKfycbzWA0mMx_B14vrHGW6-QK4tOClSIj1lw7udLJwp7XCg2nZ8hDxt7d-dqnc6WenqBM8FBA/exec"
+        cls.RawData.clear()
         cls.RawData = requests.get(url).json()
         cls.SortRawData()
 
@@ -2318,7 +2365,7 @@ class Sheet:
         if name: # 檢查是否是「有效的值」
             return cls.SortedData.get(name, 0)
         print("名稱無效！")
-        return None
+        return 0
     
     @classmethod
     def RankedData(cls):
@@ -2328,4 +2375,6 @@ class Sheet:
 
 if __name__ == "__main__":
     Sheet.GetData()
+    Sheet.CommitScore("測試", Sheet.GetScore("測試"))
+
 
