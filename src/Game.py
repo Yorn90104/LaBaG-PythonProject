@@ -158,12 +158,11 @@ class LaBaG:
     def Random(self):
         """遊戲變數隨機產生"""
         RandNums = [randint(1, 100), randint(1, 100), randint(1, 100)]
-        print(f"P隨機數為：{RandNums[0]} | {RandNums[1]} | {RandNums[2]}")
-
         self.SuperNum = randint(1, 100) 
-        print(f"超級阿禾隨機數為: {self.SuperNum}")
-
         self.GreenNum = randint(1, 100) 
+
+        print(f"P隨機數為：{RandNums[0]} | {RandNums[1]} | {RandNums[2]}")
+        print(f"超級阿禾隨機數為: {self.SuperNum}")
         print(f"綠光阿瑋隨機數為: {self.GreenNum}")
 
         for i in range(3):
@@ -356,7 +355,7 @@ class JsonLaBaG(LaBaG):
     """與json檔案連接的啦八機"""
     def __init__(self):
         super().__init__()
-        self.json_data = None
+        self.json_data = dict()
         self.index = "1" # 第 n 次的索引
         
 
@@ -393,13 +392,17 @@ class JsonLaBaG(LaBaG):
 
     def Random(self):
         """遊戲變數隨機產生"""
-        RandNums = [self.json_data[self.index]["RandNums[0]"], self.json_data[self.index]["RandNums[1]"], self.json_data[self.index]["RandNums[2]"]]
+        if self.index in self.json_data:
+            RandNums = [self.json_data[self.index]["RandNums[0]"], self.json_data[self.index]["RandNums[1]"], self.json_data[self.index]["RandNums[2]"]]
+            self.SuperNum = self.json_data[self.index]["SuperHHH"]
+            self.GreenNum = self.json_data[self.index]["GreenWei"]
+        else:
+            RandNums = [randint(1, 100), randint(1, 100), randint(1, 100)]
+            self.SuperNum = randint(1, 100) 
+            self.GreenNum = randint(1, 100) 
+
         print(f"P隨機數為：{RandNums[0]} | {RandNums[1]} | {RandNums[2]}")
-
-        self.SuperNum = self.json_data[self.index]["SuperHHH"]
         print(f"超級阿禾隨機數為: {self.SuperNum}")
-
-        self.GreenNum = self.json_data[self.index]["GreenWei"]
         print(f"綠光阿瑋隨機數為: {self.GreenNum}")
 
 

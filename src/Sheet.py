@@ -11,7 +11,11 @@ class Sheet:
         """獲取資料"""
         url = "https://script.google.com/macros/s/AKfycbzWA0mMx_B14vrHGW6-QK4tOClSIj1lw7udLJwp7XCg2nZ8hDxt7d-dqnc6WenqBM8FBA/exec"
         cls.RawData.clear()
-        cls.RawData = requests.get(url).json()
+        try:
+            cls.RawData = requests.get(url).json()
+        except Exception as e:
+            print(f"錯誤：{e}")
+            exit(1)
         cls.SortRawData()
 
     @classmethod
