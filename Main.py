@@ -47,15 +47,15 @@ def into_game():
     """進入Game畫面"""
     global Game
     Game = Games["Game"]
-    Game.name = win.get_input("Name")
-    if Game.name:
-        win.update_text("Game", "PlayerName", f"玩家名：{Game.name}")
-        print(f"玩家名：{Game.name}")
+    Game.Name = win.get_input("Name")
+    if Game.Name:
+        win.update_text("Game", "PlayerName", f"玩家名：{Game.Name}")
+        print(f"玩家名：{Game.Name}")
     else :
         win.update_text("Game", "PlayerName", f"")
         print(f"玩家名：無")
 
-    Game.history_score = Sheet.GetScore(Game.name)
+    Game.history_score = Sheet.GetScore(Game.Name)
     win.unbind('<Return>') # 解除綁定ENTER
     BeginAble()
     Game.Reset()
@@ -233,7 +233,7 @@ def init_Game_screen_item():
 
 def Game_to_Home():
     """返回首頁"""
-    win.reset_input_box("Name", Game.name)
+    win.reset_input_box("Name", Game.Name)
     win.unbind('<space>')  # 取消space鍵的綁定
     win.bind('<Return>', lambda event :into_game())
     bgm_on_off(game_running=False) #關閉音樂
@@ -412,7 +412,7 @@ win.add_text(
     5, 50,
     15,
     "white",
-    "PlayerName", #Game.name
+    "PlayerName", #Game.Name
     "w"
 )
 
@@ -526,7 +526,7 @@ def Game_over_to_End():
     bgm_on_off(Game.GameRunning())
     music.play_sound("Ding")
     print("切換至結束畫面")
-    win.update_text("End", "PlayerName", f"{Game.name}")
+    win.update_text("End", "PlayerName", f"{Game.Name}")
     win.update_text("End","over", "遊戲結束！") 
     win.update_text("End","final_score", f"最終分數：{Game.score}")  # 最終分數顯示
     win.update_text("End","history_score", f"歷史最高分數：{Game.history_score}")
@@ -547,7 +547,7 @@ win.add_text(
     225, 175,
     22,
     "skyblue",
-    "PlayerName", #Game.name
+    "PlayerName", #Game.Name
 )
 
 win.add_text(
