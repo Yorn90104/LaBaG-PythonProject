@@ -11,6 +11,12 @@ class TargetLaBaG(LaBaG):
         self.superS = 0
         self.greenS = 0
         self.kachuS = 0
+    
+    def Reset(self):
+        super().Reset()
+        self.superS = 0
+        self.greenS = 0
+        self.kachuS = 0
                     
     def JudgeMode(self):
         """判斷模式"""
