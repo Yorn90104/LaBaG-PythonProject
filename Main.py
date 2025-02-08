@@ -1,6 +1,6 @@
 from GUI import Window
 win = Window("啦八機", 450, 800) #先初始化 Tkinter 才能創建 ImageTk
-from src.Game import P, LaBaG, JsonLaBaG
+from src.GameV2 import P, PlayLaBaG, JsonLaBaG
 from src.element import (
     Gss, Hhh, Hentai, Handsun, Kachu, Rrr,
     BG, SuperBG, GreenBG, KachuBG,
@@ -19,7 +19,7 @@ from src.Sheet import Sheet
 Sheet.GetData() #獲取啦八機試算表的資料
 
 Games = {
-    "Game": LaBaG(),
+    "Game": PlayLaBaG(),
     "Json_Game" : JsonLaBaG() #.json檔案模擬用
 }  
 Game = Games["Game"] #預設
@@ -388,7 +388,7 @@ def Begin():
     win.after(3000, result_txt)
     if not Game.GameRunning():
         Game.GameOver()
-        Sheet.CommitScore(Game.name, Game.score)
+        Sheet.CommitScore(Game.Name, Game.score)
         win.after(3500, Game_over_to_End)
         return
     if Game.ModtoScreen:
