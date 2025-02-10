@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
 from PIL import Image, ImageTk
 import base64
 from io import BytesIO
@@ -134,6 +134,11 @@ class SubWindow(tk.Toplevel):
         """重新載入輸入盒內容"""
         self.Entry(entry_name).delete(0, "end")
         self.Entry(entry_name).insert(0, content)
+    
+    @staticmethod
+    def open_file() -> str:
+        """開啟檔案(回傳檔案路徑)"""
+        return filedialog.askopenfilename()
 
 
 class Window(tk.Tk):
@@ -328,6 +333,11 @@ class Window(tk.Tk):
         """建立子視窗(視窗, 寬, 高)"""
         sw = SubWindow(self, window_name, width, height, BG_pic)
         self._subwindow_dict[window_name] = sw
+    
+    @staticmethod
+    def open_file() -> str:
+        """開啟檔案(回傳檔案路徑)"""
+        return filedialog.askopenfilename()
 
 class Picture:
     @staticmethod

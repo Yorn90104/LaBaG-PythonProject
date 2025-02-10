@@ -112,51 +112,20 @@ def into_json(json_path: str= None):
         print(f"使用 .json檔案模擬中")
         Game.setup_path(f"{json_path}")
 
-        win.unbind('<Return>') # 解除綁定ENTER
-        win.SubWindow("JsonPath").unbind('<Return>')
         BeginAble()
         Game.Reset()
         init_Game_screen_item()
         bgm_on_off()
         win.switch_frame("Home", "Game") #切換畫面
-        win.SubWindow("JsonPath").destroy()
     else:
-        win.SubWindow("JsonPath").message_box(
-            f"無效 or 不存在的路徑:\n{json_path}",
+        win.message_box(
+            f"無效的路徑:\n{json_path}",
             )
-        print(f"無效 or 不存在的路徑:\n{json_path}")
-
-
-def jsonpath_subwindow():
-    """json路徑子視窗"""
-    win.setup_subwindow("JsonPath", 300, 200, BG)
-    win.SubWindow("JsonPath").add_text(
-        "請輸入 .json檔案之路徑\n      (絕對or相對都行)",
-        150, 50,
-        14,
-        "white",
-        "path"
-    )
-    win.SubWindow("JsonPath").input_box(
-        "path",
-        "",
-        150, 100,
-        12,
-        18
-    )
-    win.SubWindow("JsonPath").txt_button(
-        "commit_path",
-        lambda: into_json(win.SubWindow("JsonPath").get_input("path")),
-        "提交路徑",
-        10, 2,
-        150, 160,
-        12
-    )
-    win.SubWindow("JsonPath").bind('<Return>', lambda event: into_json(win.SubWindow("JsonPath").get_input("path")))
+        print(f"無效的路徑:\n{json_path}")
 
 win.txt_button(
     "toJson",
-    jsonpath_subwindow,
+    lambda: into_json(win.open_file()),
     "Home",
     "使用 .json 檔案模擬遊戲",
     10, 2,
