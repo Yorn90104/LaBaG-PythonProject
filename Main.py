@@ -49,10 +49,10 @@ def into_game():
     Game = Games["Game"]
     Game.Name = win.get_input("Name")
     if Game.Name:
-        win.update_text("Game", "PlayerName", f"玩家名：{Game.Name}")
+        win.update_by_tag("Game", "PlayerName", f"玩家名：{Game.Name}")
         print(f"玩家名：{Game.Name}")
     else :
-        win.update_text("Game", "PlayerName", f"")
+        win.update_by_tag("Game", "PlayerName", f"")
         print(f"玩家名：無")
 
     Game.history_score = Sheet.GetScore(Game.Name)
@@ -166,7 +166,6 @@ def rank_subwindow():
         win.Button("toRank").config(state='normal')
         win.Button("toRank").config(text="查看排行榜")
         win.SubWindow("Rank").destroy()
-
     win.SubWindow("Rank").txt_button(
         "off_window",
         off_rank,
@@ -194,18 +193,18 @@ win.txt_button(
 #region Game Screen
 def init_Game_screen_item():
     """初始化 Game 畫面物件"""
-    win.update_picture("Game", "BG", BG)
-    win.update_picture("Game", "LP", QST)
-    win.update_picture("Game", "MP", QST)
-    win.update_picture("Game", "RP", QST)
-    win.update_picture("Game", "Title", Title)
-    win.update_text("Game", "MarginScore", f"")
-    win.update_text("Game", "Score", f"目前分數：{Game.score}")
-    win.update_text("Game", "Times", f"剩餘次數：{Game.times - Game.played}")
-    win.update_text("Game", "history_score", f"歷史最高分數：{Game.history_score}")
-    win.update_text("Game", "mod_1", f"")
-    win.update_text("Game", "mod_2", f"")
-    win.update_text("Game", "gss", f"咖波累積數：{Game.GssNum}")
+    win.update_by_tag("Game", "BG", BG)
+    win.update_by_tag("Game", "LP", QST)
+    win.update_by_tag("Game", "MP", QST)
+    win.update_by_tag("Game", "RP", QST)
+    win.update_by_tag("Game", "Title", Title)
+    win.update_by_tag("Game", "MarginScore", f"")
+    win.update_by_tag("Game", "Score", f"目前分數：{Game.score}")
+    win.update_by_tag("Game", "Times", f"剩餘次數：{Game.times - Game.played}")
+    win.update_by_tag("Game", "history_score", f"歷史最高分數：{Game.history_score}")
+    win.update_by_tag("Game", "mod_1", f"")
+    win.update_by_tag("Game", "mod_2", f"")
+    win.update_by_tag("Game", "gss", f"咖波累積數：{Game.GssNum}")
 
 def Game_to_Home():
     """返回首頁"""
@@ -253,18 +252,18 @@ def Begin():
             case _:
                 qstpic = QST
 
-        win.update_picture("Game", "LP", qstpic)
-        win.update_picture("Game", "MP", qstpic)
-        win.update_picture("Game", "RP", qstpic)
+        win.update_by_tag("Game", "LP", qstpic)
+        win.update_by_tag("Game", "MP", qstpic)
+        win.update_by_tag("Game", "RP", qstpic)
 
-        win.update_text("Game", "MarginScore", "") #邊際分數文字清除
-        win.update_text("Game", "mod_2", "")
+        win.update_by_tag("Game", "MarginScore", "") #邊際分數文字清除
+        win.update_by_tag("Game", "mod_2", "")
 
     def change_pic_per500ms():
         """每隔0.5秒改圖片"""
-        win.after(500, lambda: win.update_picture("Game", "LP", Game.Ps[0].picture))
-        win.after(1000, lambda: win.update_picture("Game", "MP", Game.Ps[1].picture))
-        win.after(1500, lambda: win.update_picture("Game", "RP", Game.Ps[2].picture))
+        win.after(500, lambda: win.update_by_tag("Game", "LP", Game.Ps[0].picture))
+        win.after(1000, lambda: win.update_by_tag("Game", "MP", Game.Ps[1].picture))
+        win.after(1500, lambda: win.update_by_tag("Game", "RP", Game.Ps[2].picture))
         # Ding 音效
         win.after(500, lambda: music.play_sound("Ding"))
         win.after(1000, lambda: music.play_sound("Ding"))
@@ -277,76 +276,76 @@ def Begin():
             
             case "SuperHHH":
                 if Game.Ps[0].code == "B":
-                    win.update_picture("Game", "LP" , super_hhh)
+                    win.update_by_tag("Game", "LP" , super_hhh)
                 if Game.Ps[1].code == "B":
-                    win.update_picture("Game", "MP" , super_hhh)
+                    win.update_by_tag("Game", "MP" , super_hhh)
                 if Game.Ps[2].code == "B":
-                    win.update_picture("Game", "RP" , super_hhh)
+                    win.update_by_tag("Game", "RP" , super_hhh)
                 music.play_sound("SuperUP")
             
             case "GreenWei":
                 if all(p.code == "A" for p in Game.Ps):
-                    win.update_picture("Game", "LP" , GreenLeft)
-                    win.update_picture("Game", "MP" , GreenMid)
-                    win.update_picture("Game", "RP" , GreenRight)
+                    win.update_by_tag("Game", "LP" , GreenLeft)
+                    win.update_by_tag("Game", "MP" , GreenMid)
+                    win.update_by_tag("Game", "RP" , GreenRight)
                 elif any(p.code == "A" for p in Game.Ps):
                     if Game.Ps[0].code == "A":
-                        win.update_picture("Game", "LP" , green_wei)
+                        win.update_by_tag("Game", "LP" , green_wei)
                     if Game.Ps[1].code == "A":
-                        win.update_picture("Game", "MP" , green_wei)
+                        win.update_by_tag("Game", "MP" , green_wei)
                     if Game.Ps[2].code == "A":
-                        win.update_picture("Game", "RP" , green_wei)
+                        win.update_by_tag("Game", "RP" , green_wei)
                 else:
-                    win.update_picture("Game", "LP" , green_wei)
-                    win.update_picture("Game", "MP" , green_wei)
-                    win.update_picture("Game", "RP" , green_wei)
+                    win.update_by_tag("Game", "LP" , green_wei)
+                    win.update_by_tag("Game", "MP" , green_wei)
+                    win.update_by_tag("Game", "RP" , green_wei)
                 music.play_sound("GreenUP")
             case "PiKaChu":
                 music.switch_music("KachuMusic")
                 if Game.Ps[0].code == "E":
-                    win.update_picture("Game", "LP" , pikachu)
+                    win.update_by_tag("Game", "LP" , pikachu)
                 if Game.Ps[1].code == "E":
-                    win.update_picture("Game", "MP" , pikachu)
+                    win.update_by_tag("Game", "MP" , pikachu)
                 if Game.Ps[2].code == "E":
-                    win.update_picture("Game", "RP" , pikachu)
+                    win.update_by_tag("Game", "RP" , pikachu)
 
     def screen_pop_music():
         """畫面、彈出圖片、音樂"""
         match Game.NowMode():
             case "Normal":
-                win.update_picture("Game", "BG", BG)
-                win.update_picture("Game", "Title", Title)
-                win.update_text("Game", "mod_1", f"")
+                win.update_by_tag("Game", "BG", BG)
+                win.update_by_tag("Game", "Title", Title)
+                win.update_by_tag("Game", "mod_1", f"")
                 music.switch_music("bgm")
 
             case "SuperHHH":
-                win.image_button("pop", lambda: win.delete_button("pop"), "Game", SuperPOP, 225 , 400, "flat", 0)
-                win.update_picture("Game", "BG", SuperBG)
-                win.update_picture("Game", "Title", SuperTitle)
+                win.image_button("pop", lambda: win.delete_canvas_tag("Game", "pop"), "Game", SuperPOP, 225 , 400, "flat", 0)
+                win.update_by_tag("Game", "BG", SuperBG)
+                win.update_by_tag("Game", "Title", SuperTitle)
                 win.Canva("Game").itemconfig("mod_1", text = f"超級阿禾剩餘次數:{Game.SuperTimes}次", fill = "#FF00FF")
                 music.switch_music("SuperMusic")
                 if Game.double_score > 0:
                     win.Canva("Game").itemconfig("mod_2", text = f"(超級阿禾加倍分:{Game.double_score})", fill = "yellow")
 
             case "GreenWei":
-                win.image_button("pop", lambda: win.delete_button("pop"), "Game", GreenPOP, 225 , 400, "flat", 0)
-                win.update_picture("Game", "BG", GreenBG)
-                win.update_picture("Game", "Title", GreenTitle)
+                win.image_button("pop", lambda: win.delete_canvas_tag("Game", "pop"), "Game", GreenPOP, 225 , 400, "flat", 0)
+                win.update_by_tag("Game", "BG", GreenBG)
+                win.update_by_tag("Game", "Title", GreenTitle)
                 win.Canva("Game").itemconfig("mod_1", text =  f"綠光阿瑋剩餘次數:{Game.GreenTimes}次", fill = "#00FF00")
                 music.switch_music("GreenMusic")
 
             case "PiKaChu":
-                win.image_button("pop", lambda: win.delete_button("pop"), "Game", KachuPOP, 225 , 400, "flat", 0)
-                win.update_picture("Game", "BG", KachuBG)
-                win.update_picture("Game", "Title", KachuTitle)
+                win.image_button("pop", lambda: win.delete_canvas_tag("Game", "pop"), "Game", KachuPOP, 225 , 400, "flat", 0)
+                win.update_by_tag("Game", "BG", KachuBG)
+                win.update_by_tag("Game", "Title", KachuTitle)
                 win.Canva("Game").itemconfig("mod_1", text = f"已觸發 {Game.kachu_times} 次皮卡丘充電", fill = "#FFFF00")
            
     def result_txt():
         """顯示結果文字"""
-        win.update_text("Game", "MarginScore", f"+{Game.margin_score}")
-        win.update_text("Game", "Score", f"目前分數：{Game.score}")
-        win.update_text("Game", "Times", f"剩餘次數：{Game.times - Game.played}")
-        win.update_text("Game", "gss", f"咖波累積數：{Game.GssNum}")
+        win.update_by_tag("Game", "MarginScore", f"+{Game.margin_score}")
+        win.update_by_tag("Game", "Score", f"目前分數：{Game.score}")
+        win.update_by_tag("Game", "Times", f"剩餘次數：{Game.times - Game.played}")
+        win.update_by_tag("Game", "gss", f"咖波累積數：{Game.GssNum}")
         match Game.NowMode():
             case "SuperHHH":
                 win.Canva("Game").itemconfig("mod_1", text = f"超級阿禾剩餘次數:{Game.SuperTimes}次", fill = "#FF00FF")
@@ -355,8 +354,7 @@ def Begin():
 
 
     #Main
-    if "pop" in win._button_dict:
-        win.delete_button("pop")
+    win.delete_canvas_tag("Game", "pop")
     BeginUnable()
     resetQST()
     Game.Logic()
@@ -502,10 +500,10 @@ def Game_over_to_End():
     bgm_on_off(Game.GameRunning())
     music.play_sound("Ding")
     print("切換至結束畫面")
-    win.update_text("End", "PlayerName", f"{Game.Name}")
-    win.update_text("End","over", "遊戲結束！") 
-    win.update_text("End","final_score", f"最終分數：{Game.score}")  # 最終分數顯示
-    win.update_text("End","history_score", f"歷史最高分數：{Game.history_score}")
+    win.update_by_tag("End", "PlayerName", f"{Game.Name}")
+    win.update_by_tag("End","over", "遊戲結束！") 
+    win.update_by_tag("End","final_score", f"最終分數：{Game.score}")  # 最終分數顯示
+    win.update_by_tag("End","history_score", f"歷史最高分數：{Game.history_score}")
     win.switch_frame("Game", "End")
     
 
