@@ -101,10 +101,11 @@ win.add_text(
     "hint"
 )
 
-def into_json(json_path: str= None):
+def into_json():
     """進入Json_Game畫面"""
     import os
     #判斷路徑是否為空、是否存在、是否為.json檔
+    json_path = win.open_file()
     if json_path is not None and os.path.exists(json_path) and os.path.splitext(json_path)[1] == ".json":
         global Game
         Game = Games["Json_Game"]
@@ -125,7 +126,7 @@ def into_json(json_path: str= None):
 
 win.txt_button(
     "toJson",
-    lambda: into_json(win.open_file()),
+    into_json,
     "Home",
     "使用 .json 檔案模擬遊戲",
     10, 2,
