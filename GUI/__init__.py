@@ -92,13 +92,13 @@ class BaseWindow():
     def add_text(self, canvas_name: str = None, txt: str = "", x: int = 0, y: int = 0, size: int = 12, color: str = "white" , tg: str = "", align: str = "center"):
         """添加粗體文字(畫面, 文字, 水平位置, 垂直位置, 大小, 顏色, 標記, 對齊方式[東南西北])"""
         self.Canva(canvas_name).create_text(
-                        x, y,
-                        text = txt ,
-                        font = ("Arial", size , "bold") ,
-                        fill = color ,
-                        tag = tg,
-                        anchor = align
-                        )
+            x, y,
+            text = txt ,
+            font = ("Arial", size , "bold") ,
+            fill = color ,
+            tag = tg,
+            anchor = align
+        )
 
     def update_by_tag(self, canvas_name: str = None, tg: str = "", new_item: Union[str, ImageTk.PhotoImage, None] = None) -> None:
         """根據標記(tag)更換 CANVA 上的 物件 (畫面, 標記, 新物件)"""
@@ -122,25 +122,25 @@ class BaseWindow():
     def image_button(self, button_name: str, CMD, canvas_name: str = None, img: ImageTk.PhotoImage = None, x: int = 0, y: int = 0, rel: str = "raised", highlight: int = 1):
         """添加圖片按鈕(按鈕名, 執行動作, 畫面名, 圖片, 水平座標, 垂直座標, 三圍邊框效果, 焦點邊框厚度)"""
         button = tk.Button(
-                        self,
-                        image = img,
-                        command = CMD,
-                        relief =  rel,
-                        highlightthickness = highlight
-                        )
+            self,
+            image = img,
+            command = CMD,
+            relief =  rel,
+            highlightthickness = highlight
+        )
         self.Canva(canvas_name).create_window(x , y , window = button, tags= button_name)
         self.__button_dict[button_name] = button
 
     def txt_button(self, button_name: str, CMD  ,canvas_name: str = None,  txt: str = None, w: int= 0, h: int= 0, x: int = 0, y: int = 0, size: int = 12, font_color: str = "black", bg_color: str = "white"):
         """添加粗體文字按鈕(按鈕名, 執行動作, 畫面名, 文字, 按鈕寬度, 按鈕高度, 水平位置, 垂直位置, 文字大小, 文字顏色, 背景顏色)"""
         button = tk.Button(
-                        self,
-                        text = txt ,
-                        command = CMD,
-                        font = ("Arial", size, "bold"),
-                        fg = font_color,
-                        bg = bg_color
-                                )
+            self,
+            text = txt ,
+            command = CMD,
+            font = ("Arial", size, "bold"),
+            fg = font_color,
+            bg = bg_color
+        )
         # 按钮的像素大小&位置
         button.place(width=w, height=h)
         self.Canva(canvas_name).create_window(x , y , window = button, tags= button_name)
