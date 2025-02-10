@@ -135,8 +135,7 @@ class SubWindow(tk.Toplevel):
         self.Entry(entry_name).delete(0, "end")
         self.Entry(entry_name).insert(0, content)
     
-    @staticmethod
-    def open_file() -> str:
+    def open_file(self) -> str:
         """開啟檔案(回傳檔案路徑)"""
         return filedialog.askopenfilename()
 
@@ -334,8 +333,7 @@ class Window(tk.Tk):
         sw = SubWindow(self, window_name, width, height, BG_pic)
         self._subwindow_dict[window_name] = sw
     
-    @staticmethod
-    def open_file() -> str:
+    def open_file(self) -> str:
         """開啟檔案(回傳檔案路徑)"""
         return filedialog.askopenfilename()
 
