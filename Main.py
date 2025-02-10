@@ -121,14 +121,10 @@ def into_json(json_path: str= None):
         win.switch_frame("Home", "Game") #切換畫面
         win.SubWindow("JsonPath").destroy()
     else:
-        win.SubWindow("JsonPath").message_text(
-            1000,
-            f"無效 or 不存在的路徑: {json_path}",
-            150, 130,
-            10,
-            "red"
+        win.SubWindow("JsonPath").message_box(
+            f"無效 or 不存在的路徑:\n{json_path}",
             )
-        print(f"無效 or 不存在的路徑: {json_path}")
+        print(f"無效 or 不存在的路徑:\n{json_path}")
 
 
 def jsonpath_subwindow():
@@ -630,11 +626,8 @@ def save_json():
             )
     except Exception as e:
         print(f"無法保存: {e}")
-        win.message_text(
-                2000,
-                "End",
+        win.message_box(
                 f"無法保存: {e}",
-                225, 730
             )
 
 win.txt_button(
