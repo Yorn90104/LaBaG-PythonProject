@@ -1,7 +1,7 @@
 @.\main.py
 from GUI import Window
 win = Window("啦八機", 450, 800) #先初始化 Tkinter 才能創建 ImageTk
-from src.Game import P, LaBaG, JsonLaBaG
+from src.Game import P, PlayLaBaG, JsonLaBaG
 from src.element import (
     Gss, Hhh, Hentai, Handsun, Kachu, Rrr,
     BG, SuperBG, GreenBG, KachuBG,
@@ -20,7 +20,7 @@ from src.Sheet import Sheet
 Sheet.GetData() #獲取啦八機試算表的資料
 
 Games = {
-    "Game": LaBaG(),
+    "Game": PlayLaBaG(),
     "Json_Game" : JsonLaBaG() #.json檔案模擬用
 }  
 Game = Games["Game"] #預設
@@ -48,15 +48,15 @@ def into_game():
     """進入Game畫面"""
     global Game
     Game = Games["Game"]
-    Game.name = win.get_input("Name")
-    if Game.name:
-        win.update_text("Game", "PlayerName", f"玩家名：{Game.name}")
-        print(f"玩家名：{Game.name}")
+    Game.Name = win.get_input("Name")
+    if Game.Name:
+        win.update_by_tag("Game", "PlayerName", f"玩家名：{Game.Name}")
+        print(f"玩家名：{Game.Name}")
     else :
-        win.update_text("Game", "PlayerName", f"")
+        win.update_by_tag("Game", "PlayerName", f"")
         print(f"玩家名：無")
 
-    Game.history_score = Sheet.GetScore(Game.name)
+    Game.history_score = Sheet.GetScore(Game.Name)
     win.unbind('<Return>') # 解除綁定ENTER
     BeginAble()
     Game.Reset()
@@ -102,10 +102,11 @@ win.add_text(
     "hint"
 )
 
-def into_json(json_path: str= None):
+def into_json():
     """進入Json_Game畫面"""
     import os
     #判斷路徑是否為空、是否存在、是否為.json檔
+    json_path = win.open_file()
     if json_path is not None and os.path.exists(json_path) and os.path.splitext(json_path)[1] == ".json":
         global Game
         Game = Games["Json_Game"]
@@ -113,55 +114,20 @@ def into_json(json_path: str= None):
         print(f"使用 .json檔案模擬中")
         Game.setup_path(f"{json_path}")
 
-        win.unbind('<Return>') # 解除綁定ENTER
-        win.SubWindow("JsonPath").unbind('<Return>')
         BeginAble()
         Game.Reset()
         init_Game_screen_item()
         bgm_on_off()
         win.switch_frame("Home", "Game") #切換畫面
-        win.SubWindow("JsonPath").destroy()
     else:
-        win.SubWindow("JsonPath").message_text(
-            1000,
-            f"無效 or 不存在的路徑: {json_path}",
-            150, 130,
-            10,
-            "red"
+        win.message_box(
+            f"無效的路徑:\n{json_path}",
             )
-        print(f"無效 or 不存在的路徑: {json_path}")
-
-
-def jsonpath_subwindow():
-    """json路徑子視窗"""
-    win.setup_subwindow("JsonPath", 300, 200, BG)
-    win.SubWindow("JsonPath").add_text(
-        "請輸入 .json檔案之路徑\n      (絕對or相對都行)",
-        150, 50,
-        14,
-        "white",
-        "path"
-    )
-    win.SubWindow("JsonPath").input_box(
-        "path",
-        "",
-        150, 100,
-        12,
-        18
-    )
-    win.SubWindow("JsonPath").txt_button(
-        "commit_path",
-        lambda: into_json(win.SubWindow("JsonPath").get_input("path")),
-        "提交路徑",
-        10, 2,
-        150, 160,
-        12
-    )
-    win.SubWindow("JsonPath").bind('<Return>', lambda event: into_json(win.SubWindow("JsonPath").get_input("path")))
+        print(f"無效的路徑:\n{json_path}")
 
 win.txt_button(
     "toJson",
-    jsonpath_subwindow,
+    into_json,
     "Home",
     "使用 .json 檔案模擬遊戲",
     10, 2,
@@ -172,7 +138,9 @@ win.txt_button(
 
 def rank_subwindow():
     """排行榜子視窗"""
-    Sheet.GetData() #重新獲取資料
+    win.Button("toRank").config(state='disabled') # toRank Button 停用
+    win.Button("toRank").config(text="資料載入中")
+    Sheet.GetData() #獲取資料
     win.setup_subwindow("Rank", 450, 800, BG)
 
     win.SubWindow("Rank").add_text(
@@ -194,14 +162,21 @@ def rank_subwindow():
             "w"
             )
     
+    def off_rank():
+        """關閉排行榜子視窗"""
+        win.Button("toRank").config(state='normal')
+        win.Button("toRank").config(text="查看排行榜")
+        win.SubWindow("Rank").destroy()
     win.SubWindow("Rank").txt_button(
         "off_window",
-        win.SubWindow("Rank").destroy,
+        off_rank,
         "關閉視窗",
         100, 50,
         225, 700,
         16
         )
+    win.SubWindow("Rank").protocol("WM_DELETE_WINDOW", off_rank) #綁定關閉視窗
+    
 
 win.txt_button(
     "toRank",
@@ -219,22 +194,22 @@ win.txt_button(
 #region Game Screen
 def init_Game_screen_item():
     """初始化 Game 畫面物件"""
-    win.update_picture("Game", "BG", BG)
-    win.update_picture("Game", "LP", QST)
-    win.update_picture("Game", "MP", QST)
-    win.update_picture("Game", "RP", QST)
-    win.update_picture("Game", "Title", Title)
-    win.update_text("Game", "MarginScore", f"")
-    win.update_text("Game", "Score", f"目前分數：{Game.score}")
-    win.update_text("Game", "Times", f"剩餘次數：{Game.times - Game.played}")
-    win.update_text("Game", "history_score", f"歷史最高分數：{Game.history_score}")
-    win.update_text("Game", "mod_1", f"")
-    win.update_text("Game", "mod_2", f"")
-    win.update_text("Game", "gss", f"咖波累積數：{Game.GssNum}")
+    win.update_by_tag("Game", "BG", BG)
+    win.update_by_tag("Game", "LP", QST)
+    win.update_by_tag("Game", "MP", QST)
+    win.update_by_tag("Game", "RP", QST)
+    win.update_by_tag("Game", "Title", Title)
+    win.update_by_tag("Game", "MarginScore", f"")
+    win.update_by_tag("Game", "Score", f"目前分數：{Game.score}")
+    win.update_by_tag("Game", "Times", f"剩餘次數：{Game.times - Game.played}")
+    win.update_by_tag("Game", "history_score", f"歷史最高分數：{Game.history_score}")
+    win.update_by_tag("Game", "mod_1", f"")
+    win.update_by_tag("Game", "mod_2", f"")
+    win.update_by_tag("Game", "gss", f"咖波累積數：{Game.GssNum}")
 
 def Game_to_Home():
     """返回首頁"""
-    win.reset_input_box("Name", Game.name)
+    win.reset_input_box("Name", Game.Name)
     win.unbind('<space>')  # 取消space鍵的綁定
     win.bind('<Return>', lambda event :into_game())
     bgm_on_off(game_running=False) #關閉音樂
@@ -278,18 +253,18 @@ def Begin():
             case _:
                 qstpic = QST
 
-        win.update_picture("Game", "LP", qstpic)
-        win.update_picture("Game", "MP", qstpic)
-        win.update_picture("Game", "RP", qstpic)
+        win.update_by_tag("Game", "LP", qstpic)
+        win.update_by_tag("Game", "MP", qstpic)
+        win.update_by_tag("Game", "RP", qstpic)
 
-        win.update_text("Game", "MarginScore", "") #邊際分數文字清除
-        win.update_text("Game", "mod_2", "")
+        win.update_by_tag("Game", "MarginScore", "") #邊際分數文字清除
+        win.update_by_tag("Game", "mod_2", "")
 
     def change_pic_per500ms():
         """每隔0.5秒改圖片"""
-        win.after(500, lambda: win.update_picture("Game", "LP", Game.Ps[0].picture))
-        win.after(1000, lambda: win.update_picture("Game", "MP", Game.Ps[1].picture))
-        win.after(1500, lambda: win.update_picture("Game", "RP", Game.Ps[2].picture))
+        win.after(500, lambda: win.update_by_tag("Game", "LP", Game.Ps[0].picture))
+        win.after(1000, lambda: win.update_by_tag("Game", "MP", Game.Ps[1].picture))
+        win.after(1500, lambda: win.update_by_tag("Game", "RP", Game.Ps[2].picture))
         # Ding 音效
         win.after(500, lambda: music.play_sound("Ding"))
         win.after(1000, lambda: music.play_sound("Ding"))
@@ -302,76 +277,76 @@ def Begin():
             
             case "SuperHHH":
                 if Game.Ps[0].code == "B":
-                    win.update_picture("Game", "LP" , super_hhh)
+                    win.update_by_tag("Game", "LP" , super_hhh)
                 if Game.Ps[1].code == "B":
-                    win.update_picture("Game", "MP" , super_hhh)
+                    win.update_by_tag("Game", "MP" , super_hhh)
                 if Game.Ps[2].code == "B":
-                    win.update_picture("Game", "RP" , super_hhh)
+                    win.update_by_tag("Game", "RP" , super_hhh)
                 music.play_sound("SuperUP")
             
             case "GreenWei":
                 if all(p.code == "A" for p in Game.Ps):
-                    win.update_picture("Game", "LP" , GreenLeft)
-                    win.update_picture("Game", "MP" , GreenMid)
-                    win.update_picture("Game", "RP" , GreenRight)
+                    win.update_by_tag("Game", "LP" , GreenLeft)
+                    win.update_by_tag("Game", "MP" , GreenMid)
+                    win.update_by_tag("Game", "RP" , GreenRight)
                 elif any(p.code == "A" for p in Game.Ps):
                     if Game.Ps[0].code == "A":
-                        win.update_picture("Game", "LP" , green_wei)
+                        win.update_by_tag("Game", "LP" , green_wei)
                     if Game.Ps[1].code == "A":
-                        win.update_picture("Game", "MP" , green_wei)
+                        win.update_by_tag("Game", "MP" , green_wei)
                     if Game.Ps[2].code == "A":
-                        win.update_picture("Game", "RP" , green_wei)
+                        win.update_by_tag("Game", "RP" , green_wei)
                 else:
-                    win.update_picture("Game", "LP" , green_wei)
-                    win.update_picture("Game", "MP" , green_wei)
-                    win.update_picture("Game", "RP" , green_wei)
+                    win.update_by_tag("Game", "LP" , green_wei)
+                    win.update_by_tag("Game", "MP" , green_wei)
+                    win.update_by_tag("Game", "RP" , green_wei)
                 music.play_sound("GreenUP")
             case "PiKaChu":
                 music.switch_music("KachuMusic")
                 if Game.Ps[0].code == "E":
-                    win.update_picture("Game", "LP" , pikachu)
+                    win.update_by_tag("Game", "LP" , pikachu)
                 if Game.Ps[1].code == "E":
-                    win.update_picture("Game", "MP" , pikachu)
+                    win.update_by_tag("Game", "MP" , pikachu)
                 if Game.Ps[2].code == "E":
-                    win.update_picture("Game", "RP" , pikachu)
+                    win.update_by_tag("Game", "RP" , pikachu)
 
     def screen_pop_music():
         """畫面、彈出圖片、音樂"""
         match Game.NowMode():
             case "Normal":
-                win.update_picture("Game", "BG", BG)
-                win.update_picture("Game", "Title", Title)
-                win.update_text("Game", "mod_1", f"")
+                win.update_by_tag("Game", "BG", BG)
+                win.update_by_tag("Game", "Title", Title)
+                win.update_by_tag("Game", "mod_1", f"")
                 music.switch_music("bgm")
 
             case "SuperHHH":
-                win.image_button("pop", lambda: win.delete_button("pop"), "Game", SuperPOP, 225 , 400, "flat", 0)
-                win.update_picture("Game", "BG", SuperBG)
-                win.update_picture("Game", "Title", SuperTitle)
+                win.image_button("pop", lambda: win.delete_canvas_tag("Game", "pop"), "Game", SuperPOP, 225 , 400, "flat", 0)
+                win.update_by_tag("Game", "BG", SuperBG)
+                win.update_by_tag("Game", "Title", SuperTitle)
                 win.Canva("Game").itemconfig("mod_1", text = f"超級阿禾剩餘次數:{Game.SuperTimes}次", fill = "#FF00FF")
                 music.switch_music("SuperMusic")
                 if Game.double_score > 0:
                     win.Canva("Game").itemconfig("mod_2", text = f"(超級阿禾加倍分:{Game.double_score})", fill = "yellow")
 
             case "GreenWei":
-                win.image_button("pop", lambda: win.delete_button("pop"), "Game", GreenPOP, 225 , 400, "flat", 0)
-                win.update_picture("Game", "BG", GreenBG)
-                win.update_picture("Game", "Title", GreenTitle)
+                win.image_button("pop", lambda: win.delete_canvas_tag("Game", "pop"), "Game", GreenPOP, 225 , 400, "flat", 0)
+                win.update_by_tag("Game", "BG", GreenBG)
+                win.update_by_tag("Game", "Title", GreenTitle)
                 win.Canva("Game").itemconfig("mod_1", text =  f"綠光阿瑋剩餘次數:{Game.GreenTimes}次", fill = "#00FF00")
                 music.switch_music("GreenMusic")
 
             case "PiKaChu":
-                win.image_button("pop", lambda: win.delete_button("pop"), "Game", KachuPOP, 225 , 400, "flat", 0)
-                win.update_picture("Game", "BG", KachuBG)
-                win.update_picture("Game", "Title", KachuTitle)
+                win.image_button("pop", lambda: win.delete_canvas_tag("Game", "pop"), "Game", KachuPOP, 225 , 400, "flat", 0)
+                win.update_by_tag("Game", "BG", KachuBG)
+                win.update_by_tag("Game", "Title", KachuTitle)
                 win.Canva("Game").itemconfig("mod_1", text = f"已觸發 {Game.kachu_times} 次皮卡丘充電", fill = "#FFFF00")
            
     def result_txt():
         """顯示結果文字"""
-        win.update_text("Game", "MarginScore", f"+{Game.margin_score}")
-        win.update_text("Game", "Score", f"目前分數：{Game.score}")
-        win.update_text("Game", "Times", f"剩餘次數：{Game.times - Game.played}")
-        win.update_text("Game", "gss", f"咖波累積數：{Game.GssNum}")
+        win.update_by_tag("Game", "MarginScore", f"+{Game.margin_score}")
+        win.update_by_tag("Game", "Score", f"目前分數：{Game.score}")
+        win.update_by_tag("Game", "Times", f"剩餘次數：{Game.times - Game.played}")
+        win.update_by_tag("Game", "gss", f"咖波累積數：{Game.GssNum}")
         match Game.NowMode():
             case "SuperHHH":
                 win.Canva("Game").itemconfig("mod_1", text = f"超級阿禾剩餘次數:{Game.SuperTimes}次", fill = "#FF00FF")
@@ -380,8 +355,7 @@ def Begin():
 
 
     #Main
-    if "pop" in win._button_dict:
-        win.delete_button("pop")
+    win.delete_canvas_tag("Game", "pop")
     BeginUnable()
     resetQST()
     Game.Logic()
@@ -389,7 +363,7 @@ def Begin():
     win.after(3000, result_txt)
     if not Game.GameRunning():
         Game.GameOver()
-        Sheet.CommitScore(Game.name, Game.score)
+        Sheet.CommitScore(Game.Name, Game.score)
         win.after(3500, Game_over_to_End)
         return
     if Game.ModtoScreen:
@@ -413,7 +387,7 @@ win.add_text(
     5, 50,
     15,
     "white",
-    "PlayerName", #Game.name
+    "PlayerName", #Game.Name
     "w"
 )
 
@@ -527,10 +501,10 @@ def Game_over_to_End():
     bgm_on_off(Game.GameRunning())
     music.play_sound("Ding")
     print("切換至結束畫面")
-    win.update_text("End", "PlayerName", f"{Game.name}")
-    win.update_text("End","over", "遊戲結束！") 
-    win.update_text("End","final_score", f"最終分數：{Game.score}")  # 最終分數顯示
-    win.update_text("End","history_score", f"歷史最高分數：{Game.history_score}")
+    win.update_by_tag("End", "PlayerName", f"{Game.Name}")
+    win.update_by_tag("End","over", "遊戲結束！") 
+    win.update_by_tag("End","final_score", f"最終分數：{Game.score}")  # 最終分數顯示
+    win.update_by_tag("End","history_score", f"歷史最高分數：{Game.history_score}")
     win.switch_frame("Game", "End")
     
 
@@ -548,7 +522,7 @@ win.add_text(
     225, 175,
     22,
     "skyblue",
-    "PlayerName", #Game.name
+    "PlayerName", #Game.Name
 )
 
 win.add_text(
@@ -621,11 +595,8 @@ def save_json():
             )
     except Exception as e:
         print(f"無法保存: {e}")
-        win.message_text(
-                2000,
-                "End",
+        win.message_box(
                 f"無法保存: {e}",
-                225, 730
             )
 
 win.txt_button(
@@ -652,223 +623,21 @@ win.mainloop()
 from random import randint
 import math
 from src.Sheet import Sheet
+from src.LaBaG import LaBaG
 
-class P:
-    """圖案符號"""
-    Dict = dict()
-
-    def __init__(self, code: str = None, score_list: list[int] = None, rate_dict: dict[str, int]= None):
-        self.code = code
-        self.score_list = score_list or []
-        self.rate_dict = rate_dict or {"Normal": 0}
-        
-        self.AddDict()
-
-    def AddDict(self):
-        """加入類字典中"""
-        if self.code not in P.Dict:
-            P.Dict[self.code] = self
-
-        
-class LaBaG:
+class TargetLaBaG(LaBaG):
     def __init__(self):
-        # 遊戲邏輯變數
-        self.times = 30 #可遊玩次數 正常30
-        self.played = 0 #已遊玩次數
-
-        self.score = 0
-        self.margin_score= 0
-
-        self.Ps = [None, None, None]
-        P("A",[625, 350, 150], {
-                "Normal": 36,
-                "SuperHHH": 19,
-                "GreenWei": 36,
-                "PiKaChu": 36
-            })
-        
-        P("B",[1250, 650, 220], {
-                "Normal": 24,
-                "SuperHHH": 5,
-                "GreenWei": 24,
-                "PiKaChu": 24
-            })
-        
-        P("C",[2100, 1080, 380], {
-                "Normal": 17,
-                "SuperHHH": 19,
-                "GreenWei": 17,
-                "PiKaChu": 17
-            })
-        
-        P("D",[2500, 1250, 420], {
-                "Normal": 12,
-                "SuperHHH": 19,
-                "GreenWei": 12,
-                "PiKaChu": 12
-            })
-        
-        P("E",[10000, 5000, 1250], {
-                "Normal": 8,
-                "SuperHHH": 19,
-                "GreenWei": 8,
-                "PiKaChu": 8
-            })
-        
-        P("F",[20000, 10000, 2500], {
-                "Normal": 3,
-                "SuperHHH": 19,
-                "GreenWei": 3,
-                "PiKaChu": 3
-            })
-        
-        #加分倍數
-        self.score_times_dict = {
-            "Normal": 1,
-            "SuperHHH": 1,
-            "GreenWei": 3,
-            "PiKaChu": 1
-        }
-        self.score_time = 1
-
-        #region 特殊模式
-        #超級阿禾
-        self.SuperRate = 15
-        self.SuperHHH = False
-        self.SuperNum = 0
-        self.SuperTimes = 0
+        super().__init__()
+        delattr(self, "kachu_times")
         self.superS = 0
-
-        #綠光阿瑋
-        self.GreenRate = 35
-        self.GreenWei = False
-        self.GreenNum = 0
-        self.GreenTimes = 0
-        self.GssNum = 0 #咖波累積數
         self.greenS = 0
-
-        #皮卡丘
-        self.PiKaChu = False
         self.kachuS = 0
-
-        #endregion
-
-    def Reset(self):
-        """重置"""
-        self.played = 0
-        self.score = 0
-        self.margin_score= 0
-        self.score_time = 1
-        self.Ps = [None, None, None]
-        
-        self.SuperHHH = False
-        self.SuperTimes = 0
-        self.superS = 0
-
-        self.GreenWei = False
-        self.GreenTimes = 0
-        self.GssNum = 0
-        self.greenS = 0
-
-        self.PiKaChu = False
-        self.kachuS = 0
-
-
-    def Logic(self):
-        """邏輯流程"""
-        self.Reset()
-        while self.GameRunning():
-            self.Random() 
-            self.CalculateScore()
-            self.Result()
-            self.JudgeMode()        
     
-    def GameRunning(self) -> bool:
-        """判斷一局遊戲是否繼續運行"""
-        return self.played < self.times
-
-    def NowMode(self)  -> str:
-        """現在模式"""
-        modes = {
-            self.SuperHHH: "SuperHHH",
-            self.GreenWei: "GreenWei",
-            self.PiKaChu: "PiKaChu"
-        }
-        return modes.get(True, "Normal")
-        
-
-    def Random(self):
-        """遊戲變數隨機產生"""
-        RandNums = [randint(1, 100), randint(1, 100), randint(1, 100)]
-
-        self.SuperNum = randint(1, 100) 
-        self.GreenNum = randint(1, 100) 
-
-        def acc_rate():
-            res = list()
-            acc = 0
-            for i in P.Dict:
-                acc += P.Dict[i].rate_dict[self.NowMode()]
-                res.append(acc)
-            return res
-        
-        rate_range = acc_rate()
-
-        for i in range(3):
-            if RandNums[i] <= rate_range[0]:
-                self.Ps[i] = P.Dict["A"]
-            elif RandNums[i] <= rate_range[1]:
-                self.Ps[i] = P.Dict["B"]
-            elif RandNums[i] <= rate_range[2]:
-                self.Ps[i] = P.Dict["C"]
-            elif RandNums[i] <= rate_range[3]:
-                self.Ps[i] = P.Dict["D"]
-            elif RandNums[i] <= rate_range[4]:
-                self.Ps[i] = P.Dict["E"]
-            elif RandNums[i] <= rate_range[5]:
-                self.Ps[i] = P.Dict["F"]
-
-        #增加咖波累積數
-        for p in self.Ps:
-            if p.code == "A" and self.GssNum < 20 :
-                self.GssNum += 1
-
-    def CalculateScore(self):
-        """計算分數"""
-        def margin_add(p: P, typ: int):
-            """p -> 使用 p 的分數列表\ntyp -> 得分型態"""
-            self.margin_score += p.score_list[typ]
-
-        if self.Ps[0] == self.Ps[1] == self.Ps[2]:
-            margin_add(self.Ps[0], 0)
-        elif self.Ps[0] == self.Ps[1]:
-            margin_add(self.Ps[0], 1)
-            margin_add(self.Ps[2], 2)
-            self.margin_score = round(self.margin_score / 1.3)
-        elif self.Ps[1] == self.Ps[2]:
-            margin_add(self.Ps[1], 1)
-            margin_add(self.Ps[0], 2)
-            self.margin_score = round(self.margin_score / 1.3)
-        elif self.Ps[2] == self.Ps[0]:
-            margin_add(self.Ps[2], 1)
-            margin_add(self.Ps[1], 2)
-            self.margin_score = round(self.margin_score / 1.3)  
-        elif self.Ps[0] != self.Ps[1] != self.Ps[2]:
-            margin_add(self.Ps[0], 2)
-            margin_add(self.Ps[1], 2)
-            margin_add(self.Ps[2], 2)
-            self.margin_score = round(self.margin_score / 3)
-
-        self.score_time = self.score_times_dict[self.NowMode()]
-        self.margin_score *= self.score_time
-        
-
-    def Result(self):
-        """結果"""
-        self.played += 1
-        self.DataIndex += 1
-        self.score += self.margin_score
-        self.margin_score = 0
+    def Reset(self):
+        super().Reset()
+        self.superS = 0
+        self.greenS = 0
+        self.kachuS = 0
                     
     def JudgeMode(self):
         """判斷模式"""
@@ -961,7 +730,7 @@ while True:
     except ValueError as e:
         print(f"請輸入有效的數字: {e}")
 
-Game = LaBaG()
+Game = TargetLaBaG()
 
 recent_max = 0
 
@@ -997,310 +766,7 @@ from datetime import datetime
 import json
 
 from src.Sheet import Sheet
-
-class P:
-    """圖案符號"""
-    Dict = dict()
-
-    def __init__(self, code: str = None, score_list: list[int] = None, rate_dict: dict[str, int]= None):
-        self.code = code
-        self.score_list = score_list or []
-        self.rate_dict = rate_dict or {"Normal": 0}
-        
-        self.AddDict()
-
-    def AddDict(self):
-        """加入類字典中"""
-        if self.code not in P.Dict:
-            P.Dict[self.code] = self
-
-        
-class LaBaG:
-    def __init__(self):
-        self.AllData = dict() #總資料
-        self.OneData = dict() #單次資料
-        self.DataIndex = 0
-
-        # 遊戲邏輯變數
-        self.times = 30 #可遊玩次數 正常30
-        self.played = 0 #已遊玩次數
-
-        self.score = 0
-        self.margin_score= 0
-
-        self.Ps = [None, None, None]
-        P("A",[625, 350, 150], {
-                "Normal": 36,
-                "SuperHHH": 19,
-                "GreenWei": 36,
-                "PiKaChu": 36
-            })
-        
-        P("B",[1250, 650, 220], {
-                "Normal": 24,
-                "SuperHHH": 5,
-                "GreenWei": 24,
-                "PiKaChu": 24
-            })
-        
-        P("C",[2100, 1080, 380], {
-                "Normal": 17,
-                "SuperHHH": 19,
-                "GreenWei": 17,
-                "PiKaChu": 17
-            })
-        
-        P("D",[2500, 1250, 420], {
-                "Normal": 12,
-                "SuperHHH": 19,
-                "GreenWei": 12,
-                "PiKaChu": 12
-            })
-        
-        P("E",[10000, 5000, 1250], {
-                "Normal": 8,
-                "SuperHHH": 19,
-                "GreenWei": 8,
-                "PiKaChu": 8
-            })
-        
-        P("F",[20000, 10000, 2500], {
-                "Normal": 3,
-                "SuperHHH": 19,
-                "GreenWei": 3,
-                "PiKaChu": 3
-            })
-        
-        #加分倍數
-        self.score_times_dict = {
-            "Normal": 1,
-            "SuperHHH": 1,
-            "GreenWei": 3,
-            "PiKaChu": 1
-        }
-        self.score_time = 1
-
-        #region 特殊模式
-        #超級阿禾
-        self.SuperRate = 15
-        self.SuperHHH = False
-        self.SuperNum = 0
-        self.SuperTimes = 0
-
-        #綠光阿瑋
-        self.GreenRate = 35
-        self.GreenWei = False
-        self.GreenNum = 0
-        self.GreenTimes = 0
-        self.GssNum = 0 #咖波累積數
-
-        #皮卡丘
-        self.PiKaChu = False
-        self.kachu_times = 0
-
-        #endregion
-
-    def Reset(self):
-        """重置"""
-        self.played = 0
-        self.score = 0
-        self.margin_score= 0
-        self.score_time = 1
-        self.Ps = [None, None, None]
-        
-        self.SuperHHH = False
-        self.SuperTimes = 0
-
-        self.GreenWei = False
-        self.GreenTimes = 0
-        self.GssNum = 0
-
-        self.PiKaChu = False
-        self.kachu_times = 0
-
-    def Logic(self):
-        """邏輯流程"""
-        self.AllData = dict()
-        self.DataIndex = 0
-        self.Reset()
-        while self.GameRunning():
-            self.OneData = dict()
-            self.Random() 
-            self.CalculateScore()
-            self.Result()
-            self.JudgeMode()        
-    
-    def GameRunning(self) -> bool:
-        """判斷一局遊戲是否繼續運行"""
-        return self.played < self.times
-
-    def NowMode(self)  -> str:
-        """現在模式"""
-        modes = {
-            self.SuperHHH: "SuperHHH",
-            self.GreenWei: "GreenWei",
-            self.PiKaChu: "PiKaChu"
-        }
-        return modes.get(True, "Normal")
-        
-
-    def Random(self):
-        """遊戲變數隨機產生"""
-        RandNums = [randint(1, 100), randint(1, 100), randint(1, 100)]
-        for i in range(3):
-            self.OneData[f"RandNums[{i}]"] = RandNums[i]
-
-        self.SuperNum = randint(1, 100) 
-        self.OneData["SuperHHH"] = self.SuperNum
-        self.GreenNum = randint(1, 100) 
-        self.OneData["GreenWei"] = self.GreenNum
-
-        def acc_rate():
-            res = list()
-            acc = 0
-            for i in P.Dict:
-                acc += P.Dict[i].rate_dict[self.NowMode()]
-                res.append(acc)
-            return res
-        
-        rate_range = acc_rate()
-
-        for i in range(3):
-            if RandNums[i] <= rate_range[0]:
-                self.Ps[i] = P.Dict["A"]
-            elif RandNums[i] <= rate_range[1]:
-                self.Ps[i] = P.Dict["B"]
-            elif RandNums[i] <= rate_range[2]:
-                self.Ps[i] = P.Dict["C"]
-            elif RandNums[i] <= rate_range[3]:
-                self.Ps[i] = P.Dict["D"]
-            elif RandNums[i] <= rate_range[4]:
-                self.Ps[i] = P.Dict["E"]
-            elif RandNums[i] <= rate_range[5]:
-                self.Ps[i] = P.Dict["F"]
-
-        #增加咖波累積數
-        for p in self.Ps:
-            if p.code == "A" and self.GssNum < 20 :
-                self.GssNum += 1
-
-    def CalculateScore(self):
-        """計算分數"""
-        def margin_add(p: P, typ: int):
-            """p -> 使用 p 的分數列表\ntyp -> 得分型態"""
-            self.margin_score += p.score_list[typ]
-
-        if self.Ps[0] == self.Ps[1] == self.Ps[2]:
-            margin_add(self.Ps[0], 0)
-        elif self.Ps[0] == self.Ps[1]:
-            margin_add(self.Ps[0], 1)
-            margin_add(self.Ps[2], 2)
-            self.margin_score = round(self.margin_score / 1.3)
-        elif self.Ps[1] == self.Ps[2]:
-            margin_add(self.Ps[1], 1)
-            margin_add(self.Ps[0], 2)
-            self.margin_score = round(self.margin_score / 1.3)
-        elif self.Ps[2] == self.Ps[0]:
-            margin_add(self.Ps[2], 1)
-            margin_add(self.Ps[1], 2)
-            self.margin_score = round(self.margin_score / 1.3)  
-        elif self.Ps[0] != self.Ps[1] != self.Ps[2]:
-            margin_add(self.Ps[0], 2)
-            margin_add(self.Ps[1], 2)
-            margin_add(self.Ps[2], 2)
-            self.margin_score = round(self.margin_score / 3)
-
-        self.score_time = self.score_times_dict[self.NowMode()]
-        self.margin_score *= self.score_time
-        
-
-    def Result(self):
-        """結果"""
-        self.played += 1
-        self.DataIndex += 1
-        self.score += self.margin_score
-        self.margin_score = 0
-        self.AllData[f"{self.DataIndex}"] = self.OneData
-                    
-    def JudgeMode(self):
-        """判斷模式"""
-        if not self.GameRunning():
-            #關掉其他模式
-            self.SuperHHH = False
-            self.GreenWei = False
-
-            #判斷皮卡丘充電
-            if any(p.code == "E" for p in self.Ps) :
-                self.PiKaChu = True
-                self.played -= 5
-                self.kachu_times += 1
-                self.ModtoScreen = True
-            else:
-                self.PiKaChu = False
-            return
-        
-        
-        
-        match self.NowMode():
-            case "Normal" | "PiKaChu":
-                #判斷超級阿禾
-                hhh_appear = any(p.code == "B" for p in self.Ps) #判斷是否有任何阿禾
-                if self.SuperNum <= self.SuperRate and hhh_appear:
-                    self.SuperHHH = True
-                    self.SuperTimes += 6
-                    if self.PiKaChu:
-                        self.PiKaChu = False
-
-                    self.ModtoScreen = True
-
-                    #超級阿禾加倍
-                    if all(p.code == "B" for p in self.Ps):
-                        self.double_score = int(round(self.score / 2)) * self.score_time
-                        self.score += self.double_score
-                    return
-                
-                #判斷綠光阿瑋
-                gss_all = all(p.code == "A" for p in self.Ps) #判斷是否有出現並全部咖波
-                if self.GreenNum <= self.GreenRate and gss_all :
-                    self.GreenWei = True
-                    self.GreenTimes += 2
-                    if self.PiKaChu:
-                        self.PiKaChu = False
-                    
-                    self.ModtoScreen = True
-                    return
-
-                elif self.GssNum >= 20 : #咖波累積數達到20
-                    self.GreenWei = True
-                    self.GreenTimes += 2
-                    self.GssNum = 0
-                    if self.PiKaChu:
-                        self.PiKaChu = False
-                    
-                    self.ModtoScreen = True
-                    return
-            case "SuperHHH":
-                self.SuperTimes -= 1
-
-                if all(p.code == "B" for p in self.Ps):
-                    self.SuperTimes += 2
-                if self.SuperTimes <= 0 : #超級阿禾次數用完
-                    self.SuperHHH = False
-                    self.JudgeMode() #判斷是否可再進入特殊模式
-                    self.ModtoScreen = True
-
-                return
-            
-            case "GreenWei":
-                self.GreenTimes -= 1
-                if all(p.code == "A" for p in self.Ps):
-                    self.GreenTimes += 1
-                if self.GreenTimes <= 0 : #綠光阿瑋次數用完
-                    self.GreenWei = False
-                    self.JudgeMode() #判斷是否可再進入特殊模式
-                    self.ModtoScreen = True
-                
-                return
+from src.LaBaG import LaBaG
 
 while True:   
     try:
@@ -1350,6 +816,28 @@ with open(f"{output_dir}{Game.score}_{timestamp}.json", "w", encoding="utf-8") a
 
             
 
+@.\test.py
+import tkinter as tk
+from tkinter import filedialog
+
+root = tk.Tk()
+root.title("")
+root.geometry('200x200')
+
+def show():
+    file_path = filedialog.askopenfilename()   # 選擇檔案後回傳檔案路徑與名稱
+    print(file_path)                           # 印出路徑
+
+# Button 設定 command 參數，點擊按鈕時執行 show 函式
+btn = tk.Button(root,
+                text='開啟檔案',
+                font=('Arial',20,'bold'),
+                command=show
+              )
+btn.pack()
+
+root.mainloop()
+
 @.\GUI\yieldb64.py
 import os
 import base64
@@ -1398,7 +886,10 @@ encode_wav(sounds)
 
 
 @.\GUI\__init__.py
+import logging
+from typing import Union
 import tkinter as tk
+from tkinter import messagebox, filedialog
 from PIL import Image, ImageTk
 import base64
 from io import BytesIO
@@ -1407,288 +898,141 @@ import wave
 import tempfile
 from pygame import mixer
 
-class _SubWindow(tk.Toplevel):
-    def __init__(self, master :tk.Tk = None, window_name: str = None, width: int = 300, height: int = 300, BG_pic: ImageTk.PhotoImage = None):
-        """子視窗類別 (父視窗, 子視窗名稱, 寬, 高)"""
-        super().__init__(master)
-        self.master = master
-        self.title(self.master.title())
-        if window_name is not None:
-            self.title(window_name)
+# 設置基本日誌配置
+logging.basicConfig(
+    level=logging.DEBUG,  # 設置最低日誌級別（DEBUG, INFO, WARNING, ERROR, CRITICAL）
+    format='%(asctime)s - %(levelname)s - %(message)s',  # 設置日誌格式
+    handlers=[
+        logging.StreamHandler()  # 只输出到控制台
+    ]
+)
 
-        self.width = width
-        self.height = height
-        self.geometry(f"{width}x{height}")
-        self.resizable(False, False)  # 鎖定視窗大小
-
-        #畫面設置
-        self.Frame = tk.Frame(self, width= self.width, height= self.height, bg='lightblue')
-        self.Canvas = tk.Canvas(self.Frame, width= self.width, height= self.height)
-        self.Canvas.create_image(0, 0, image = BG_pic, anchor="nw", tag= "BG")
-        #畫面顯示
-        self.Canvas.pack(fill="both", expand=True)
-        self.Frame.pack(fill='both', expand=True) 
-
-        self._button_dict = dict()
-        self._entry_dict = dict()
-
-    def Button(self, button_name: str= None) -> tk.Button:
-        "使用 Tkinter.Button 相關操作"
-        if button_name in self._button_dict:
-            return self._button_dict[button_name]
-        else:
-            raise KeyError(f"無法從 {type(self).__name__}._button_dict 找到名為 {button_name} 的button")
-    
-    def Entry(self, entry_name: str= None) -> tk.Entry:
-        """使用 Tkinter.Entry 相關操作"""
-        if entry_name in self._entry_dict:
-            return self._entry_dict[entry_name]
-        else:
-            raise KeyError(f"無法從 {type(self).__name__}._entry_dict 找到名為 {entry_name} 的entry")
-
-    def load_picture(self, img: ImageTk.PhotoImage = None, x: int = 0, y: int = 0 , tg: str = ""):
-        """加載新的圖片並放在CANVA上 (照片, 水平座標, 垂直座標, 標記)"""
-        self.Canvas.create_image(x, y, image = img, anchor = "nw" , tag = tg)
-
-    def update_picture(self, tg: str = "", img: ImageTk.PhotoImage = None) :
-        """更換CANVA上的圖片 (標記, 圖)"""
-        self.Canvas.itemconfig(tg , image = img)
-
-    def add_text(self, txt: str = "", x: int = 0, y: int = 0, size: int = 12, color: str = "white" , tg: str = "", align: str = "center"):
-        """添加粗體文字(文字, 水平位置, 垂直位置, 大小, 顏色, 標記, 對齊方式[東南西北])"""
-        self.Canvas.create_text(
-                        x, y,
-                        text = txt ,
-                        font = ("Arial", size , "bold") ,
-                        fill = color ,
-                        tag = tg,
-                        anchor = align
-                        )
-        
-    def update_text(self, tg: str = "", txt: str = None) :
-        """更換CANVA上的文字 (標記, 文字)"""
-        self.Canvas.itemconfig(tg , text = txt)
-
-    def delete_canvas_tag(self,tg: str = ""):
-        """根據標記刪除CANVA上的物件 (標記)"""
-        self.Canvas.delete(tg)
-
-    def message_text(self,ms: int = 1000, txt: str = "", x: int = 0, y: int = 0, size: int = 12, color: str = "white" , align: str = "center"):
-        """顯示短暫訊息文字(ms毫秒: 預設 1000)"""
-        self.add_text(txt, x, y, size, color, "msg", align)
-        self.master.after(ms, lambda:self.delete_canvas_tag("msg"))
-
-    def image_button(self, button_name: str, CMD, img: ImageTk.PhotoImage = None, x: int = 0, y: int = 0, rel: str = "raised", highlight: int = 1):
-        """添加圖片按鈕(按鈕名, 執行動作, 圖片, 水平座標, 垂直座標, 三圍邊框效果, 焦點邊框厚度)"""
-        button = tk.Button(
-                        self,
-                        image = img,
-                        command = CMD,
-                        relief =  rel,
-                        highlightthickness = highlight
-                        )
-        self.Canvas.create_window(x , y , window = button)
-        self._button_dict[button_name] = button
-
-    def txt_button(self, button_name: str, CMD, txt: str = None, w: int= 0, h: int= 0, x: int = 0, y: int = 0, size: int = 12, font_color: str = "black", bg_color: str = "white"):
-        """添加粗體文字按鈕(按鈕名, 執行動作, 文字, 按鈕寬度, 按鈕高度, 水平位置, 垂直位置, 文字大小, 文字顏色, 背景顏色)"""
-        button = tk.Button(
-                        self,
-                        text = txt ,
-                        command = CMD,
-                        font = ("Arial", size, "bold"),
-                        fg = font_color,
-                        bg = bg_color
-                                )
-        # 按钮的位置&像素大小
-        button.place(width=w, height=h)
-        self.Canvas.create_window(x , y , window = button, tags=button_name)
-        self._button_dict[button_name] = button
-    
-    def delete_button(self, button_name: str):
-        """刪除按鈕"""
-        self.Button(button_name).destroy()
-
-    def input_box(self, entry_name: str= None,txt: str ="",x: int = 0, y: int = 0, size: int = 16, width: int = 12) :
-        """文字輸入盒(輸入盒名稱, 提示文字,水平座標,垂直座標,文字大小,寬度)"""
-        entry = tk.Entry(self, width = width, font=("Arial", size))
-        entry.insert(0, txt) 
-        self.Canvas.create_window(x, y, window = entry)
-        self._entry_dict[entry_name] = entry
-
-    def get_input(self, entry_name: str= None):
-        """獲取文字輸入盒內容"""
-        user_input = self.Entry(entry_name).get()
-        content = str(user_input.strip()) #去除字串前後空白
-        return content
-    
-    def reset_input_box(self, entry_name: str= None, content: str = ""):
-        """重新載入輸入盒內容"""
-        self.Entry(entry_name).delete(0, "end")
-        self.Entry(entry_name).insert(0, content)
-
-
-class Window(tk.Tk):
-    def __init__(self, title: str= "",  width: int = 300, height: int= 300):
-        """設置視窗(視窗名, 寬, 高)"""
-        super().__init__()
-        mixer.init()
-        self.title(title)
-        
+class BaseWindow():
+    """基本視窗類"""
+    def __init__(self, title: str = None, width: int = 300, height: int = 300):
+        self.window_title = title
         self.width = width
         self.height = height
 
-        self.geometry(f"{self.width}x{self.height}") #視窗長寬
-        self.resizable(False, False) #視窗大小鎖定
-
-        self._frame_dict = dict()
-        self._canvas_dict = dict()
-        self._button_dict = dict()
-        self._entry_dict = dict()
-        self._subwindow_dict = dict()
-      
-        self.temp_files = list() #臨時文件
-
-        self.protocol("WM_DELETE_WINDOW", self.clean_temp) #綁定關閉視窗
-
-    def clean_temp(self):
-        """關閉視窗時刪除臨時 圖標 & 音訊文件"""
-        print("正在關閉視窗")
-        self.destroy()
-        mixer.music.stop()
-        mixer.quit() 
-        if os.path.exists("temp_icon.ico"):
-            os.remove("temp_icon.ico")
-            print(f"已成功刪除臨時文件: temp_icon.ico")
-        
-        for temp_file in self.temp_files:
-            if os.path.exists(temp_file):
-                try:
-                    os.remove(temp_file)
-                    print(f"已成功刪除臨時文件: {temp_file}")
-                except Exception as e:
-                    print(f"無法刪除臨時文件: {temp_file}, 原因: {e}")
-
+        self.__frame_dict = dict()
+        self.__canvas_dict = dict()
+        self.__button_dict = dict()
+        self.__entry_dict = dict()
+        self.__subwindow_dict = dict()
+    
     def Canva(self, canvas_name: str= None) -> tk.Canvas:
         "使用 Tkinter.Canvas 相關操作"
-        if canvas_name in self._canvas_dict:
-            return self._canvas_dict[canvas_name]
+        if canvas_name in self.__canvas_dict:
+            return self.__canvas_dict[canvas_name]
         else:
-            raise KeyError(f"無法從 {type(self).__name__}._canvas_dict 找到名為 {canvas_name} 的canvas")
+            raise KeyError(f"無法從 {type(self).__name__}.__canvas_dict 找到名為 {canvas_name} 的canvas")
 
     def Frame(self, frame_name: str= None) -> tk.Frame:
         "使用 Tkinter.Frame 相關操作"
-        if frame_name in self._frame_dict:
-            return self._frame_dict[frame_name]
+        if frame_name in self.__frame_dict:
+            return self.__frame_dict[frame_name]
         else:
-            raise KeyError(f"無法從 {type(self).__name__}._frame_dict 找到名為 {frame_name} 的frame")
+            raise KeyError(f"無法從 {type(self).__name__}.__frame_dict 找到名為 {frame_name} 的frame")
 
     def Button(self, button_name: str= None) -> tk.Button:
         "使用 Tkinter.Button 相關操作"
-        if button_name in self._button_dict:
-            return self._button_dict[button_name]
+        if button_name in self.__button_dict:
+            return self.__button_dict[button_name]
         else:
-            raise KeyError(f"無法從 {type(self).__name__}._button_dict 找到名為 {button_name} 的button")
-
+            raise KeyError(f"無法從 {type(self).__name__}.__button_dict 找到名為 {button_name} 的button")
+        
     def Entry(self, entry_name: str= None) -> tk.Entry:
         """使用 Tkinter.Entry 相關操作"""
-        if entry_name in self._entry_dict:
-            return self._entry_dict[entry_name]
+        if entry_name in self.__entry_dict:
+            return self.__entry_dict[entry_name]
         else:
-            raise KeyError(f"無法從 {type(self).__name__}._entry_dict 找到名為 {entry_name} 的entry")
+            raise KeyError(f"無法從 {type(self).__name__}.__entry_dict 找到名為 {entry_name} 的entry")
     
-    def SubWindow(self, window_name: str = None) -> _SubWindow:
-        """使用 _SubWindow (Tkinter.Toplevel) 相關操作"""
-        if window_name in self._subwindow_dict:
-            return self._subwindow_dict[window_name]
+    def SubWindow(self, window_name: str = None) -> "SubWindow": #延遲解析
+        """使用 SubWindow (Tkinter.Toplevel) 相關操作"""
+        if window_name in self.__subwindow_dict:
+            return self.__subwindow_dict[window_name]
         else:
             raise KeyError(f"無法從 {type(self).__name__}._subwindow_dict 找到名為 {window_name} 的subwindow")
-
+    
     def setup_frame_and_canvas(self, name,  BG_pic: ImageTk.PhotoImage = None):
         """創建 & 設置畫面(畫面名稱, 背景圖片)"""
         Frame = tk.Frame(self, width= self.width, height= self.height, bg='lightblue')
         Canvas = tk.Canvas(Frame, width= self.width, height= self.height)
         Canvas.pack(fill="both", expand=True)
         Canvas.create_image(0, 0, image = BG_pic, anchor="nw", tag= "BG")
-        self._frame_dict[name] = Frame
-        self._canvas_dict[name] = Canvas
-    
+        self.__frame_dict[name] = Frame
+        self.__canvas_dict[name] = Canvas
+
     def switch_frame(self, frame1_name: str, frame2_name: str):
         """切換畫面(畫面1 to 畫面2)"""
         self.Frame(frame1_name).pack_forget()
         self.Frame(frame2_name).pack(fill='both', expand=True)
 
     def first_window(self, frame_name: str):
-        """顯示首畫面"""
+        """顯示首個畫面"""
         self.Frame(frame_name).pack(fill='both', expand=True)
-
-    def save_icon_use(self, image_dict: dict, name: str):
-        """創建、保存並使用臨時圖標《temp_icon.ico》"""
-        icon_data = base64.b64decode(image_dict[name])
-        with open("temp_icon.ico", "wb") as icon_file:
-            icon_file.write(icon_data)
-        self.iconbitmap("temp_icon.ico") #視窗圖標.ico
-
 
     def load_picture(self, canvas_name: str = None, img: ImageTk.PhotoImage = None, x: int = 0, y: int = 0 , tg: str = ""):
         """加載新的圖片並放在CANVA上 (畫面 , 照片, 水平座標, 垂直座標, 標記)"""
         self.Canva(canvas_name).create_image(x, y, image = img, anchor = "nw" , tag = tg)
-
-    def update_picture(self, canvas_name: str = None,tg: str = "", img: ImageTk.PhotoImage = None) :
-        """更換CANVA上的圖片 (畫面, 標記, 圖)"""
-        self.Canva(canvas_name).itemconfig(tg , image = img)
-
-
+    
     def add_text(self, canvas_name: str = None, txt: str = "", x: int = 0, y: int = 0, size: int = 12, color: str = "white" , tg: str = "", align: str = "center"):
         """添加粗體文字(畫面, 文字, 水平位置, 垂直位置, 大小, 顏色, 標記, 對齊方式[東南西北])"""
         self.Canva(canvas_name).create_text(
-                        x, y,
-                        text = txt ,
-                        font = ("Arial", size , "bold") ,
-                        fill = color ,
-                        tag = tg,
-                        anchor = align
-                        )
-        
-    def update_text(self, canvas_name: str = None, tg: str = "", txt: str = None) :
-        """更換CANVA上的文字 (畫面, 標記, 文字)"""
-        self.Canva(canvas_name).itemconfig(tg , text = txt)
+            x, y,
+            text = txt ,
+            font = ("Arial", size , "bold") ,
+            fill = color ,
+            tag = tg,
+            anchor = align
+        )
+
+    def update_by_tag(self, canvas_name: str = None, tg: str = "", new_item: Union[str, ImageTk.PhotoImage, None] = None) -> None:
+        """根據標記(tag)更換 CANVA 上的 物件 (畫面, 標記, 新物件)"""
+        canva = self.Canva(canvas_name)
+
+        if isinstance(new_item, str):
+            canva.itemconfig(tg, text=new_item)
+        elif isinstance(new_item, ImageTk.PhotoImage):
+            canva.itemconfig(tg, image=new_item)
+        elif new_item is not None:
+            raise TypeError(f"不支援的類型: {type(new_item)}，請傳入 str 或 ImageTk.PhotoImage")
 
     def delete_canvas_tag(self, canvas_name: str = None, tg: str = ""):
         """根據標記刪除CANVA上的物件 (畫面, 標記)"""
         self.Canva(canvas_name).delete(tg)
 
-    def message_text(self,ms: int = 1000, canvas_name: str = None, txt: str = "", x: int = 0, y: int = 0, size: int = 12, color: str = "white" , align: str = "center"):
-        """顯示短暫訊息文字(ms毫秒: 預設 1000)"""
-        self.add_text(canvas_name, txt, x, y, size, color, "msg", align)
-        self.after(ms, lambda:self.delete_canvas_tag(canvas_name, "msg"))
+    def message_box(self, message: str = ""):
+        """顯示訊息框"""
+        messagebox.showinfo(self.window_title, message)
         
     def image_button(self, button_name: str, CMD, canvas_name: str = None, img: ImageTk.PhotoImage = None, x: int = 0, y: int = 0, rel: str = "raised", highlight: int = 1):
         """添加圖片按鈕(按鈕名, 執行動作, 畫面名, 圖片, 水平座標, 垂直座標, 三圍邊框效果, 焦點邊框厚度)"""
         button = tk.Button(
-                        self,
-                        image = img,
-                        command = CMD,
-                        relief =  rel,
-                        highlightthickness = highlight
-                        )
+            self,
+            image = img,
+            command = CMD,
+            relief =  rel,
+            highlightthickness = highlight
+        )
         self.Canva(canvas_name).create_window(x , y , window = button, tags= button_name)
-        self._button_dict[button_name] = button
+        self.__button_dict[button_name] = button
 
     def txt_button(self, button_name: str, CMD  ,canvas_name: str = None,  txt: str = None, w: int= 0, h: int= 0, x: int = 0, y: int = 0, size: int = 12, font_color: str = "black", bg_color: str = "white"):
         """添加粗體文字按鈕(按鈕名, 執行動作, 畫面名, 文字, 按鈕寬度, 按鈕高度, 水平位置, 垂直位置, 文字大小, 文字顏色, 背景顏色)"""
         button = tk.Button(
-                        self,
-                        text = txt ,
-                        command = CMD,
-                        font = ("Arial", size, "bold"),
-                        fg = font_color,
-                        bg = bg_color
-                                )
-        # 按钮的位置&像素大小
+            self,
+            text = txt ,
+            command = CMD,
+            font = ("Arial", size, "bold"),
+            fg = font_color,
+            bg = bg_color
+        )
+        # 按钮的像素大小&位置
         button.place(width=w, height=h)
-        self.Canva(canvas_name).create_window(x , y , window = button)
-        self._button_dict[button_name] = button
+        self.Canva(canvas_name).create_window(x , y , window = button, tags= button_name)
+        self.__button_dict[button_name] = button
 
     def delete_button(self, button_name: str):
         """刪除按鈕"""
@@ -1699,23 +1043,114 @@ class Window(tk.Tk):
         entry = tk.Entry(self, width = width, font=("Arial", size))
         entry.insert(0, txt) 
         self.Canva(canvas_name).create_window(x, y, window = entry)
-        self._entry_dict[entry_name] = entry
+        self.__entry_dict[entry_name] = entry
 
     def get_input(self, entry_name: str= None):
         """獲取文字輸入盒內容"""
-        user_input = self.Entry(entry_name).get()
-        content = str(user_input.strip()) #去除字串前後空白
-        return content
+        return self.Entry(entry_name).get().strip() #去除字串前後空白
+        
     
     def reset_input_box(self, entry_name: str= None, content: str = ""):
         """重新載入輸入盒內容"""
         self.Entry(entry_name).delete(0, "end")
         self.Entry(entry_name).insert(0, content)
+    
+    def open_file(self) -> str:
+        """開啟檔案(回傳檔案路徑)"""
+        return filedialog.askopenfilename()
+
+class Window(tk.Tk, BaseWindow):
+    def __init__(self, title: str = None, width: int = 300, height: int = 300):
+        """主視窗類別 (視窗名稱, 寬, 高)"""
+        tk.Tk.__init__(self)  # 初始化 tk.Tk
+        BaseWindow.__init__(self, title, width, height)  # 初始化 BaseWindow
+        mixer.init() # 初始化音訊
+        self.title(self.window_title)
+        self.geometry(f"{self.width}x{self.height}")
+        self.resizable(False, False) # 鎖定視窗大小
+        
+        self.temp_files = list() #臨時文件
+
+        self.protocol("WM_DELETE_WINDOW", self.clean_temp) #綁定關閉視窗
+
+    def clean_temp(self):
+        """關閉視窗時刪除臨時 圖標 & 音訊文件"""
+        logging.debug("正在關閉視窗")
+        self.destroy()
+        mixer.music.stop()
+        mixer.quit() 
+        if os.path.exists("temp_icon.ico"):
+            os.remove("temp_icon.ico")
+            logging.debug(f"已成功刪除臨時文件: temp_icon.ico")
+        
+        for temp_file in self.temp_files:
+            if os.path.exists(temp_file):
+                try:
+                    os.remove(temp_file)
+                    logging.debug(f"已成功刪除臨時文件: {temp_file}")
+                except Exception as e:
+                    logging.error(f"無法刪除臨時文件: {temp_file}, 原因: {e}")
+
+    def save_icon_use(self, image_dict: dict, name: str):
+        """創建、保存並使用臨時圖標《temp_icon.ico》"""
+        icon_data = base64.b64decode(image_dict[name])
+        with open("temp_icon.ico", "wb") as icon_file:
+            icon_file.write(icon_data)
+        self.iconbitmap("temp_icon.ico") #視窗圖標.ico
+
+class SubWindow(tk.Toplevel, BaseWindow):
+    """子視窗類"""
+    def __init__(self, master :tk.Tk = None, title: str = None, width: int = 300, height: int = 300, BG_pic: ImageTk.PhotoImage = None):
+        """子視窗類別 (父視窗, 子視窗名稱, 寬, 高)"""
+        tk.Toplevel.__init__(self, master)  # 初始化 tk.Toplevel
+        BaseWindow.__init__(self, title, width, height)  # 初始化 BaseWindow
+        self.master = master
+        self.iconbitmap(self.master.iconbitmap())
+        
+        self.title(self.master.title())
+        if title is not None:
+            self.title(title)
+
+        self.geometry(f"{self.width}x{self.height}")
+        self.resizable(False, False)  # 鎖定視窗大小
+
+        self.setup_frame_and_canvas("Main", BG_pic)
+        self.first_window("Main")
+    
+    def load_picture(self, img: ImageTk.PhotoImage = None, x: int = 0, y: int = 0 , tg: str = ""):
+        """加載新的圖片並放在CANVA上 (照片, 水平座標, 垂直座標, 標記)"""
+        super().load_picture("Main", img, x, y, tg)
+    
+    def add_text(self, txt: str = "", x: int = 0, y: int = 0, size: int = 12, color: str = "white" , tg: str = "", align: str = "center"):
+        """添加粗體文字(文字, 水平位置, 垂直位置, 大小, 顏色, 標記, 對齊方式[東南西北])"""
+        super().add_text("Main", txt, x, y, size, color, tg, align)
+
+    def update_by_tag(self, tg: str = "", new_item: Union[str, ImageTk.PhotoImage, None] = None) -> None:
+        """根據標記(tag)更換 CANVA 上的 物件 (標記, 新物件)"""
+        super().update_by_tag("Main", tg, new_item)
+
+    def delete_canvas_tag(self, tg: str = ""):
+        """根據標記刪除CANVA上的物件 (標記)"""
+        super().delete_canvas_tag("Main", tg)
+
+    def message_text(self,ms: int = 1000, txt: str = "", x: int = 0, y: int = 0, size: int = 12, color: str = "white" , align: str = "center"):
+        """顯示短暫訊息文字(ms毫秒: 預設 1000)"""
+        self.add_text(txt, x, y, size, color, "msg", align)
+        self.master.after(ms, lambda:self.delete_canvas_tag("msg"))
+
+    def image_button(self, button_name: str, CMD, img: ImageTk.PhotoImage = None, x: int = 0, y: int = 0, rel: str = "raised", highlight: int = 1):
+        super().image_button(button_name, CMD, "Main", img, x, y, rel, highlight)
+    
+    def txt_button(self, button_name: str, CMD, txt: str = None, w: int= 0, h: int= 0, x: int = 0, y: int = 0, size: int = 12, font_color: str = "black", bg_color: str = "white"):
+        super().txt_button(button_name, CMD, "Main", txt, w, h, x, y, size, font_color, bg_color)
+
+    def input_box(self, entry_name: str= None, txt: str = "", x: int = 0, y: int = 0, size: int = 16, width: int = 12):
+        super().input_box("Main", entry_name, txt, x, y, size, width)
 
     def setup_subwindow(self, window_name: str = None,  width: int = 300, height: int= 300, BG_pic: ImageTk.PhotoImage = None):
         """建立子視窗(視窗, 寬, 高)"""
-        sw = _SubWindow(self, window_name, width, height, BG_pic)
-        self._subwindow_dict[window_name] = sw
+        sw = SubWindow(self, window_name, width, height, BG_pic)
+        self.__subwindow_dict[window_name] = sw
 
 class Picture:
     @staticmethod
@@ -1807,10 +1242,10 @@ class Audio:
                             self.temp_files.append(temp_filename)
                     
                 # 儲存臨時文件名
-                print(f"成功創建臨時文件: {temp_filename}")
+                logging.debug(f"成功創建臨時文件: {temp_filename}")
                 self.music_dict[name] = temp_filename
             except Exception as e:
-               print(f"音樂解碼失敗 ({name}): {e}")
+               logging.error(f"音樂解碼失敗 ({name}): {e}")
     #endregion
 
 @.\src\element.py
@@ -1872,140 +1307,24 @@ except Exception as e:
     print(e)
 
 @.\src\Game.py
-from random import randint
+try:
+    from src.LaBaG import P, LaBaG
+except ModuleNotFoundError:
+    from LaBaG import P, LaBaG
 
-class P:
-    """圖案符號"""
-    Dict = dict()
-
-    def __init__(self, code: str = None, score_list: list[int] = None, rate_dict: dict[str, int]= None):
-        self.code = code
-        self.score_list = score_list or []
-        self.rate_dict = rate_dict or {"Normal": 0}
-        
-        self.AddDict()
-
-    def AddDict(self):
-        """加入類字典中"""
-        if self.code not in P.Dict:
-            P.Dict[self.code] = self
-
-    
-class LaBaG:
+class PlayLaBaG(LaBaG):
     def __init__(self):
-        self.name = "" #玩家名稱
-        self.AllData = dict() #總資料
-        self.OneData = dict() #單次資料
-        self.DataIndex = 0
-
-        # 遊戲邏輯變數
-        self.times = 30 #可遊玩次數 正常30
-        self.played = 0 #已遊玩次數
-
-        self.score = 0
-        self.margin_score= 0
-
+        super().__init__()
+        self.Name = ""
         self.history_score = 0
 
-        self.Ps = [None, None, None]
-
-        P("A",[625, 350, 150], {
-                "Normal": 36,
-                "SuperHHH": 19,
-                "GreenWei": 36,
-                "PiKaChu": 36
-            })
-        
-        P("B",[1250, 650, 220], {
-                "Normal": 24,
-                "SuperHHH": 5,
-                "GreenWei": 24,
-                "PiKaChu": 24
-            })
-        
-        P("C",[2100, 1080, 380], {
-                "Normal": 17,
-                "SuperHHH": 19,
-                "GreenWei": 17,
-                "PiKaChu": 17
-            })
-        
-        P("D",[2500, 1250, 420], {
-                "Normal": 12,
-                "SuperHHH": 19,
-                "GreenWei": 12,
-                "PiKaChu": 12
-            })
-        
-        P("E",[10000, 5000, 1250], {
-                "Normal": 8,
-                "SuperHHH": 19,
-                "GreenWei": 8,
-                "PiKaChu": 8
-            })
-        
-        P("F",[20000, 10000, 2500], {
-                "Normal": 3,
-                "SuperHHH": 19,
-                "GreenWei": 3,
-                "PiKaChu": 3
-            })
-
-        #加分倍數
-        self.score_times_dict = {
-            "Normal": 1,
-            "SuperHHH": 1,
-            "GreenWei": 3,
-            "PiKaChu": 1
-        }
-        self.score_time = 1 #本次加分倍數
-
-        #region 特殊模式
-        self.ModtoScreen = False #模式影響畫面
-        #超級阿禾
-        self.SuperRate = 15
-        self.SuperHHH = False
-        self.SuperNum = 0
-        self.SuperTimes = 0
         self.double_score = 0 #超級阿禾加倍分
 
-        #綠光阿瑋
-        self.GreenRate = 35
-        self.GreenWei = False
-        self.GreenNum = 0
-        self.GreenTimes = 0
-        self.GssNum = 0 #咖波累積數
-
-        #皮卡丘
-        self.PiKaChu = False
-        self.kachu_times = 0
-
-        #endregion
-
     def Reset(self):
-        """重置"""
-        self.AllData = dict()
-        self.DataIndex = 0
-
-        self.played = 0
-        self.score = 0
-        self.margin_score= 0
-        self.score_time = 1
-        self.Ps = [None, None, None]
-        
-        self.SuperHHH = False
-        self.SuperTimes = 0
-        self.double_score = 0
-
-        self.GreenWei = False
-        self.GreenTimes = 0
-        self.GssNum = 0
-
-        self.PiKaChu = False
-        self.kachu_times = 0
+        super().Reset()
+        self.history_score = 0
 
     def Logic(self):
-        """邏輯流程"""
         self.ModtoScreen = False
         self.OneData = dict()
         self.margin_score = 0
@@ -2015,121 +1334,52 @@ class LaBaG:
         self.Result()
         self.JudgeMode()
 
-    def GameRunning(self) -> bool:
-        """判斷一局遊戲是否繼續運行"""
-        return self.played < self.times
-
-    def NowMode(self)  -> str:
-        """現在模式"""
-        modes = {
-            self.SuperHHH: "SuperHHH",
-            self.GreenWei: "GreenWei",
-            self.PiKaChu: "PiKaChu"
-        }
-        return modes.get(True, "Normal")
-        
-
     def Random(self):
-        """遊戲變數隨機產生"""
-        RandNums = [randint(1, 100), randint(1, 100), randint(1, 100)]
-        print(f"P隨機數為：{RandNums[0]} | {RandNums[1]} | {RandNums[2]}")
-
-        self.SuperNum = randint(1, 100) 
+        """隨機生成數字"""
+        super().Random()
         print(f"超級阿禾隨機數為: {self.SuperNum}")
-
-        self.GreenNum = randint(1, 100) 
         print(f"綠光阿瑋隨機數為: {self.GreenNum}")
-
-        for i in range(3):
-            self.OneData[f"RandNums[{i}]"] = RandNums[i]
-        self.OneData["SuperHHH"] = self.SuperNum
-        self.OneData["GreenWei"] = self.GreenNum
-
-
-        def acc_rate():
-            res = list()
-            acc = 0
-            for i in P.Dict:
-                acc += P.Dict[i].rate_dict[self.NowMode()]
-                res.append(acc)
-            return res
-        
-        rate_range = acc_rate()
-        print("機率區間：", rate_range)
-
-        for i in range(3):
-            if RandNums[i] <= rate_range[0]:
-                self.Ps[i] = P.Dict["A"]
-            elif RandNums[i] <= rate_range[1]:
-                self.Ps[i] = P.Dict["B"]
-            elif RandNums[i] <= rate_range[2]:
-                self.Ps[i] = P.Dict["C"]
-            elif RandNums[i] <= rate_range[3]:
-                self.Ps[i] = P.Dict["D"]
-            elif RandNums[i] <= rate_range[4]:
-                self.Ps[i] = P.Dict["E"]
-            elif RandNums[i] <= rate_range[5]:
-                self.Ps[i] = P.Dict["F"]
-
-        #增加咖波累積數
-        for p in self.Ps:
-            if p.code == "A" and self.GssNum < 20 :
-                self.GssNum += 1
         print(f"咖波累積數：{self.GssNum}")
-        
+
 
     def CalculateScore(self):
         """計算分數"""
-        def margin_add(p: P, typ: int):
-            """p -> 使用 p 的分數列表\ntyp -> 得分型態"""
-            self.margin_score += p.score_list[typ]
-
-        if self.Ps[0] == self.Ps[1] == self.Ps[2]:
-            margin_add(self.Ps[0], 0)
-        elif self.Ps[0] == self.Ps[1]:
-            margin_add(self.Ps[0], 1)
-            margin_add(self.Ps[2], 2)
-            self.margin_score = round(self.margin_score / 1.3)
-        elif self.Ps[1] == self.Ps[2]:
-            margin_add(self.Ps[1], 1)
-            margin_add(self.Ps[0], 2)
-            self.margin_score = round(self.margin_score / 1.3)
-        elif self.Ps[2] == self.Ps[0]:
-            margin_add(self.Ps[2], 1)
-            margin_add(self.Ps[1], 2)
-            self.margin_score = round(self.margin_score / 1.3)  
-        elif self.Ps[0] != self.Ps[1] != self.Ps[2]:
-            margin_add(self.Ps[0], 2)
-            margin_add(self.Ps[1], 2)
-            margin_add(self.Ps[2], 2)
-            self.margin_score = round(self.margin_score / 3)
-
-        self.score_time = self.score_times_dict[self.NowMode()]
-        self.margin_score *= self.score_time
+        super().CalculateScore()
         print(f"加分倍數: {self.score_time}")
-        
 
     def Result(self):
         """結果"""
-        self.played += 1
-        self.DataIndex += 1
-        self.score += self.margin_score
+        super().Result()
         print(f"")
         print(f' | {self.Ps[0].code} | {self.Ps[1].code} | {self.Ps[2].code} |')
         print(f"+{self.margin_score}")
         print(f"目前分數：{self.score}")
         print(f"剩餘次數：{self.times - self.played}")
-        self.AllData[f"{self.DataIndex}"] = self.OneData
 
-        
-
-    def GameOver(self):
-        """遊戲結束"""
-        print("")
-        print(f"遊戲已結束，最終分數為：{self.score}。")
-        if self.score > self.history_score:
-            self.history_score = self.score
-
+    # def JudgeMode(self):
+    #     super().JudgeMode()
+    #     match self.NowMode():
+    #         case "SuperHHH":
+    #             if self.ModtoScreen:
+    #                 print(f"超級阿禾出現")
+    #                 if self.double_score != 0:
+    #                         print(f"(超級阿禾加倍分:{self.double_score})")
+    #             else:
+    #                 if all(p.code == "B" for p in self.Ps):
+    #                     print("全阿禾，次數不消耗且+1！")
+    #             print(f"超級阿禾剩餘次數:{self.SuperTimes}次")
+    #         case "GreenWei":
+    #             if self.ModtoScreen:
+    #                 print(f"綠光阿瑋出現")
+    #             else:
+    #                 if all(p.code == "A" for p in self.Ps):
+    #                     print("全咖波，次數不消耗！")
+    #             print(f"綠光阿瑋剩餘次數:{self.GreenTimes}次")
+                
+    #         case "PiKaChu":
+    #             if self.ModtoScreen:
+    #                 print(f"皮卡丘為你充電")
+    #                 print(f"已觸發 {self.kachu_times} 次皮卡丘充電")
     def JudgeMode(self):
         """判斷模式"""
         if not self.GameRunning():
@@ -2222,15 +1472,23 @@ class LaBaG:
                     self.ModtoScreen = True
                 
                 return
-
+        
+    def GameOver(self):
+        """遊戲結束"""
+        print("")
+        print(f"遊戲已結束，最終分數為：{self.score}。")
+        if self.score > self.history_score:
+            self.history_score = self.score
 
 #region JsonLaBaG
 import json
-class JsonLaBaG(LaBaG):
+from random import randint
+
+class JsonLaBaG(PlayLaBaG):
     """與json檔案連接的啦八機"""
     def __init__(self):
         super().__init__()
-        self.json_data = None
+        self.json_data = dict()
         self.index = "1" # 第 n 次的索引
         
 
@@ -2267,13 +1525,17 @@ class JsonLaBaG(LaBaG):
 
     def Random(self):
         """遊戲變數隨機產生"""
-        RandNums = [self.json_data[self.index]["RandNums[0]"], self.json_data[self.index]["RandNums[1]"], self.json_data[self.index]["RandNums[2]"]]
+        if self.index in self.json_data:
+            RandNums = [self.json_data[self.index]["RandNums[0]"], self.json_data[self.index]["RandNums[1]"], self.json_data[self.index]["RandNums[2]"]]
+            self.SuperNum = self.json_data[self.index]["SuperHHH"]
+            self.GreenNum = self.json_data[self.index]["GreenWei"]
+        else:
+            RandNums = [randint(1, 100), randint(1, 100), randint(1, 100)]
+            self.SuperNum = randint(1, 100) 
+            self.GreenNum = randint(1, 100) 
+
         print(f"P隨機數為：{RandNums[0]} | {RandNums[1]} | {RandNums[2]}")
-
-        self.SuperNum = self.json_data[self.index]["SuperHHH"]
         print(f"超級阿禾隨機數為: {self.SuperNum}")
-
-        self.GreenNum = self.json_data[self.index]["GreenWei"]
         print(f"綠光阿瑋隨機數為: {self.GreenNum}")
 
 
@@ -2320,16 +1582,333 @@ class JsonLaBaG(LaBaG):
         print(f"剩餘次數：{self.times - self.played}")
 #endregion
 
-
 if __name__ == "__main__":
-    Game = LaBaG()
+    Game = PlayLaBaG()
     while Game.GameRunning():
+        while True:
+            if input("請按下ENTER") == "":
+                break
         Game.Logic()
     Game.GameOver()
-     
+        
 
+@.\src\LaBaG.py
+from random import randint
+
+class P:
+    """圖案符號"""
+    Dict = dict()
+
+    def __init__(self, code: str = None, score_list: list[int] = None, rate_dict: dict[str, int]= None):
+        self.code = code
+        self.score_list = score_list or []
+        self.rate_dict = rate_dict or {"Normal": 0}
+        
+        self.AddDict()
+
+    def AddDict(self):
+        """加入類字典中"""
+        if self.code not in P.Dict:
+            P.Dict[self.code] = self
+
+        
+class LaBaG:
+    def __init__(self):
+        self.AllData = dict() #總資料
+        self.OneData = dict() #單次資料
+        self.DataIndex = 0
+
+        # 遊戲邏輯變數
+        self.times = 30 #可遊玩次數 正常30
+        self.played = 0 #已遊玩次數
+
+        self.score = 0
+        self.margin_score= 0
+
+        self.Ps = [None, None, None]
+        P("A",[625, 350, 150], {
+                "Normal": 36,
+                "SuperHHH": 19,
+                "GreenWei": 36,
+                "PiKaChu": 36
+            })
+        
+        P("B",[1250, 650, 220], {
+                "Normal": 24,
+                "SuperHHH": 5,
+                "GreenWei": 24,
+                "PiKaChu": 24
+            })
+        
+        P("C",[2100, 1080, 380], {
+                "Normal": 17,
+                "SuperHHH": 19,
+                "GreenWei": 17,
+                "PiKaChu": 17
+            })
+        
+        P("D",[2500, 1250, 420], {
+                "Normal": 12,
+                "SuperHHH": 19,
+                "GreenWei": 12,
+                "PiKaChu": 12
+            })
+        
+        P("E",[10000, 5000, 1250], {
+                "Normal": 8,
+                "SuperHHH": 19,
+                "GreenWei": 8,
+                "PiKaChu": 8
+            })
+        
+        P("F",[20000, 10000, 2500], {
+                "Normal": 3,
+                "SuperHHH": 19,
+                "GreenWei": 3,
+                "PiKaChu": 3
+            })
+        
+        #加分倍數
+        self.score_times_dict = {
+            "Normal": 1,
+            "SuperHHH": 1,
+            "GreenWei": 3,
+            "PiKaChu": 1
+        }
+        self.score_time = 1
+
+        #region 特殊模式
+        self.ModtoScreen = False #模式影響畫面
+        #超級阿禾
+        self.SuperRate = 15
+        self.SuperHHH = False
+        self.SuperNum = 0
+        self.SuperTimes = 0
+        self.double_score = 0 #超級阿禾加倍分
+
+        #綠光阿瑋
+        self.GreenRate = 35
+        self.GreenWei = False
+        self.GreenNum = 0
+        self.GreenTimes = 0
+        self.GssNum = 0 #咖波累積數
+
+        #皮卡丘
+        self.PiKaChu = False
+        self.kachu_times = 0
+
+        #endregion
+
+    def Reset(self):
+        """重置"""
+        self.AllData = dict()
+        self.DataIndex = 0
+
+        self.played = 0
+        self.score = 0
+        self.margin_score= 0
+        self.score_time = 1
+        self.Ps = [None, None, None]
+        
+        self.SuperHHH = False
+        self.SuperTimes = 0
+
+        self.GreenWei = False
+        self.GreenTimes = 0
+        self.GssNum = 0
+
+        self.PiKaChu = False
+        self.kachu_times = 0
+
+    def Logic(self):
+        """邏輯流程"""
+        self.Reset()
+        while self.GameRunning():
+            self.ModtoScreen = False
+            self.OneData = dict()
+
+            self.margin_score = 0
+            self.double_score  = 0
+            self.Random() 
+            self.CalculateScore()
+            self.Result()
+            self.JudgeMode()        
+    
+    def GameRunning(self) -> bool:
+        """判斷一局遊戲是否繼續運行"""
+        return self.played < self.times
+
+    def NowMode(self)  -> str:
+        """現在模式"""
+        modes = {
+            self.SuperHHH: "SuperHHH",
+            self.GreenWei: "GreenWei",
+            self.PiKaChu: "PiKaChu"
+        }
+        return modes.get(True, "Normal")
+        
+
+    def Random(self):
+        """遊戲變數隨機產生"""
+        RandNums = [randint(1, 100), randint(1, 100), randint(1, 100)]
+        for i in range(3):
+            self.OneData[f"RandNums[{i}]"] = RandNums[i]
+
+        self.SuperNum = randint(1, 100) 
+        self.OneData["SuperHHH"] = self.SuperNum
+        self.GreenNum = randint(1, 100) 
+        self.OneData["GreenWei"] = self.GreenNum
+
+        def acc_rate():
+            res = list()
+            acc = 0
+            for i in P.Dict:
+                acc += P.Dict[i].rate_dict[self.NowMode()]
+                res.append(acc)
+            return res
+        
+        rate_range = acc_rate()
+
+        for i in range(3):
+            if RandNums[i] <= rate_range[0]:
+                self.Ps[i] = P.Dict["A"]
+            elif RandNums[i] <= rate_range[1]:
+                self.Ps[i] = P.Dict["B"]
+            elif RandNums[i] <= rate_range[2]:
+                self.Ps[i] = P.Dict["C"]
+            elif RandNums[i] <= rate_range[3]:
+                self.Ps[i] = P.Dict["D"]
+            elif RandNums[i] <= rate_range[4]:
+                self.Ps[i] = P.Dict["E"]
+            elif RandNums[i] <= rate_range[5]:
+                self.Ps[i] = P.Dict["F"]
+
+        #增加咖波累積數
+        for p in self.Ps:
+            if p.code == "A" and self.GssNum < 20 :
+                self.GssNum += 1
+        
+    def CalculateScore(self):
+        """計算分數"""
+        def margin_add(p: P, typ: int):
+            """p -> 使用 p 的分數列表\ntyp -> 得分型態"""
+            self.margin_score += p.score_list[typ]
+
+        if self.Ps[0] == self.Ps[1] == self.Ps[2]:
+            margin_add(self.Ps[0], 0)
+        elif self.Ps[0] == self.Ps[1]:
+            margin_add(self.Ps[0], 1)
+            margin_add(self.Ps[2], 2)
+            self.margin_score = round(self.margin_score / 1.3)
+        elif self.Ps[1] == self.Ps[2]:
+            margin_add(self.Ps[1], 1)
+            margin_add(self.Ps[0], 2)
+            self.margin_score = round(self.margin_score / 1.3)
+        elif self.Ps[2] == self.Ps[0]:
+            margin_add(self.Ps[2], 1)
+            margin_add(self.Ps[1], 2)
+            self.margin_score = round(self.margin_score / 1.3)  
+        elif self.Ps[0] != self.Ps[1] != self.Ps[2]:
+            margin_add(self.Ps[0], 2)
+            margin_add(self.Ps[1], 2)
+            margin_add(self.Ps[2], 2)
+            self.margin_score = round(self.margin_score / 3)
+
+        self.score_time = self.score_times_dict[self.NowMode()]
+        self.margin_score *= self.score_time
+        
+
+    def Result(self):
+        """結果"""
+        self.played += 1
+        self.DataIndex += 1
+        self.score += self.margin_score
+        self.AllData[f"{self.DataIndex}"] = self.OneData
+                    
+    def JudgeMode(self):
+        """判斷模式"""
+        if not self.GameRunning():
+            #關掉其他模式
+            self.SuperHHH = False
+            self.GreenWei = False
+
+            #判斷皮卡丘充電
+            if any(p.code == "E" for p in self.Ps) :
+                self.PiKaChu = True
+                self.played -= 5
+                self.kachu_times += 1
+                self.ModtoScreen = True
+            else:
+                self.PiKaChu = False
+            return
+        
+        
+        
+        match self.NowMode():
+            case "Normal" | "PiKaChu":
+                #判斷超級阿禾
+                hhh_appear = any(p.code == "B" for p in self.Ps) #判斷是否有任何阿禾
+                if self.SuperNum <= self.SuperRate and hhh_appear:
+                    self.SuperHHH = True
+                    self.SuperTimes += 6
+                    if self.PiKaChu:
+                        self.PiKaChu = False
+
+                    self.ModtoScreen = True
+
+                    #超級阿禾加倍
+                    if all(p.code == "B" for p in self.Ps):
+                        self.double_score = int(round(self.score / 2)) * self.score_time
+                        self.score += self.double_score
+                    return
+                
+                #判斷綠光阿瑋
+                gss_all = all(p.code == "A" for p in self.Ps) #判斷是否有出現並全部咖波
+                if self.GreenNum <= self.GreenRate and gss_all :
+                    self.GreenWei = True
+                    self.GreenTimes += 2
+                    if self.PiKaChu:
+                        self.PiKaChu = False
+                    
+                    self.ModtoScreen = True
+                    return
+
+                elif self.GssNum >= 20 : #咖波累積數達到20
+                    self.GreenWei = True
+                    self.GreenTimes += 2
+                    self.GssNum = 0
+                    if self.PiKaChu:
+                        self.PiKaChu = False
+                    
+                    self.ModtoScreen = True
+                    return
+            case "SuperHHH":
+                self.SuperTimes -= 1
+
+                if all(p.code == "B" for p in self.Ps):
+                    self.SuperTimes += 2
+                if self.SuperTimes <= 0 : #超級阿禾次數用完
+                    self.SuperHHH = False
+                    self.JudgeMode() #判斷是否可再進入特殊模式
+                    self.ModtoScreen = True
+
+                return
             
-
+            case "GreenWei":
+                self.GreenTimes -= 1
+                if all(p.code == "A" for p in self.Ps):
+                    self.GreenTimes += 1
+                if self.GreenTimes <= 0 : #綠光阿瑋次數用完
+                    self.GreenWei = False
+                    self.JudgeMode() #判斷是否可再進入特殊模式
+                    self.ModtoScreen = True
+                
+                return
+            
+if __name__ == "__main__":
+    Game = LaBaG()
+    Game.Logic()
+    print(Game.score)
 
 @.\src\Sheet.py
 #https://script.google.com/macros/s/AKfycbzWA0mMx_B14vrHGW6-QK4tOClSIj1lw7udLJwp7XCg2nZ8hDxt7d-dqnc6WenqBM8FBA/exec
@@ -2345,7 +1924,11 @@ class Sheet:
         """獲取資料"""
         url = "https://script.google.com/macros/s/AKfycbzWA0mMx_B14vrHGW6-QK4tOClSIj1lw7udLJwp7XCg2nZ8hDxt7d-dqnc6WenqBM8FBA/exec"
         cls.RawData.clear()
-        cls.RawData = requests.get(url).json()
+        try:
+            cls.RawData = requests.get(url).json()
+        except Exception as e:
+            print(f"錯誤：{e}")
+            exit(1)
         cls.SortRawData()
 
     @classmethod

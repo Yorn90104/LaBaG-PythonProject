@@ -209,6 +209,11 @@ class Window(tk.Tk, BaseWindow):
         with open("temp_icon.ico", "wb") as icon_file:
             icon_file.write(icon_data)
         self.iconbitmap("temp_icon.ico") #視窗圖標.ico
+    
+    def message_text(self,ms: int = 1000, canvas_name: str = None, txt: str = "", x: int = 0, y: int = 0, size: int = 12, color: str = "white" , align: str = "center"):
+        """顯示短暫訊息文字(ms毫秒: 預設 1000)"""
+        self.add_text(canvas_name, txt, x, y, size, color, "msg", align)
+        self.after(ms, lambda:self.delete_canvas_tag(canvas_name, "msg"))
 
 class SubWindow(tk.Toplevel, BaseWindow):
     """子視窗類"""
