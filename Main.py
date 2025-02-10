@@ -171,7 +171,9 @@ win.txt_button(
 
 def rank_subwindow():
     """排行榜子視窗"""
-    Sheet.GetData() #重新獲取資料
+    win.Button("toRank").config(state='disabled') # toRank Button 停用
+    win.Button("toRank").config(text="資料載入中")
+    Sheet.GetData() #獲取資料
     win.setup_subwindow("Rank", 450, 800, BG)
 
     win.SubWindow("Rank").add_text(
@@ -193,14 +195,22 @@ def rank_subwindow():
             "w"
             )
     
+    def off_rank():
+        """關閉排行榜子視窗"""
+        win.Button("toRank").config(state='normal')
+        win.Button("toRank").config(text="查看排行榜")
+        win.SubWindow("Rank").destroy()
+
     win.SubWindow("Rank").txt_button(
         "off_window",
-        win.SubWindow("Rank").destroy,
+        off_rank,
         "關閉視窗",
         100, 50,
         225, 700,
         16
         )
+    win.SubWindow("Rank").protocol("WM_DELETE_WINDOW", off_rank) #綁定關閉視窗
+    
 
 win.txt_button(
     "toRank",

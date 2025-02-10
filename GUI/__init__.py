@@ -78,6 +78,9 @@ class _SubWindow(tk.Toplevel):
         self.add_text(txt, x, y, size, color, "msg", align)
         self.master.after(ms, lambda:self.delete_canvas_tag("msg"))
 
+    def message_box(self, message: str = ""):
+        tk.messagebox.showinfo(self.title(), message)
+
     def image_button(self, button_name: str, CMD, img: ImageTk.PhotoImage = None, x: int = 0, y: int = 0, rel: str = "raised", highlight: int = 1):
         """添加圖片按鈕(按鈕名, 執行動作, 圖片, 水平座標, 垂直座標, 三圍邊框效果, 焦點邊框厚度)"""
         button = tk.Button(
@@ -262,6 +265,9 @@ class Window(tk.Tk):
         """顯示短暫訊息文字(ms毫秒: 預設 1000)"""
         self.add_text(canvas_name, txt, x, y, size, color, "msg", align)
         self.after(ms, lambda:self.delete_canvas_tag(canvas_name, "msg"))
+    
+    def message_box(self, message: str = ""):
+        tk.messagebox.showinfo(self.title(), message)
         
     def image_button(self, button_name: str, CMD, canvas_name: str = None, img: ImageTk.PhotoImage = None, x: int = 0, y: int = 0, rel: str = "raised", highlight: int = 1):
         """添加圖片按鈕(按鈕名, 執行動作, 畫面名, 圖片, 水平座標, 垂直座標, 三圍邊框效果, 焦點邊框厚度)"""
@@ -287,7 +293,7 @@ class Window(tk.Tk):
                                 )
         # 按钮的位置&像素大小
         button.place(width=w, height=h)
-        self.Canva(canvas_name).create_window(x , y , window = button)
+        self.Canva(canvas_name).create_window(x , y , window = button, tags= button_name)
         self._button_dict[button_name] = button
 
     def delete_button(self, button_name: str):
