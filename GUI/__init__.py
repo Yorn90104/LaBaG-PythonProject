@@ -66,6 +66,11 @@ class BaseWindow():
             return self.__subwindow_dict[window_name]
         else:
             raise KeyError(f"無法從 {type(self).__name__}._subwindow_dict 找到名為 {window_name} 的subwindow")
+        
+    def setup_subwindow(self, window_name: str = None,  width: int = 300, height: int= 300, BG_pic: ImageTk.PhotoImage = None):
+        """建立子視窗(視窗, 寬, 高)"""
+        sw = SubWindow(self, window_name, width, height, BG_pic)
+        self.__subwindow_dict[window_name] = sw
     
     def setup_frame_and_canvas(self, name,  BG_pic: ImageTk.PhotoImage = None):
         """創建 & 設置畫面(畫面名稱, 背景圖片)"""
@@ -75,6 +80,7 @@ class BaseWindow():
         Canvas.create_image(0, 0, image = BG_pic, anchor="nw", tag= "BG")
         self.__frame_dict[name] = Frame
         self.__canvas_dict[name] = Canvas
+        logging.debug(f"{self.window_title } 已成功創建畫面: {name}")
 
     def switch_frame(self, frame1_name: str, frame2_name: str):
         """切換畫面(畫面1 to 畫面2)"""
@@ -172,6 +178,7 @@ class BaseWindow():
         return filedialog.askopenfilename()
 
 class Window(tk.Tk, BaseWindow):
+    """主視窗"""
     def __init__(self, title: str = None, width: int = 300, height: int = 300):
         """主視窗類別 (視窗名稱, 寬, 高)"""
         tk.Tk.__init__(self)  # 初始化 tk.Tk
@@ -214,6 +221,8 @@ class Window(tk.Tk, BaseWindow):
         """顯示短暫訊息文字(ms毫秒: 預設 1000)"""
         self.add_text(canvas_name, txt, x, y, size, color, "msg", align)
         self.after(ms, lambda:self.delete_canvas_tag(canvas_name, "msg"))
+    
+    
 
 class SubWindow(tk.Toplevel, BaseWindow):
     """子視窗類"""
@@ -264,10 +273,6 @@ class SubWindow(tk.Toplevel, BaseWindow):
     def input_box(self, entry_name: str= None, txt: str = "", x: int = 0, y: int = 0, size: int = 16, width: int = 12):
         super().input_box("Main", entry_name, txt, x, y, size, width)
 
-    def setup_subwindow(self, window_name: str = None,  width: int = 300, height: int= 300, BG_pic: ImageTk.PhotoImage = None):
-        """建立子視窗(視窗, 寬, 高)"""
-        sw = SubWindow(self, window_name, width, height, BG_pic)
-        self.__subwindow_dict[window_name] = sw
 
 class Picture:
     @staticmethod

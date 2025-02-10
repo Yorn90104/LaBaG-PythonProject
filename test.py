@@ -1,20 +1,29 @@
-import tkinter as tk
-from tkinter import filedialog
+from GUI import Window
 
-root = tk.Tk()
-root.title("")
-root.geometry('200x200')
+win = Window("Main")
+win.setup_frame_and_canvas("Main")
 
-def show():
-    file_path = filedialog.askopenfilename()   # 選擇檔案後回傳檔案路徑與名稱
-    print(file_path)                           # 印出路徑
+i = 0
+def OpenSub(root):
+    global i
+    i += 1
+    root.setup_subwindow(f"Sub{i}")
+    now_win = root.SubWindow(f"Sub{i}")
+    now_win.txt_button(
+        "OpenSub",
+        lambda :OpenSub(now_win),
+        f"master: {root.title()}",
+        10, 10,
+        150, 150
+    )
 
-# Button 設定 command 參數，點擊按鈕時執行 show 函式
-btn = tk.Button(root,
-                text='開啟檔案',
-                font=('Arial',20,'bold'),
-                command=show
-              )
-btn.pack()
-
-root.mainloop()
+win.txt_button(
+    "OpenSub",
+    lambda :OpenSub(win),
+    "Main",
+    "Main",
+    10, 10,
+    150, 150
+)
+win.first_window("Main")
+win.mainloop()
