@@ -56,7 +56,7 @@ def into_game():
         print(f"玩家名：無")
 
     Game.history_score = Sheet.GetScore(Game.Name)
-    win.unbind('<Return>') # 解除綁定ENTER
+    win.keyboard_unbind('ENTER') # 解除綁定ENTER
     BeginAble()
     Game.Reset()
     init_Game_screen_item()
@@ -64,7 +64,7 @@ def into_game():
     win.switch_frame("Home", "Game") #切換畫面
 
 win.Canva("Home").tag_bind("SuperCircle", "<Button-1>", lambda event :into_game()) #綁定 SuperCircle 圖片被點擊->進入遊戲
-win.bind('<Return>', lambda event :into_game()) #綁定ENTER進入遊戲
+win.keyboard_bind('ENTER', into_game) #綁定ENTER進入遊戲
 
 win.input_box(
     "Home", 
@@ -209,8 +209,8 @@ def init_Game_screen_item():
 def Game_to_Home():
     """返回首頁"""
     win.reset_input_box("Name", Game.Name)
-    win.unbind('<space>')  # 取消space鍵的綁定
-    win.bind('<Return>', lambda event :into_game())
+    win.keyboard_unbind('SPACE')  # 取消space鍵的綁定
+    win.keyboard_bind('ENTER',into_game)
     bgm_on_off(game_running=False) #關閉音樂
     win.switch_frame("Game", "Home")
     print("返回首頁")
@@ -230,12 +230,12 @@ win.load_picture("Game" , QST, 300, 250 , "RP")
 
 def BeginAble():
     """可 Begin"""
-    win.bind('<space>', lambda event: Begin()) # 綁定Space鍵
+    win.keyboard_bind('SPACE', Begin) # 綁定 Space 鍵
     win.Button("Begin").config(state='normal') # Begin Button 啟用
 
 def BeginUnable() :
       """不可 Begin"""
-      win.unbind('<space>')  # 取消space鍵的綁定
+      win.keyboard_unbind('SPACE')  # 取消 Space 鍵的綁定
       win.Button("Begin").config(state='disabled')  # Begin Button 停用
 
 def Begin():
@@ -506,6 +506,7 @@ def Game_over_to_End():
     win.update_by_tag("End","history_score", f"歷史最高分數：{Game.history_score}")
     win.switch_frame("Game", "End")
     
+    win.keyboard_bind("CTRL+S", save_json) #綁定CTRL+S保存.json檔案
 
 def game_again():
     """再玩一次遊戲"""
@@ -514,6 +515,8 @@ def game_again():
     init_Game_screen_item()
     bgm_on_off()
     win.switch_frame("End", "Game")
+
+    win.keyboard_unbind("CTRL+S", save_json) #解除綁定CTRL+S
 
 win.add_text(
     "End",
@@ -606,8 +609,8 @@ win.txt_button(
     225, 700,
     12,
     "black", "#00FF00"
-    
 )
+
 
 win.load_picture("End" , SB, 0, 500, "SB")
 #endregion
