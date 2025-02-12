@@ -1,5 +1,4 @@
 #產生目標分數的隨機數 json 檔
-from random import randint
 import math
 import os
 from datetime import datetime

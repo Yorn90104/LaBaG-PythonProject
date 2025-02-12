@@ -1,5 +1,4 @@
 #目標分數
-from random import randint
 import math
 from src.Sheet import Sheet
 from src.LaBaG import LaBaG
