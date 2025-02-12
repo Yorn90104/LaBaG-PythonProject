@@ -576,8 +576,7 @@ def save_json():
     from datetime import datetime
     # 確保目錄存在
     output_dir = "C:\\JsonLaBaG\\"
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    os.makedirs(output_dir, exist_ok=True)
     # 使用時間戳作為部分文件名
     timestamp = datetime.now().strftime("%Y%m%d")
     filename = f"{output_dir}{Game.score}_{timestamp}.json"
