@@ -1,5 +1,6 @@
 #目標分數
 import math
+
 from src.Sheet import Sheet
 from src.LaBaG import LaBaG
 
