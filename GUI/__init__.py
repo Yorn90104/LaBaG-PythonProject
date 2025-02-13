@@ -205,6 +205,14 @@ class BaseWindow():
     def message_box(self, message: str = ""):
         """顯示訊息框"""
         messagebox.showinfo(self.window_title, message)
+
+    def message_text(self,ms: int = 1000, canvas_name: str = None, txt: str = "", x: int = 0, y: int = 0, size: int = 12, color: str = "white" , align: str = "center"):
+        """顯示短暫訊息文字(ms毫秒: 預設 1000)"""
+        if isinstance(self, (tk.Tk, tk.Toplevel)):  # 確保 self 是 Tk 或 Toplevel
+            self.add_text(canvas_name, txt, x, y, size, color, "msg", align)
+            self.after(ms, lambda:self.delete_canvas_tag(canvas_name, "msg"))
+        else:
+            raise TypeError(f"{self.message_text.__name__} 只能綁定在 Tk 或 Toplevel 的視窗上，而不是 {type(self)}")
         
     def image_button(self, button_name: str, func, canvas_name: str = None, img: ImageTk.PhotoImage = None, x: int = 0, y: int = 0, rel: str = "raised", highlight: int = 1):
         """添加圖片按鈕(按鈕名, 執行動作(函式), 畫面名, 圖片, 水平座標, 垂直座標, 三圍邊框效果, 焦點邊框厚度)"""
@@ -298,11 +306,6 @@ class Window(tk.Tk, BaseWindow):
             icon_file.write(icon_data)
         self.iconbitmap("temp_icon.ico") #視窗圖標.ico
     
-    def message_text(self,ms: int = 1000, canvas_name: str = None, txt: str = "", x: int = 0, y: int = 0, size: int = 12, color: str = "white" , align: str = "center"):
-        """顯示短暫訊息文字(ms毫秒: 預設 1000)"""
-        self.add_text(canvas_name, txt, x, y, size, color, "msg", align)
-        self.after(ms, lambda:self.delete_canvas_tag(canvas_name, "msg"))
-    
     
 
 class SubWindow(tk.Toplevel, BaseWindow):
@@ -315,7 +318,7 @@ class SubWindow(tk.Toplevel, BaseWindow):
         self.iconbitmap(self.master.iconbitmap())
         
         self.title(self.master.title())
-        if title is not None:
+        if title:
             self.title(title)
 
         self.geometry(f"{self.width}x{self.height}")
@@ -341,9 +344,7 @@ class SubWindow(tk.Toplevel, BaseWindow):
         super().delete_canvas_tag("Main", tg)
 
     def message_text(self,ms: int = 1000, txt: str = "", x: int = 0, y: int = 0, size: int = 12, color: str = "white" , align: str = "center"):
-        """顯示短暫訊息文字(ms毫秒: 預設 1000)"""
-        self.add_text(txt, x, y, size, color, "msg", align)
-        self.master.after(ms, lambda:self.delete_canvas_tag("msg"))
+        super().message_text(ms, "Main", txt, x, y, size, color, align)
 
     def image_button(self, button_name: str, func, img: ImageTk.PhotoImage = None, x: int = 0, y: int = 0, rel: str = "raised", highlight: int = 1):
         super().image_button(button_name, func, "Main", img, x, y, rel, highlight)
@@ -391,12 +392,11 @@ class Audio:
         mixer.music.stop()
         self.bgm_playing = False
 
-    def switch_music(self, music_name: str = None, game_running = True) :
+    def switch_music(self, music_name: str = None) :
         """切換音樂"""
         if self.bgm_playing:
             self.stop_music()
-            if game_running:
-                self.play_music(music_name)
+            self.play_music(music_name)
 
     def play_sound(self, sound_name: str= None, volume: float = 1):
         """播放音效(Sound音訊, 音量)"""

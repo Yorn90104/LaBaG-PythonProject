@@ -28,6 +28,7 @@ class PlayLaBaG(LaBaG):
     def Random(self):
         """隨機生成數字"""
         super().Random()
+        print(f"機率區間：{self.rate_ranges[self.NowMode()]}")
         print(f"超級阿禾隨機數為: {self.SuperNum}")
         print(f"綠光阿瑋隨機數為: {self.GreenNum}")
         print(f"咖波累積數：{self.GssNum}")
@@ -47,30 +48,6 @@ class PlayLaBaG(LaBaG):
         print(f"目前分數：{self.score}")
         print(f"剩餘次數：{self.times - self.played}")
 
-    # def JudgeMode(self):
-    #     super().JudgeMode()
-    #     match self.NowMode():
-    #         case "SuperHHH":
-    #             if self.ModtoScreen:
-    #                 print(f"超級阿禾出現")
-    #                 if self.double_score != 0:
-    #                         print(f"(超級阿禾加倍分:{self.double_score})")
-    #             else:
-    #                 if all(p.code == "B" for p in self.Ps):
-    #                     print("全阿禾，次數不消耗且+1！")
-    #             print(f"超級阿禾剩餘次數:{self.SuperTimes}次")
-    #         case "GreenWei":
-    #             if self.ModtoScreen:
-    #                 print(f"綠光阿瑋出現")
-    #             else:
-    #                 if all(p.code == "A" for p in self.Ps):
-    #                     print("全咖波，次數不消耗！")
-    #             print(f"綠光阿瑋剩餘次數:{self.GreenTimes}次")
-                
-    #         case "PiKaChu":
-    #             if self.ModtoScreen:
-    #                 print(f"皮卡丘為你充電")
-    #                 print(f"已觸發 {self.kachu_times} 次皮卡丘充電")
     def JudgeMode(self):
         """判斷模式"""
         if not self.GameRunning():

@@ -1,4 +1,4 @@
-from random import randint
+from numpy import random 
 
 class P:
     """圖案符號"""
@@ -72,6 +72,19 @@ class LaBaG:
                 "GreenWei": 3,
                 "PiKaChu": 3
             })
+        
+        #機率區間
+        def acc_rate(mode: str = "Normal") -> list[int]:
+            res = list()
+            acc = 0
+            for p in P.Dict.values():
+                acc += p.rate_dict[mode]
+                res.append(acc)
+            return res
+        
+        self.rate_ranges = {
+            mode: acc_rate(mode) for mode in ["Normal", "SuperHHH", "GreenWei", "PiKaChu"]
+        }
         
         #加分倍數
         self.score_times_dict = {
@@ -155,24 +168,16 @@ class LaBaG:
 
     def Random(self):
         """遊戲變數隨機產生"""
-        RandNums = [randint(1, 100), randint(1, 100), randint(1, 100)]
+        RandNums = random.randint(1, 101, 3)
         for i in range(3):
             self.OneData[f"RandNums[{i}]"] = RandNums[i]
 
-        self.SuperNum = randint(1, 100) 
+        self.SuperNum = random.randint(1, 101)
         self.OneData["SuperHHH"] = self.SuperNum
-        self.GreenNum = randint(1, 100) 
+        self.GreenNum = random.randint(1, 101)
         self.OneData["GreenWei"] = self.GreenNum
 
-        def acc_rate():
-            res = list()
-            acc = 0
-            for i in P.Dict:
-                acc += P.Dict[i].rate_dict[self.NowMode()]
-                res.append(acc)
-            return res
-        
-        rate_range = acc_rate()
+        rate_range = self.rate_ranges[self.NowMode()]
 
         for i in range(3):
             if RandNums[i] <= rate_range[0]:
@@ -199,25 +204,27 @@ class LaBaG:
             """p -> 使用 p 的分數列表\ntyp -> 得分型態"""
             self.margin_score += p.score_list[typ]
 
-        if self.Ps[0] == self.Ps[1] == self.Ps[2]:
-            margin_add(self.Ps[0], 0)
-        elif self.Ps[0] == self.Ps[1]:
-            margin_add(self.Ps[0], 1)
-            margin_add(self.Ps[2], 2)
-            self.margin_score = round(self.margin_score / 1.3)
-        elif self.Ps[1] == self.Ps[2]:
-            margin_add(self.Ps[1], 1)
-            margin_add(self.Ps[0], 2)
-            self.margin_score = round(self.margin_score / 1.3)
-        elif self.Ps[2] == self.Ps[0]:
-            margin_add(self.Ps[2], 1)
-            margin_add(self.Ps[1], 2)
-            self.margin_score = round(self.margin_score / 1.3)  
-        elif self.Ps[0] != self.Ps[1] != self.Ps[2]:
-            margin_add(self.Ps[0], 2)
-            margin_add(self.Ps[1], 2)
-            margin_add(self.Ps[2], 2)
-            self.margin_score = round(self.margin_score / 3)
+        match len(set(p.code for p in self.Ps)):
+            case 1: #三個一樣
+                margin_add(self.Ps[0], 0)
+            case 2: #兩個一樣
+                if self.Ps[0] == self.Ps[1]:
+                    margin_add(self.Ps[0], 1)
+                    margin_add(self.Ps[2], 2)
+                    self.margin_score = round(self.margin_score / 1.3)
+                elif self.Ps[1] == self.Ps[2]:
+                    margin_add(self.Ps[1], 1)
+                    margin_add(self.Ps[0], 2)
+                    self.margin_score = round(self.margin_score / 1.3)
+                elif self.Ps[2] == self.Ps[0]:
+                    margin_add(self.Ps[2], 1)
+                    margin_add(self.Ps[1], 2)
+                    self.margin_score = round(self.margin_score / 1.3)  
+            case 3: #三個不一樣
+                margin_add(self.Ps[0], 2)
+                margin_add(self.Ps[1], 2)
+                margin_add(self.Ps[2], 2)
+                self.margin_score = round(self.margin_score / 3)
 
         self.score_time = self.score_times_dict[self.NowMode()]
         self.margin_score *= self.score_time
