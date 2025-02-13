@@ -24,7 +24,7 @@ class LaBaG:
         self.DataIndex = 0
 
         # 遊戲邏輯變數
-        self.times = 30 #可遊玩次數 正常30
+        self.times = 3 #可遊玩次數 正常30
         self.played = 0 #已遊玩次數
 
         self.score = 0
@@ -170,29 +170,22 @@ class LaBaG:
         """遊戲變數隨機產生"""
         RandNums = random.randint(1, 101, 3)
         for i in range(3):
-            self.OneData[f"RandNums[{i}]"] = RandNums[i]
+            self.OneData[f"RandNums[{i}]"] = int(RandNums[i])
 
         self.SuperNum = random.randint(1, 101)
-        self.OneData["SuperHHH"] = self.SuperNum
+        self.OneData["SuperHHH"] = int(self.SuperNum)
         self.GreenNum = random.randint(1, 101)
-        self.OneData["GreenWei"] = self.GreenNum
+        self.OneData["GreenWei"] = int(self.GreenNum)
 
         rate_range = self.rate_ranges[self.NowMode()]
 
         for i in range(3):
-            if RandNums[i] <= rate_range[0]:
-                self.Ps[i] = P.Dict["A"]
-            elif RandNums[i] <= rate_range[1]:
-                self.Ps[i] = P.Dict["B"]
-            elif RandNums[i] <= rate_range[2]:
-                self.Ps[i] = P.Dict["C"]
-            elif RandNums[i] <= rate_range[3]:
-                self.Ps[i] = P.Dict["D"]
-            elif RandNums[i] <= rate_range[4]:
-                self.Ps[i] = P.Dict["E"]
-            elif RandNums[i] <= rate_range[5]:
-                self.Ps[i] = P.Dict["F"]
+            for j in range(6):
+                if RandNums[i] <= rate_range[j]:
+                    self.Ps[i] = P.Dict[list(P.Dict.keys())[j]]
+                    break
 
+            
         #增加咖波累積數
         for p in self.Ps:
             if p.code == "A" and self.GssNum < 20 :

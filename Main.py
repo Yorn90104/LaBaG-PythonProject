@@ -516,7 +516,7 @@ def game_again():
     bgm_on_off()
     win.switch_frame("End", "Game")
 
-    win.keyboard_unbind("CTRL+S", save_json) #解除綁定CTRL+S
+    win.keyboard_unbind("CTRL+S") #解除綁定CTRL+S
 
 win.add_text(
     "End",
