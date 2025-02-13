@@ -150,7 +150,7 @@ class PlayLaBaG(LaBaG):
 
 #region JsonLaBaG
 import json
-from random import randint
+from numpy import random 
 
 class JsonLaBaG(PlayLaBaG):
     """與json檔案連接的啦八機"""
@@ -193,29 +193,17 @@ class JsonLaBaG(PlayLaBaG):
 
     def Random(self):
         """遊戲變數隨機產生"""
-        if self.index in self.json_data:
-            RandNums = [self.json_data[self.index]["RandNums[0]"], self.json_data[self.index]["RandNums[1]"], self.json_data[self.index]["RandNums[2]"]]
-            self.SuperNum = self.json_data[self.index]["SuperHHH"]
-            self.GreenNum = self.json_data[self.index]["GreenWei"]
-        else:
-            RandNums = [randint(1, 100), randint(1, 100), randint(1, 100)]
-            self.SuperNum = randint(1, 100) 
-            self.GreenNum = randint(1, 100) 
+        if self.index not in self.json_data:
+            return super().Random()
+        RandNums = [self.json_data[self.index]["RandNums[0]"], self.json_data[self.index]["RandNums[1]"], self.json_data[self.index]["RandNums[2]"]]
+        self.SuperNum = self.json_data[self.index]["SuperHHH"]
+        self.GreenNum = self.json_data[self.index]["GreenWei"]
 
         print(f"P隨機數為：{RandNums[0]} | {RandNums[1]} | {RandNums[2]}")
         print(f"超級阿禾隨機數為: {self.SuperNum}")
         print(f"綠光阿瑋隨機數為: {self.GreenNum}")
-
-
-        def acc_rate():
-            res = list()
-            acc = 0
-            for i in P.Dict:
-                acc += P.Dict[i].rate_dict[self.NowMode()]
-                res.append(acc)
-            return res
         
-        rate_range = acc_rate()
+        rate_range = self.rate_ranges[self.NowMode()]
         print("機率區間：", rate_range)
 
         for i in range(3):
