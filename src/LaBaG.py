@@ -197,7 +197,8 @@ class LaBaG:
             """p -> 使用 p 的分數列表\ntyp -> 得分型態"""
             self.margin_score += p.score_list[typ]
 
-        match len(set(p.code for p in self.Ps)):
+        unique_count = len(set(p.code for p in self.Ps))
+        match unique_count:
             case 1: #三個一樣
                 margin_add(self.Ps[0], 0)
             case 2: #兩個一樣
@@ -248,8 +249,8 @@ class LaBaG:
             return
         
         
-        
-        match self.NowMode():
+        now_mode = self.NowMode()
+        match now_mode:
             case "Normal" | "PiKaChu":
                 #判斷超級阿禾
                 hhh_appear = any(p.code == "B" for p in self.Ps) #判斷是否有任何阿禾
