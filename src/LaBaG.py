@@ -24,7 +24,7 @@ class LaBaG:
         self.DataIndex = 0
 
         # 遊戲邏輯變數
-        self.times = 3 #可遊玩次數 正常30
+        self.times = 30 #可遊玩次數 正常30
         self.played = 0 #已遊玩次數
 
         self.score = 0

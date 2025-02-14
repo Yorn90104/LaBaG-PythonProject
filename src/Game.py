@@ -9,8 +9,6 @@ class PlayLaBaG(LaBaG):
         self.Name = ""
         self.history_score = 0
 
-        self.double_score = 0 #超級阿禾加倍分
-
     def Reset(self):
         super().Reset()
         self.history_score = 0
