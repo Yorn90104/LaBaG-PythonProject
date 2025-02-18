@@ -57,7 +57,7 @@ def into_game():
         print(f"玩家名：無")
 
     Game.history_score = Sheet.GetScore(Game.Name)
-    win.unbind('<Return>') # 解除綁定ENTER
+    win.keyboard_unbind('ENTER') # 解除綁定ENTER
     BeginAble()
     Game.Reset()
     init_Game_screen_item()
@@ -65,7 +65,7 @@ def into_game():
     win.switch_frame("Home", "Game") #切換畫面
 
 win.Canva("Home").tag_bind("SuperCircle", "<Button-1>", lambda event :into_game()) #綁定 SuperCircle 圖片被點擊->進入遊戲
-win.bind('<Return>', lambda event :into_game()) #綁定ENTER進入遊戲
+win.keyboard_bind('ENTER', into_game) #綁定ENTER進入遊戲
 
 win.input_box(
     "Home", 
@@ -210,8 +210,8 @@ def init_Game_screen_item():
 def Game_to_Home():
     """返回首頁"""
     win.reset_input_box("Name", Game.Name)
-    win.unbind('<space>')  # 取消space鍵的綁定
-    win.bind('<Return>', lambda event :into_game())
+    win.keyboard_unbind('SPACE')  # 取消space鍵的綁定
+    win.keyboard_bind('ENTER',into_game)
     bgm_on_off(game_running=False) #關閉音樂
     win.switch_frame("Game", "Home")
     print("返回首頁")
@@ -231,12 +231,12 @@ win.load_picture("Game" , QST, 300, 250 , "RP")
 
 def BeginAble():
     """可 Begin"""
-    win.bind('<space>', lambda event: Begin()) # 綁定Space鍵
+    win.keyboard_bind('SPACE', Begin) # 綁定 Space 鍵
     win.Button("Begin").config(state='normal') # Begin Button 啟用
 
 def BeginUnable() :
       """不可 Begin"""
-      win.unbind('<space>')  # 取消space鍵的綁定
+      win.keyboard_unbind('SPACE')  # 取消 Space 鍵的綁定
       win.Button("Begin").config(state='disabled')  # Begin Button 停用
 
 def Begin():
@@ -507,6 +507,7 @@ def Game_over_to_End():
     win.update_by_tag("End","history_score", f"歷史最高分數：{Game.history_score}")
     win.switch_frame("Game", "End")
     
+    win.keyboard_bind("CTRL+S", save_json) #綁定CTRL+S保存.json檔案
 
 def game_again():
     """再玩一次遊戲"""
@@ -515,6 +516,8 @@ def game_again():
     init_Game_screen_item()
     bgm_on_off()
     win.switch_frame("End", "Game")
+
+    win.keyboard_unbind("CTRL+S") #解除綁定CTRL+S
 
 win.add_text(
     "End",
@@ -577,8 +580,7 @@ def save_json():
     from datetime import datetime
     # 確保目錄存在
     output_dir = "C:\\JsonLaBaG\\"
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    os.makedirs(output_dir, exist_ok=True)
     # 使用時間戳作為部分文件名
     timestamp = datetime.now().strftime("%Y%m%d")
     filename = f"{output_dir}{Game.score}_{timestamp}.json"
@@ -608,8 +610,8 @@ win.txt_button(
     225, 700,
     12,
     "black", "#00FF00"
-    
 )
+
 
 win.load_picture("End" , SB, 0, 500, "SB")
 #endregion
@@ -620,8 +622,8 @@ win.mainloop()
 
 @.\Target.py
 #目標分數
-from random import randint
 import math
+
 from src.Sheet import Sheet
 from src.LaBaG import LaBaG
 
@@ -759,7 +761,6 @@ print (f"第{i: {LOG}}次達成：{Game.score : 8} ({Game.superS : 2} 次 超級
 
 @.\TargetJson.py
 #產生目標分數的隨機數 json 檔
-from random import randint
 import math
 import os
 from datetime import datetime
@@ -811,32 +812,36 @@ timestamp = datetime.now().strftime("%Y%m%d")
 with open(f"{output_dir}{Game.score}_{timestamp}.json", "w", encoding="utf-8") as file:
     json.dump(Game.AllData, file, indent=4)
 
-        
-     
-
-            
-
 @.\test.py
-import tkinter as tk
-from tkinter import filedialog
+from GUI import Window
 
-root = tk.Tk()
-root.title("")
-root.geometry('200x200')
+win = Window("Main")
+win.setup_frame_and_canvas("Main")
 
-def show():
-    file_path = filedialog.askopenfilename()   # 選擇檔案後回傳檔案路徑與名稱
-    print(file_path)                           # 印出路徑
+i = 0
+def OpenSub(root):
+    global i
+    i += 1
+    root.setup_subwindow(f"Sub{i}")
+    now_win = root.SubWindow(f"Sub{i}")
+    now_win.txt_button(
+        "OpenSub",
+        lambda :OpenSub(now_win),
+        f"master: {root.title()}",
+        10, 10,
+        150, 150
+    )
 
-# Button 設定 command 參數，點擊按鈕時執行 show 函式
-btn = tk.Button(root,
-                text='開啟檔案',
-                font=('Arial',20,'bold'),
-                command=show
-              )
-btn.pack()
-
-root.mainloop()
+win.txt_button(
+    "OpenSub",
+    lambda :OpenSub(win),
+    "Main",
+    "Main",
+    10, 10,
+    150, 150
+)
+win.first_window("Main")
+win.mainloop()
 
 @.\GUI\yieldb64.py
 import os
@@ -909,6 +914,65 @@ logging.basicConfig(
 
 class BaseWindow():
     """基本視窗類"""
+    KEYSDICT = {
+        # 滑鼠按鍵
+        "CLICK_LEFT": "<Button-1>",  # 左鍵
+        "CLICK_RIGHT": "<Button-3>",  # 右鍵
+        "SCROLL": "<Button-2>",  # 滾輪
+        "SCROLL_UP": "<Button-4>",  # 滾輪上滾
+        "SCROLL_DOWN": "<Button-5>",  # 滾輪下滾
+
+        # 鍵盤按鍵
+        **{str(i): str(i) for i in range(10)},  # 0~9
+        **{chr(i): chr(i) for i in range(65, 91)},  # A~Z
+        **{chr(i): chr(i) for i in range(97, 123)},  # a~z
+        "ENTER": "<Return>", "ESC": "<Escape>", "SPACE": "<space>", "TAB": "<Tab>", 
+        "BACKSPACE": "<BackSpace>", "DELETE": "<Delete>", "INSERT": "<Insert>", 
+        "UP": "<Up>", "DOWN": "<Down>", "LEFT": "<Left>", "RIGHT": "<Right>", 
+        "PAGE_UP": "<Prior>", "PAGE_DOWN": "<Next>", "HOME": "<Home>", "END": "<End>", 
+        **{f"F{i}": f"<F{i}>" for i in range(0, 13)},  # F1~F12
+        "LEFT_CTRL": "<Control_L>", "RIGHT_CTRL": "<Control_R>", 
+        "LEFT_ALT": "<Alt_L>", "RIGHT_ALT": "<Alt_R>",  # Alt 鍵
+        "LEFT_SHIFT": "<Shift_L>", "RIGHT_SHIFT": "<Shift_R>", # Shift 鍵
+        "CAPS_LOCK": "<Caps_Lock>","CAPSLOCK": "CAPSLOCK", "NUM_LOCK": "<Num_Lock>", "SCROLL_LOCK": "<Scroll_Lock>", 
+        "LEFT_WIN": "<Super_L>", "RIGHT_WIN": "<Super_R>",  # Windows 鍵
+        "LEFT_COMMAND": "<Super_L>", "RIGHT_COMMAND": "<Super_R>",  # MacOS Command 鍵
+        "LEFT_OPTION": "<Alt_L>", "RIGHT_OPTION": "<Alt_R>",  # MacOS Option 鍵
+        "LEFT_META": "<Meta_L>", "RIGHT_META": "<Meta_R>",  # Meta 鍵（某些鍵盤的特殊鍵）
+        "MENU": "<Menu>", "CONTEXT_MENU": "<Menu>",  # Menu 鍵
+        "PRINT_SCREEN": "<Print>", "PAUSE": "<Pause>", "BREAK": "<Break>",  # PrintScreen, Pause/Break 鍵
+        "SYSREQ": "<Sys_Req>",  # 系統請求鍵
+        "HELP": "<Help>",  # 幫助鍵
+
+        
+        # 數字鍵盤
+        **{f"NUM_{i}": f"<KP_{i}>" for i in range(0, 10)},  # 0~9
+        "NUM_ADD": "<KP_Add>", "NUM_SUB": "<KP_Subtract>", 
+        "NUM_MUL": "<KP_Multiply>", "NUM_DIV": "<KP_Divide>",  # 數字鍵盤上的運算符
+        "NUM_ENTER": "<KP_Enter>", "NUM_POINT": "<KP_Decimal>",  # 數字鍵盤上的Enter和小數點
+
+        # 組合鍵
+        "CTRL+SHIFT+ALT+DEL": "<Control-Shift-Alt-Delete>",  # Ctrl + Shift + Alt + Delete
+        **{f"SHIFT+{chr(i)}".upper(): f"<Shift-{chr(i)}>" for i in range(97, 123)},  # Shift + a~z
+        **{f"SHIFT+{i}".upper(): f"<Shift-{i}>" for i in range(10)},  # Shift + 0~9
+        **{f"CTRL+{chr(i)}".upper(): f"<Control-{chr(i)}>" for i in range(97, 123)},  # Ctrl + a~z
+        **{f"CTRL+{i}".upper(): f"<Control-{i}>" for i in range(10)},  # Ctrl + 0~9
+        **{f"ALT+{chr(i)}".upper(): f"<Alt-{chr(i)}>" for i in range(97, 123)},  # Alt + a~z
+        **{f"ALT+{i}".upper(): f"<Alt-{i}>" for i in range(10)},  # Alt + 0~9
+        "CTRL+SHIFT": "<Control-Shift>",  # Ctrl + Shift
+        **{f"CTRL+SHIFT+{chr(i)}".upper(): f"<Control-Shift-{chr(i)}>" for i in range(97, 123)},  # Ctrl + Shift + a~z
+        **{f"CTRL+SHIFT+{i}".upper(): f"<Control-Shift-{i}>" for i in range(10)},  # Ctrl + Shift + 0~9
+        "CTRL+ALT": "<Control-Alt>",  # Ctrl + Alt
+        **{f"CTRL+ALT+{chr(i)}".upper(): f"<Control-Alt-{chr(i)}>" for i in range(97, 123)},  # Ctrl + Alt + a~z
+        **{f"CTRL+ALT+{i}".upper(): f"<Control-Alt-{i}>" for i in range(10)},  # Ctrl + Alt + 0~9
+        "SHIFT+ALT": "<Shift-Alt>",  # Shift + Alt
+        **{f"SHIFT+ALT+{chr(i)}".upper(): f"<Shift-Alt-{chr(i)}>" for i in range(97, 123)},  # Shift + Alt + a~z
+        **{f"SHIFT+ALT+{i}".upper(): f"<Shift-Alt-{i}>" for i in range(10)},  # Shift + Alt + 0~9
+        "CTRL+SHIFT+ALT": "<Control-Shift-Alt>",  # Ctrl + Shift + Alt
+        **{f"CTRL+SHIFT+ALT+{chr(i)}".upper(): f"<Control-Shift-Alt-{chr(i)}>" for i in range(97, 123)},  # Ctrl + Shift + Alt + a~z
+        **{f"CTRL+SHIFT+ALT+{i}".upper(): f"<Control-Shift-Alt-{i}>" for i in range(10)},  # Ctrl + Shift + Alt + 0~9
+        
+    }
     def __init__(self, title: str = None, width: int = 300, height: int = 300):
         self.window_title = title
         self.width = width
@@ -954,6 +1018,33 @@ class BaseWindow():
             return self.__subwindow_dict[window_name]
         else:
             raise KeyError(f"無法從 {type(self).__name__}._subwindow_dict 找到名為 {window_name} 的subwindow")
+        
+    def keyboard_bind(self, key: str, func):
+        """綁定鍵盤快捷鍵"""
+        if isinstance(self, (tk.Tk, tk.Toplevel)):  # 確保 self 是 Tk 或 Toplevel
+            if key in self.KEYSDICT:
+                self.bind(self.KEYSDICT[key], lambda event: func())
+                logging.debug(f"已綁定鍵盤按鍵鍵: {key}")
+            else:
+                raise KeyError(f"無法從 {type(self).__name__}.KEYSDICT 找到名為 {key} 的鍵盤按鍵")
+        else:
+            raise TypeError(f"{self.keyboard_bind.__name__} 只能綁定在 Tk 或 Toplevel 的視窗上，而不是 {type(self)}")
+        
+    def keyboard_unbind(self, key: str):
+        """解除綁定鍵盤快捷鍵"""
+        if isinstance(self, (tk.Tk, tk.Toplevel)):  # 確保 self 是 Tk 或 Toplevel
+            if key in self.KEYSDICT:
+                self.unbind(self.KEYSDICT[key])
+                logging.debug(f"已解除綁定鍵盤按鍵鍵: {key}")
+            else:
+                raise KeyError(f"無法從 {type(self).__name__}.KEYSDICT 找到名為 {key} 的鍵盤按鍵")
+        else:
+            raise TypeError(f"{self.keyboard_bind.__name__} 只能綁定在 Tk 或 Toplevel 的視窗上，而不是 {type(self)}")
+        
+    def setup_subwindow(self, window_name: str = None,  width: int = 300, height: int= 300, BG_pic: ImageTk.PhotoImage = None):
+        """建立子視窗(視窗, 寬, 高)"""
+        sw = SubWindow(self, window_name, width, height, BG_pic)
+        self.__subwindow_dict[window_name] = sw
     
     def setup_frame_and_canvas(self, name,  BG_pic: ImageTk.PhotoImage = None):
         """創建 & 設置畫面(畫面名稱, 背景圖片)"""
@@ -963,6 +1054,7 @@ class BaseWindow():
         Canvas.create_image(0, 0, image = BG_pic, anchor="nw", tag= "BG")
         self.__frame_dict[name] = Frame
         self.__canvas_dict[name] = Canvas
+        logging.debug(f"{self.window_title } 已成功創建畫面: {name}")
 
     def switch_frame(self, frame1_name: str, frame2_name: str):
         """切換畫面(畫面1 to 畫面2)"""
@@ -1006,25 +1098,33 @@ class BaseWindow():
     def message_box(self, message: str = ""):
         """顯示訊息框"""
         messagebox.showinfo(self.window_title, message)
+
+    def message_text(self,ms: int = 1000, canvas_name: str = None, txt: str = "", x: int = 0, y: int = 0, size: int = 12, color: str = "white" , align: str = "center"):
+        """顯示短暫訊息文字(ms毫秒: 預設 1000)"""
+        if isinstance(self, (tk.Tk, tk.Toplevel)):  # 確保 self 是 Tk 或 Toplevel
+            self.add_text(canvas_name, txt, x, y, size, color, "msg", align)
+            self.after(ms, lambda:self.delete_canvas_tag(canvas_name, "msg"))
+        else:
+            raise TypeError(f"{self.message_text.__name__} 只能綁定在 Tk 或 Toplevel 的視窗上，而不是 {type(self)}")
         
-    def image_button(self, button_name: str, CMD, canvas_name: str = None, img: ImageTk.PhotoImage = None, x: int = 0, y: int = 0, rel: str = "raised", highlight: int = 1):
-        """添加圖片按鈕(按鈕名, 執行動作, 畫面名, 圖片, 水平座標, 垂直座標, 三圍邊框效果, 焦點邊框厚度)"""
+    def image_button(self, button_name: str, func, canvas_name: str = None, img: ImageTk.PhotoImage = None, x: int = 0, y: int = 0, rel: str = "raised", highlight: int = 1):
+        """添加圖片按鈕(按鈕名, 執行動作(函式), 畫面名, 圖片, 水平座標, 垂直座標, 三圍邊框效果, 焦點邊框厚度)"""
         button = tk.Button(
             self,
             image = img,
-            command = CMD,
+            command = func,
             relief =  rel,
             highlightthickness = highlight
         )
         self.Canva(canvas_name).create_window(x , y , window = button, tags= button_name)
         self.__button_dict[button_name] = button
 
-    def txt_button(self, button_name: str, CMD  ,canvas_name: str = None,  txt: str = None, w: int= 0, h: int= 0, x: int = 0, y: int = 0, size: int = 12, font_color: str = "black", bg_color: str = "white"):
-        """添加粗體文字按鈕(按鈕名, 執行動作, 畫面名, 文字, 按鈕寬度, 按鈕高度, 水平位置, 垂直位置, 文字大小, 文字顏色, 背景顏色)"""
+    def txt_button(self, button_name: str, func  ,canvas_name: str = None,  txt: str = None, w: int= 0, h: int= 0, x: int = 0, y: int = 0, size: int = 12, font_color: str = "black", bg_color: str = "white"):
+        """添加粗體文字按鈕(按鈕名, 執行動作(函式), 畫面名, 文字, 按鈕寬度, 按鈕高度, 水平位置, 垂直位置, 文字大小, 文字顏色, 背景顏色)"""
         button = tk.Button(
             self,
             text = txt ,
-            command = CMD,
+            command = func,
             font = ("Arial", size, "bold"),
             fg = font_color,
             bg = bg_color
@@ -1060,6 +1160,7 @@ class BaseWindow():
         return filedialog.askopenfilename()
 
 class Window(tk.Tk, BaseWindow):
+    """主視窗"""
     def __init__(self, title: str = None, width: int = 300, height: int = 300):
         """主視窗類別 (視窗名稱, 寬, 高)"""
         tk.Tk.__init__(self)  # 初始化 tk.Tk
@@ -1097,6 +1198,8 @@ class Window(tk.Tk, BaseWindow):
         with open("temp_icon.ico", "wb") as icon_file:
             icon_file.write(icon_data)
         self.iconbitmap("temp_icon.ico") #視窗圖標.ico
+    
+    
 
 class SubWindow(tk.Toplevel, BaseWindow):
     """子視窗類"""
@@ -1108,7 +1211,7 @@ class SubWindow(tk.Toplevel, BaseWindow):
         self.iconbitmap(self.master.iconbitmap())
         
         self.title(self.master.title())
-        if title is not None:
+        if title:
             self.title(title)
 
         self.geometry(f"{self.width}x{self.height}")
@@ -1134,23 +1237,17 @@ class SubWindow(tk.Toplevel, BaseWindow):
         super().delete_canvas_tag("Main", tg)
 
     def message_text(self,ms: int = 1000, txt: str = "", x: int = 0, y: int = 0, size: int = 12, color: str = "white" , align: str = "center"):
-        """顯示短暫訊息文字(ms毫秒: 預設 1000)"""
-        self.add_text(txt, x, y, size, color, "msg", align)
-        self.master.after(ms, lambda:self.delete_canvas_tag("msg"))
+        super().message_text(ms, "Main", txt, x, y, size, color, align)
 
-    def image_button(self, button_name: str, CMD, img: ImageTk.PhotoImage = None, x: int = 0, y: int = 0, rel: str = "raised", highlight: int = 1):
-        super().image_button(button_name, CMD, "Main", img, x, y, rel, highlight)
+    def image_button(self, button_name: str, func, img: ImageTk.PhotoImage = None, x: int = 0, y: int = 0, rel: str = "raised", highlight: int = 1):
+        super().image_button(button_name, func, "Main", img, x, y, rel, highlight)
     
-    def txt_button(self, button_name: str, CMD, txt: str = None, w: int= 0, h: int= 0, x: int = 0, y: int = 0, size: int = 12, font_color: str = "black", bg_color: str = "white"):
-        super().txt_button(button_name, CMD, "Main", txt, w, h, x, y, size, font_color, bg_color)
+    def txt_button(self, button_name: str, func, txt: str = None, w: int= 0, h: int= 0, x: int = 0, y: int = 0, size: int = 12, font_color: str = "black", bg_color: str = "white"):
+        super().txt_button(button_name, func, "Main", txt, w, h, x, y, size, font_color, bg_color)
 
     def input_box(self, entry_name: str= None, txt: str = "", x: int = 0, y: int = 0, size: int = 16, width: int = 12):
         super().input_box("Main", entry_name, txt, x, y, size, width)
 
-    def setup_subwindow(self, window_name: str = None,  width: int = 300, height: int= 300, BG_pic: ImageTk.PhotoImage = None):
-        """建立子視窗(視窗, 寬, 高)"""
-        sw = SubWindow(self, window_name, width, height, BG_pic)
-        self.__subwindow_dict[window_name] = sw
 
 class Picture:
     @staticmethod
@@ -1188,12 +1285,11 @@ class Audio:
         mixer.music.stop()
         self.bgm_playing = False
 
-    def switch_music(self, music_name: str = None, game_running = True) :
+    def switch_music(self, music_name: str = None) :
         """切換音樂"""
         if self.bgm_playing:
             self.stop_music()
-            if game_running:
-                self.play_music(music_name)
+            self.play_music(music_name)
 
     def play_sound(self, sound_name: str= None, volume: float = 1):
         """播放音效(Sound音訊, 音量)"""
@@ -1318,8 +1414,6 @@ class PlayLaBaG(LaBaG):
         self.Name = ""
         self.history_score = 0
 
-        self.double_score = 0 #超級阿禾加倍分
-
     def Reset(self):
         super().Reset()
         self.history_score = 0
@@ -1337,6 +1431,7 @@ class PlayLaBaG(LaBaG):
     def Random(self):
         """隨機生成數字"""
         super().Random()
+        print(f"機率區間：{self.rate_ranges[self.NowMode()]}")
         print(f"超級阿禾隨機數為: {self.SuperNum}")
         print(f"綠光阿瑋隨機數為: {self.GreenNum}")
         print(f"咖波累積數：{self.GssNum}")
@@ -1356,123 +1451,32 @@ class PlayLaBaG(LaBaG):
         print(f"目前分數：{self.score}")
         print(f"剩餘次數：{self.times - self.played}")
 
-    # def JudgeMode(self):
-    #     super().JudgeMode()
-    #     match self.NowMode():
-    #         case "SuperHHH":
-    #             if self.ModtoScreen:
-    #                 print(f"超級阿禾出現")
-    #                 if self.double_score != 0:
-    #                         print(f"(超級阿禾加倍分:{self.double_score})")
-    #             else:
-    #                 if all(p.code == "B" for p in self.Ps):
-    #                     print("全阿禾，次數不消耗且+1！")
-    #             print(f"超級阿禾剩餘次數:{self.SuperTimes}次")
-    #         case "GreenWei":
-    #             if self.ModtoScreen:
-    #                 print(f"綠光阿瑋出現")
-    #             else:
-    #                 if all(p.code == "A" for p in self.Ps):
-    #                     print("全咖波，次數不消耗！")
-    #             print(f"綠光阿瑋剩餘次數:{self.GreenTimes}次")
-                
-    #         case "PiKaChu":
-    #             if self.ModtoScreen:
-    #                 print(f"皮卡丘為你充電")
-    #                 print(f"已觸發 {self.kachu_times} 次皮卡丘充電")
     def JudgeMode(self):
-        """判斷模式"""
-        if not self.GameRunning():
-            #關掉其他模式
-            self.SuperHHH = False
-            self.GreenWei = False
-
-            #判斷皮卡丘充電
-            if any(p.code == "E" for p in self.Ps) :
-                self.PiKaChu = True
-                self.played -= 5
-                self.kachu_times += 1
-                print(f"皮卡丘為你充電")
-                print(f"已觸發 {self.kachu_times} 次皮卡丘充電")
-                self.ModtoScreen = True
-            else:
-                self.PiKaChu = False
-            return
-        
-        match self.NowMode():
-            case "Normal" | "PiKaChu":
-                #判斷超級阿禾
-                hhh_appear = any(p.code == "B" for p in self.Ps) #判斷是否有任何阿禾
-                if self.SuperNum <= self.SuperRate and hhh_appear:
-                    self.SuperHHH = True
-                    self.SuperTimes += 6
-                    print(f"超級阿禾出現")
-                    if self.PiKaChu:
-                        self.PiKaChu = False
-
-                    self.ModtoScreen = True
-
-                    #超級阿禾加倍
-                    if all(p.code == "B" for p in self.Ps):
-                        self.double_score = int(round(self.score / 2)) * self.score_time
-                        self.score += self.double_score
-                        if self.score_time == 3:
-                            print(f"(超級阿禾 x 綠光阿瑋加倍分:{self.double_score})")
-                        else:
-                            print(f"(超級阿禾加倍分:{self.double_score})")
-                    return
-                    
-                
-                #判斷綠光阿瑋
-                gss_all = all(p.code == "A" for p in self.Ps) #判斷是否有出現並全部咖波
-                if self.GreenNum <= self.GreenRate and gss_all :
-                    self.GreenWei = True
-                    self.GreenTimes += 2
-                    print(f"綠光阿瑋出現")
-                    if self.PiKaChu:
-                        self.PiKaChu = False
-                    
-                    self.ModtoScreen = True
-                    return
-
-                elif self.GssNum >= 20 : #咖波累積數達到20
-                    self.GreenWei = True
-                    self.GreenTimes += 2
-                    print(f"綠光阿瑋出現")
-                    self.GssNum = 0
-                    if self.PiKaChu:
-                        self.PiKaChu = False
-                    
-                    self.ModtoScreen = True
-                    return
+        super().JudgeMode()
+        now_mode = self.NowMode()
+        match now_mode:
             case "SuperHHH":
-                self.SuperTimes -= 1
-                if all(p.code == "B" for p in self.Ps):
-                    self.SuperTimes += 2
-                    print("全阿禾，次數不消耗且+1！")
+                if self.ModtoScreen:
+                    print(f"超級阿禾出現")
+                    if self.double_score != 0:
+                            print(f"(超級阿禾加倍分:{self.double_score})")
+                else:
+                    if all(p.code == "B" for p in self.Ps):
+                        print("全阿禾，次數不消耗且+1！")
                 print(f"超級阿禾剩餘次數:{self.SuperTimes}次")
-
-                if self.SuperTimes <= 0 : #超級阿禾次數用完
-                    self.SuperHHH = False
-                    self.JudgeMode() #判斷是否可再進入特殊模式
-                    self.ModtoScreen = True
-
-                return
-            
             case "GreenWei":
-                self.GreenTimes -= 1
-                if all(p.code == "A" for p in self.Ps):
-                    self.GreenTimes += 1
-                    print("全咖波，次數不消耗！")
+                if self.ModtoScreen:
+                    print(f"綠光阿瑋出現")
+                else:
+                    if all(p.code == "A" for p in self.Ps):
+                        print("全咖波，次數不消耗！")
                 print(f"綠光阿瑋剩餘次數:{self.GreenTimes}次")
                 
-                if self.GreenTimes <= 0 : #綠光阿瑋次數用完
-                    self.GreenWei = False
-                    self.JudgeMode() #判斷是否可再進入特殊模式
-                    self.ModtoScreen = True
-                
-                return
-        
+            case "PiKaChu":
+                if self.ModtoScreen:
+                    print(f"皮卡丘為你充電")
+                    print(f"已觸發 {self.kachu_times} 次皮卡丘充電")
+
     def GameOver(self):
         """遊戲結束"""
         print("")
@@ -1482,8 +1486,6 @@ class PlayLaBaG(LaBaG):
 
 #region JsonLaBaG
 import json
-from random import randint
-
 class JsonLaBaG(PlayLaBaG):
     """與json檔案連接的啦八機"""
     def __init__(self):
@@ -1525,44 +1527,24 @@ class JsonLaBaG(PlayLaBaG):
 
     def Random(self):
         """遊戲變數隨機產生"""
-        if self.index in self.json_data:
-            RandNums = [self.json_data[self.index]["RandNums[0]"], self.json_data[self.index]["RandNums[1]"], self.json_data[self.index]["RandNums[2]"]]
-            self.SuperNum = self.json_data[self.index]["SuperHHH"]
-            self.GreenNum = self.json_data[self.index]["GreenWei"]
-        else:
-            RandNums = [randint(1, 100), randint(1, 100), randint(1, 100)]
-            self.SuperNum = randint(1, 100) 
-            self.GreenNum = randint(1, 100) 
+        if self.index not in self.json_data:
+            return super().Random()
+        RandNums = [self.json_data[self.index]["RandNums[0]"], self.json_data[self.index]["RandNums[1]"], self.json_data[self.index]["RandNums[2]"]]
+        self.SuperNum = self.json_data[self.index]["SuperHHH"]
+        self.GreenNum = self.json_data[self.index]["GreenWei"]
 
         print(f"P隨機數為：{RandNums[0]} | {RandNums[1]} | {RandNums[2]}")
         print(f"超級阿禾隨機數為: {self.SuperNum}")
         print(f"綠光阿瑋隨機數為: {self.GreenNum}")
-
-
-        def acc_rate():
-            res = list()
-            acc = 0
-            for i in P.Dict:
-                acc += P.Dict[i].rate_dict[self.NowMode()]
-                res.append(acc)
-            return res
         
-        rate_range = acc_rate()
+        rate_range = self.rate_ranges[self.NowMode()]
         print("機率區間：", rate_range)
 
         for i in range(3):
-            if RandNums[i] <= rate_range[0]:
-                self.Ps[i] = P.Dict["A"]
-            elif RandNums[i] <= rate_range[1]:
-                self.Ps[i] = P.Dict["B"]
-            elif RandNums[i] <= rate_range[2]:
-                self.Ps[i] = P.Dict["C"]
-            elif RandNums[i] <= rate_range[3]:
-                self.Ps[i] = P.Dict["D"]
-            elif RandNums[i] <= rate_range[4]:
-                self.Ps[i] = P.Dict["E"]
-            elif RandNums[i] <= rate_range[5]:
-                self.Ps[i] = P.Dict["F"]
+            for j in range(6):
+                if RandNums[i] <= rate_range[j]:
+                    self.Ps[i] = P.Dict[list(P.Dict.keys())[j]]
+                    break
 
         #增加咖波累積數
         for p in self.Ps:
@@ -1572,14 +1554,8 @@ class JsonLaBaG(PlayLaBaG):
 
     def Result(self):
         """結果"""
+        super().Result()
         self.index_plus()
-        self.played += 1
-        self.score += self.margin_score
-        print(f"")
-        print(f' | {self.Ps[0].code} | {self.Ps[1].code} | {self.Ps[2].code} |')
-        print(f"+{self.margin_score}")
-        print(f"目前分數：{self.score}")
-        print(f"剩餘次數：{self.times - self.played}")
 #endregion
 
 if __name__ == "__main__":
@@ -1593,7 +1569,7 @@ if __name__ == "__main__":
         
 
 @.\src\LaBaG.py
-from random import randint
+from numpy import random 
 
 class P:
     """圖案符號"""
@@ -1667,6 +1643,19 @@ class LaBaG:
                 "GreenWei": 3,
                 "PiKaChu": 3
             })
+        
+        #機率區間
+        def acc_rate(mode: str = "Normal") -> list[int]:
+            res = list()
+            acc = 0
+            for p in P.Dict.values():
+                acc += p.rate_dict[mode]
+                res.append(acc)
+            return res
+        
+        self.rate_ranges = {
+            mode: acc_rate(mode) for mode in ["Normal", "SuperHHH", "GreenWei", "PiKaChu"]
+        }
         
         #加分倍數
         self.score_times_dict = {
@@ -1750,39 +1739,24 @@ class LaBaG:
 
     def Random(self):
         """遊戲變數隨機產生"""
-        RandNums = [randint(1, 100), randint(1, 100), randint(1, 100)]
+        RandNums = random.randint(1, 101, 3)
         for i in range(3):
-            self.OneData[f"RandNums[{i}]"] = RandNums[i]
+            self.OneData[f"RandNums[{i}]"] = int(RandNums[i])
 
-        self.SuperNum = randint(1, 100) 
-        self.OneData["SuperHHH"] = self.SuperNum
-        self.GreenNum = randint(1, 100) 
-        self.OneData["GreenWei"] = self.GreenNum
+        self.SuperNum = random.randint(1, 101)
+        self.OneData["SuperHHH"] = int(self.SuperNum)
+        self.GreenNum = random.randint(1, 101)
+        self.OneData["GreenWei"] = int(self.GreenNum)
 
-        def acc_rate():
-            res = list()
-            acc = 0
-            for i in P.Dict:
-                acc += P.Dict[i].rate_dict[self.NowMode()]
-                res.append(acc)
-            return res
-        
-        rate_range = acc_rate()
+        rate_range = self.rate_ranges[self.NowMode()]
 
         for i in range(3):
-            if RandNums[i] <= rate_range[0]:
-                self.Ps[i] = P.Dict["A"]
-            elif RandNums[i] <= rate_range[1]:
-                self.Ps[i] = P.Dict["B"]
-            elif RandNums[i] <= rate_range[2]:
-                self.Ps[i] = P.Dict["C"]
-            elif RandNums[i] <= rate_range[3]:
-                self.Ps[i] = P.Dict["D"]
-            elif RandNums[i] <= rate_range[4]:
-                self.Ps[i] = P.Dict["E"]
-            elif RandNums[i] <= rate_range[5]:
-                self.Ps[i] = P.Dict["F"]
+            for j in range(6):
+                if RandNums[i] <= rate_range[j]:
+                    self.Ps[i] = P.Dict[list(P.Dict.keys())[j]]
+                    break
 
+            
         #增加咖波累積數
         for p in self.Ps:
             if p.code == "A" and self.GssNum < 20 :
@@ -1794,25 +1768,28 @@ class LaBaG:
             """p -> 使用 p 的分數列表\ntyp -> 得分型態"""
             self.margin_score += p.score_list[typ]
 
-        if self.Ps[0] == self.Ps[1] == self.Ps[2]:
-            margin_add(self.Ps[0], 0)
-        elif self.Ps[0] == self.Ps[1]:
-            margin_add(self.Ps[0], 1)
-            margin_add(self.Ps[2], 2)
-            self.margin_score = round(self.margin_score / 1.3)
-        elif self.Ps[1] == self.Ps[2]:
-            margin_add(self.Ps[1], 1)
-            margin_add(self.Ps[0], 2)
-            self.margin_score = round(self.margin_score / 1.3)
-        elif self.Ps[2] == self.Ps[0]:
-            margin_add(self.Ps[2], 1)
-            margin_add(self.Ps[1], 2)
-            self.margin_score = round(self.margin_score / 1.3)  
-        elif self.Ps[0] != self.Ps[1] != self.Ps[2]:
-            margin_add(self.Ps[0], 2)
-            margin_add(self.Ps[1], 2)
-            margin_add(self.Ps[2], 2)
-            self.margin_score = round(self.margin_score / 3)
+        unique_count = len(set(p.code for p in self.Ps))
+        match unique_count:
+            case 1: #三個一樣
+                margin_add(self.Ps[0], 0)
+            case 2: #兩個一樣
+                if self.Ps[0] == self.Ps[1]:
+                    margin_add(self.Ps[0], 1)
+                    margin_add(self.Ps[2], 2)
+                    self.margin_score = round(self.margin_score / 1.3)
+                elif self.Ps[1] == self.Ps[2]:
+                    margin_add(self.Ps[1], 1)
+                    margin_add(self.Ps[0], 2)
+                    self.margin_score = round(self.margin_score / 1.3)
+                elif self.Ps[2] == self.Ps[0]:
+                    margin_add(self.Ps[2], 1)
+                    margin_add(self.Ps[1], 2)
+                    self.margin_score = round(self.margin_score / 1.3)  
+            case 3: #三個不一樣
+                margin_add(self.Ps[0], 2)
+                margin_add(self.Ps[1], 2)
+                margin_add(self.Ps[2], 2)
+                self.margin_score = round(self.margin_score / 3)
 
         self.score_time = self.score_times_dict[self.NowMode()]
         self.margin_score *= self.score_time
@@ -1843,8 +1820,8 @@ class LaBaG:
             return
         
         
-        
-        match self.NowMode():
+        now_mode = self.NowMode()
+        match now_mode:
             case "Normal" | "PiKaChu":
                 #判斷超級阿禾
                 hhh_appear = any(p.code == "B" for p in self.Ps) #判斷是否有任何阿禾
